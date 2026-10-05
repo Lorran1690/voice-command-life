@@ -191,6 +191,7 @@ async function answerQuestion(
     },
     system:
       JARVIS_PERSONA +
+      `\nData e hora atuais do usuário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full", timeStyle: "short" })} (fuso America/Sao_Paulo). Use isso para interpretar "hoje", "amanhã" e prazos. ` +
       "\nVocê é o cérebro de bastidores de uma conversa por voz. As transcrições podem estar incompletas ou corrigidas; use a correção mais recente. " +
       "Continue a partir de resultados de ferramentas já concluídos; não repita ações já feitas. " +
       "Responda em português do Brasil, com no máximo 120 palavras, em texto corrido adequado para ser falado em voz alta (sem markdown, sem listas). " +
