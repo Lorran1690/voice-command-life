@@ -569,7 +569,7 @@ export function bindLiveConnection(
         type: "session.start",
         session: {
           model: config.liveModel,
-          instructions: conversationInstructions,
+          instructions: conversationInstructions(),
           audio: { output: { voice: "tempo" } },
           delegation: { type: "client" },
         },
