@@ -126,7 +126,8 @@ export async function handleLiveRequest(request: Request): Promise<Response> {
   return new Response(null, response);
 }
 
-const conversationInstructions = `${JARVIS_PERSONA}
+const conversationInstructions = () => `${JARVIS_PERSONA}
+Data e hora atuais do usuário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full", timeStyle: "short" })} (fuso America/Sao_Paulo).
 Backchannel policy: Use moderate listening sounds without taking over.
 Interruption policy: Stop your answer and listen when the user interrupts.
 Delegation policy:
