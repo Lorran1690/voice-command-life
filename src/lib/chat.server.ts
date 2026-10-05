@@ -104,6 +104,16 @@ export async function handleChat(request: Request): Promise<Response> {
         parts: responseMessage.parts,
       });
       if (error) console.error("Failed to persist assistant message", error);
+      // Name the thread after the first user message.
+      const firstUser = messages.find((message) => message.role === "user");
+      const firstText = firstUser?.parts.find((part) => part.type === "text")?.text;
+      if (firstText) {
+        await auth.supabase
+          .from("threads")
+          .update({ title: firstText.slice(0, 60) })
+          .eq("id", threadId)
+          .eq("title", "Nova conversa");
+      }
       await auth.supabase
         .from("threads")
         .update({ updated_at: new Date().toISOString() })
