@@ -101,7 +101,7 @@ export async function handleChat(request: Request): Promise<Response> {
         thread_id: threadId,
         user_id: auth.userId,
         role: "assistant",
-        parts: responseMessage.parts,
+        parts: responseMessage.parts as unknown as import("@/integrations/supabase/types").Json,
       });
       if (error) console.error("Failed to persist assistant message", error);
       // Name the thread after the first user message.
