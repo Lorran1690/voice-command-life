@@ -54,7 +54,7 @@ export async function handleChat(request: Request): Promise<Response> {
       thread_id: threadId,
       user_id: auth.userId,
       role: "user",
-      parts: lastUser.parts,
+      parts: lastUser.parts as unknown as import("@/integrations/supabase/types").Json,
     });
     if (insertError) console.error("Failed to persist user message", insertError);
   }

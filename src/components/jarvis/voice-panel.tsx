@@ -25,22 +25,23 @@ export function VoicePanel() {
   }, []);
 
   const onEvent = useCallback((event: LiveEvent) => {
-    if (event.type === "session.input_transcript.delta" && typeof event.delta === "string") {
-      userCaption.current += event.delta;
+    if (event.type === "session.input_transcript.delta" && typeof event["delta"] === "string") {
+      userCaption.current += event["delta"];
       const text = userCaption.current;
       setCaptions((prev) => {
         const next = [...prev];
-        if (next.length && next[next.length - 1].role === "user") next[next.length - 1] = { role: "user", text };
+        const last = next[next.length - 1];
+        if (last?.role === "user") next[next.length - 1] = { role: "user", text };
         else next.push({ role: "user", text });
         return next.slice(-6);
       });
-    } else if (event.type === "session.output_transcript.delta" && typeof event.delta === "string") {
-      assistantCaption.current += event.delta;
+    } else if (event.type === "session.output_transcript.delta" && typeof event["delta"] === "string") {
+      assistantCaption.current += event["delta"];
       const text = assistantCaption.current;
       setCaptions((prev) => {
         const next = [...prev];
-        if (next.length && next[next.length - 1].role === "assistant")
-          next[next.length - 1] = { role: "assistant", text };
+        const last = next[next.length - 1];
+        if (last?.role === "assistant") next[next.length - 1] = { role: "assistant", text };
         else next.push({ role: "assistant", text });
         return next.slice(-6);
       });
@@ -51,7 +52,7 @@ export function VoicePanel() {
     }
   }, []);
 
-  const call = useLiveVoice({ url: liveUrl, onEvent });
+  const call = useLiveVoice({ ...(liveUrl ? { url: liveUrl } : {}), onEvent });
   const active = call.status === "connected" || call.status === "connecting";
 
   return (
