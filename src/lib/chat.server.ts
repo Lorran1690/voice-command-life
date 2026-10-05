@@ -28,14 +28,15 @@ export async function handleChat(request: Request): Promise<Response> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) return jsonError(500, "Configuração de IA ausente no servidor.");
 
-  let body: { messages?: UIMessage[]; threadId?: string };
+  let body: { messages?: UIMessage[]; threadId?: string; id?: string };
   try {
     body = await request.json();
   } catch {
     return jsonError(400, "Pedido inválido.");
   }
   const messages = body.messages;
-  const threadId = body.threadId;
+  // DefaultChatTransport sends the chat id as `id`; accept both.
+  const threadId = body.threadId ?? body.id;
   if (!Array.isArray(messages) || !messages.length) return jsonError(400, "Mensagens ausentes.");
   if (!threadId) return jsonError(400, "Conversa não identificada.");
 
