@@ -78,6 +78,7 @@ export async function handleChat(request: Request): Promise<Response> {
     stopWhen: stepCountIs(50),
     system:
       JARVIS_PERSONA +
+      `\nData e hora atuais do usuário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full", timeStyle: "short" })} (fuso America/Sao_Paulo). Use isso para interpretar "hoje", "amanhã" e prazos.` +
       "\nResponda em português do Brasil. Você pode usar markdown nas respostas de texto. " +
       "Use as ferramentas para criar/listar/concluir tarefas, salvar/listar anotações e memorizar/consultar fatos; confirme ações com os dados reais retornados." +
       (memories ? `\nFatos memorizados sobre o usuário:\n${memories}` : ""),
