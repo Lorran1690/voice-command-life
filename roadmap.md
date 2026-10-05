@@ -1,9 +1,16 @@
-# J.A.R.V.I.S. — Roadmap
+# Roadmap — J.A.R.V.I.S. (Lorram)
 
-- [ ] Ativar login (email + Google) no Lovable Cloud
-- [ ] Banco de dados: conversas (threads/mensagens), tarefas, notas, memórias
-- [ ] Voz ao vivo (relay + hook + plugin Vite), voz masculina BR, personalidade mordomo elegante
-- [ ] Chat por texto com streaming, threads salvas, ferramentas (tarefas/notas/memória)
-- [ ] UI estilo HUD JARVIS (tema escuro, identidade visual própria)
-- [ ] Verificar build, fluxo de login, chat e voz
-- [ ] Próxima etapa (depois): agenda e pesquisa na web
+## Fase 1 — concluída
+- [x] Login (e-mail/senha + Google), acesso restrito ao dono
+- [x] Conversas por texto com histórico salvo (várias conversas, uma URL por conversa)
+- [x] Voz ao vivo (botão "Falar com J.A.R.V.I.S.", transcrição na tela, voz masculina)
+- [x] Tarefas/lembretes, notas e memória de fatos (criados por voz ou texto)
+- [x] Visual HUD escuro estilo JARVIS, emblema próprio + favicon
+
+## Fase 2 — pendente (pedir confirmação do usuário)
+- [ ] Agenda (integração com Google Calendar)
+- [ ] Pesquisa na web durante a conversa
+- [ ] Lembretes com notificação ativa (hoje são registros com data/hora)
+
+## Verificação pendente
+- [ ] Teste real da chamada de voz com microfone (não dá para validar áudio em ambiente headless)
