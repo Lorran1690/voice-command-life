@@ -80,7 +80,7 @@ export function createJarvisTools(supabase: UserScopedSupabase, userId: string) 
         const { data, error } = await supabase
           .from("tasks")
           .update({ status: "done", updated_at: new Date().toISOString() })
-          .eq("id", matches[0].id)
+          .eq("id", matches[0]!.id)
           .select("id, title, status")
           .single();
         if (error) return { ok: false as const, error: error.message };
