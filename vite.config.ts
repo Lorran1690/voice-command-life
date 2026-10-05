@@ -16,5 +16,11 @@ export default defineConfig({
   },
   vite: {
     plugins: [liveVoiceDev()],
+    resolve: {
+      dedupe: ["react", "react-dom"],
+    },
+    optimizeDeps: {
+      include: ["react", "react-dom", "@ai-sdk/react"],
+    },
   },
 });
