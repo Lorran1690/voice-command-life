@@ -263,3 +263,162 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* JARVIS COMMAND-CENTER MOTION LAYER */
+.jarvis-grid-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in oklab, var(--primary) 2%, transparent) 4px),
+    radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--primary) 7%, transparent), transparent 42%);
+  mix-blend-mode: screen;
+  animation: hud-scanlines 8s linear infinite;
+}
+.hud-shell { background:
+  radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--primary) 5%, transparent), transparent 35%),
+  var(--background);
+}
+.hud-header { box-shadow: 0 1px 0 color-mix(in oklab, var(--primary) 16%, transparent), 0 12px 40px color-mix(in oklab, #000 55%, transparent); }
+.hud-main::before, .hud-main::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  width: 90px;
+  height: 90px;
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  border-style: solid;
+  animation: hud-corner-pulse 3s ease-in-out infinite;
+}
+.hud-main::before { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+.hud-main::after { right: 12px; bottom: 12px; border-width: 0 1px 1px 0; animation-delay: -1.5s; }
+
+.orbital-core {
+  width: 270px;
+  height: 270px;
+  filter: drop-shadow(0 0 20px color-mix(in oklab, var(--primary) 18%, transparent));
+}
+.orbital-core::before,
+.orbital-core::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orbital-core::before {
+  inset: 42px;
+  background: conic-gradient(from 0deg, transparent, color-mix(in oklab, var(--primary) 28%, transparent), transparent 24%, color-mix(in oklab, var(--hud-amber) 18%, transparent), transparent 48%);
+  filter: blur(10px);
+  animation: core-gyro 5s linear infinite;
+}
+.orbital-core::after {
+  inset: 2px;
+  border: 1px solid color-mix(in oklab, var(--primary) 12%, transparent);
+  box-shadow: inset 0 0 45px color-mix(in oklab, var(--primary) 7%, transparent);
+  animation: core-breathe 2.8s ease-in-out infinite;
+}
+.orbital-aura {
+  position: absolute; inset: 22px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 15%, transparent), transparent 62%);
+  filter: blur(8px); animation: aura-pulse 2s ease-in-out infinite;
+}
+.orbital-ring--outer { inset: 2px; border: 1px dashed color-mix(in oklab, var(--primary) 28%, transparent); animation: ring-spin 18s linear infinite; }
+.orbital-ring--middle { inset: 20px; border: 1px solid color-mix(in oklab, var(--primary) 45%, transparent); border-left-color: transparent; border-right-color: var(--hud-amber); animation: ring-spin-reverse 9s linear infinite; }
+.orbital-ring--inner { inset: 34px; border: 1px dotted color-mix(in oklab, var(--primary) 55%, transparent); animation: ring-spin 7s linear infinite; }
+.orbital-ring--ticks {
+  inset: 8px; border: 6px dotted color-mix(in oklab, var(--primary) 22%, transparent);
+  animation: ring-spin-reverse 24s linear infinite;
+}
+.orbital-ring--radar {
+  inset: 52px;
+  border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent);
+  background: conic-gradient(from 0deg, transparent 0 78%, color-mix(in oklab, var(--primary) 38%, transparent) 82%, transparent 87%);
+  animation: ring-spin 3.8s linear infinite;
+}
+.orbital-sweep {
+  position: absolute; inset: 3px; border-radius: 50%;
+  background: conic-gradient(from 180deg, transparent 0 68%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 76%);
+  mask: radial-gradient(circle, transparent 0 52%, #000 54% 58%, transparent 60%);
+  animation: ring-spin 2.6s linear infinite;
+}
+.orbital-lens {
+  width: 108px; height: 108px; z-index: 4;
+  background: radial-gradient(circle at 45% 40%, #112a35, #050a0e 68%);
+  border: 1px solid color-mix(in oklab, var(--primary) 80%, transparent);
+  box-shadow: 0 0 12px var(--hud-glow), 0 0 70px color-mix(in oklab, var(--primary) 18%, transparent), inset 0 0 35px color-mix(in oklab, var(--primary) 12%, transparent);
+  overflow: hidden;
+}
+.orbital-lens::before {
+  content: ""; position: absolute; inset: -35%;
+  background: conic-gradient(transparent, color-mix(in oklab, var(--primary) 30%, transparent), transparent 35%);
+  animation: ring-spin 2.2s linear infinite;
+}
+.orbital-lens-glass { position: absolute; inset: 8px; border-radius: 50%; border: 1px solid color-mix(in oklab, #fff 18%, transparent); z-index: 2; }
+.orbital-lens img { position: relative; z-index: 3; filter: drop-shadow(0 0 9px var(--primary)); }
+.orbital-lens-scan {
+  position: absolute; z-index: 5; left: 0; right: 0; top: -10%; height: 2px;
+  background: var(--primary); box-shadow: 0 0 12px 2px var(--primary);
+  animation: lens-scan 2.1s ease-in-out infinite;
+}
+.orbital-crosshair { inset: 0; border-left: 1px solid color-mix(in oklab, var(--primary) 16%, transparent); border-right: 1px solid color-mix(in oklab, var(--primary) 16%, transparent); }
+.orbital-crosshair::after { content: ""; position: absolute; left: 12%; right: 12%; top: 50%; border-top: 1px solid color-mix(in oklab, var(--primary) 14%, transparent); }
+.orbital-label {
+  position: absolute; z-index: 8; font: 500 7px/1 var(--font-display);
+  letter-spacing: .18em !important; color: color-mix(in oklab, var(--primary) 65%, transparent);
+  text-transform: uppercase; white-space: nowrap; animation: label-flicker 4s steps(2) infinite;
+}
+.orbital-label--top { top: 28px; }
+.orbital-label--left { left: -22px; transform: rotate(-90deg); }
+.orbital-label--right { right: -20px; transform: rotate(90deg); animation-delay: -2s; }
+.orbital-node {
+  position: absolute; z-index: 9; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--primary); box-shadow: 0 0 10px var(--primary);
+  animation: node-pulse 1.4s ease-in-out infinite;
+}
+.orbital-node--a { top: 23%; left: 18%; }
+.orbital-node--b { top: 68%; right: 13%; animation-delay: -.35s; }
+.orbital-node--c { bottom: 15%; left: 31%; animation-delay: -.7s; }
+.orbital-node--d { top: 15%; right: 28%; animation-delay: -1.05s; background: var(--hud-amber); box-shadow: 0 0 10px var(--hud-amber); }
+.orbital-particle-field { position: absolute; inset: 0; }
+.orbital-particle-field i {
+  --angle: calc(var(--i) * 30deg);
+  position: absolute; width: 2px; height: 2px; border-radius: 50%;
+  left: 50%; top: 50%; background: var(--primary);
+  box-shadow: 0 0 5px var(--primary);
+  transform: rotate(var(--angle)) translateY(-124px);
+  animation: particle-orbit 3s linear infinite;
+  animation-delay: calc(var(--i) * -0.22s);
+}
+.orbital-core--active { transform: scale(1.12); }
+.orbital-core--active::before { animation-duration: 1.8s; }
+.orbital-core--active .orbital-ring--outer { animation-duration: 5s; }
+.orbital-core--active .orbital-ring--middle { animation-duration: 2.6s; }
+.orbital-core--active .orbital-ring--inner { animation-duration: 3.5s; }
+.orbital-core--active .orbital-ring--radar { animation-duration: 1.4s; }
+.orbital-core--active .orbital-particle-field i { animation-duration: 1.2s; }
+.orbital-core--active .orbital-lens { box-shadow: 0 0 20px var(--hud-glow), 0 0 95px color-mix(in oklab, var(--primary) 28%, transparent), inset 0 0 35px color-mix(in oklab, var(--primary) 18%, transparent); }
+.voice-frequency--active span { animation-duration: 420ms; }
+.voice-frequency { width: min(360px, 80vw); }
+.voice-frequency span { width: 3px; border-radius: 999px; box-shadow: 0 0 7px color-mix(in oklab, var(--primary) 35%, transparent); }
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+@keyframes ring-spin-reverse { to { transform: rotate(-360deg); } }
+@keyframes core-gyro { to { transform: rotate(360deg); } }
+@keyframes core-breathe { 50% { transform: scale(1.03); opacity: .8; } }
+@keyframes aura-pulse { 50% { transform: scale(1.15); opacity: .65; } }
+@keyframes lens-scan { 0%,100% { transform: translateY(0); opacity: .15; } 50% { transform: translateY(115px); opacity: .9; } }
+@keyframes node-pulse { 50% { transform: scale(2.2); opacity: .35; } }
+@keyframes particle-orbit { 50% { opacity: .2; transform: rotate(var(--angle)) translateY(-105px) scale(.5); } }
+@keyframes label-flicker { 0%,94%,100% { opacity: .7; } 96% { opacity: .15; } }
+@keyframes hud-corner-pulse { 50% { opacity: .35; width: 120px; height: 120px; } }
+@keyframes hud-scanlines { from { transform: translateY(-2%); } to { transform: translateY(2%); } }
+@media (max-width: 640px) {
+  .orbital-core { width: 220px; height: 220px; }
+  .orbital-particle-field i { transform: rotate(var(--angle)) translateY(-100px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbital-core::before, .orbital-core::after, .orbital-aura, .orbital-ring, .orbital-sweep,
+  .orbital-lens::before, .orbital-lens-scan, .orbital-node, .orbital-particle-field i,
+  .orbital-label, .hud-main::before, .hud-main::after, .jarvis-grid-bg::after { animation: none !important; }
+}
