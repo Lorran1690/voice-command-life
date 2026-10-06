@@ -11,18 +11,13 @@ import { ChatWindow } from "@/components/jarvis/chat-window";
 import { TasksPanel } from "@/components/jarvis/tasks-panel";
 import { ThreadSidebar } from "@/components/jarvis/thread-sidebar";
 import { VoicePanel } from "@/components/jarvis/voice-panel";
-import { supabase } from "@/integrations/supabase/client";
-import { clearLocalUser, isLocalMode } from "@/lib/local-mode";
+import { clearLocalUser, getLocalUser } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
   head: () => ({
     meta: [
-      { title: "Conversa — J.A.R.V.I.S." },
-      { name: "description", content: "Converse por texto ou voz com seu assistente pessoal J.A.R.V.I.S." },
-      { property: "og:title", content: "Conversa — J.A.R.V.I.S." },
-      { property: "og:description", content: "Converse por texto ou voz com seu assistente pessoal J.A.R.V.I.S." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { title: "J.A.R.V.I.S. — Local" },
+      { name: "description", content: "J.A.R.V.I.S. rodando localmente." },
     ],
   }),
   component: ChatPage,
@@ -34,90 +29,82 @@ function ChatPage() {
   const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null);
 
   useEffect(() => {
-    let active = true;
-    setInitialMessages(null);
+    setInitialMessages([]);
+  }, [threadId]);
 
-    if (isLocalMode()) {
-      setInitialMessages([]);
-      return;
-    }
-
-    (async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("id, role, parts")
-        .eq("thread_id", threadId)
-        .order("created_at", { ascending: true });
-      if (!active) return;
-      if (error) {
-        navigate({ to: "/", replace: true });
-        return;
-      }
-      setInitialMessages(
-        (data ?? []).map((row) => ({
-          id: row.id,
-          role: row.role as UIMessage["role"],
-          parts: (row.parts as UIMessage["parts"]) ?? [],
-        })),
-      );
-    })();
-    return () => {
-      active = false;
-    };
-  }, [threadId, navigate]);
-
-  async function signOut() {
-    if (isLocalMode()) {
-      clearLocalUser();
-    } else {
-      await supabase.auth.signOut();
-    }
+  function signOut() {
+    clearLocalUser();
     navigate({ to: "/auth", replace: true });
   }
+
+  const operator = getLocalUser()?.name ?? "Operador";
 
   return (
     <div className="jarvis-grid-bg hud-shell flex h-dvh flex-col bg-background">
       <header className="hud-header hud-enter flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-8">
         <div className="flex items-center gap-2.5">
           <img src={jarvisCore} alt="" width={1024} height={1024} className="h-7 w-7" />
-          <h1 className="font-display text-base font-semibold text-primary sm:text-lg">J.A.R.V.I.S.</h1>
+          <div>
+            <h1 className="font-display text-base font-semibold text-primary sm:text-lg">J.A.R.V.I.S.</h1>
+            <p className="font-display text-[8px] uppercase tracking-[0.14em] text-muted-foreground">Operador: {operator}</p>
+          </div>
         </div>
+
         <nav className="flex items-center gap-1" aria-label="Painéis do Jarvis">
           <Sheet>
-            <SheetTrigger asChild><Button variant="ghost" size="sm" aria-label="Configurações do JARVIS" title="Configurações"><Settings2 /><span className="hidden sm:inline">Configurar</span></Button></SheetTrigger>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm" aria-label="Configurações" title="Configurações">
+                <Settings2 /><span className="hidden sm:inline">Configurar</span>
+              </Button>
+            </SheetTrigger>
             <SheetContent className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
-              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Configurações do J.A.R.V.I.S.</SheetTitle></SheetHeader>
+              <SheetHeader className="border-b border-border p-5">
+                <SheetTitle className="font-display text-primary">Configurações locais</SheetTitle>
+              </SheetHeader>
               <AssistantSettings />
             </SheetContent>
           </Sheet>
+
           <Sheet>
-            <SheetTrigger asChild><Button variant="ghost" size="sm" aria-label="Conversas" title="Conversas"><MessagesSquare /><span className="hidden sm:inline">Conversas</span></Button></SheetTrigger>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm" aria-label="Conversas" title="Conversas">
+                <MessagesSquare /><span className="hidden sm:inline">Conversas</span>
+              </Button>
+            </SheetTrigger>
             <SheetContent side="left" className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
-              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Conversas</SheetTitle></SheetHeader>
+              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Conversas locais</SheetTitle></SheetHeader>
               <ThreadSidebar />
             </SheetContent>
           </Sheet>
+
           <Sheet>
-            <SheetTrigger asChild><Button variant="ghost" size="sm" aria-label="Tarefas" title="Tarefas, notas e memória"><ListTodo /><span className="hidden sm:inline">Tarefas</span></Button></SheetTrigger>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm" aria-label="Organização" title="Tarefas, notas e memória">
+                <ListTodo /><span className="hidden sm:inline">Organização</span>
+              </Button>
+            </SheetTrigger>
             <SheetContent className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
-              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-hud-amber">Organização pessoal</SheetTitle></SheetHeader>
+              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Organização local</SheetTitle></SheetHeader>
               <TasksPanel />
             </SheetContent>
           </Sheet>
-          <Button variant="ghost" size="sm" onClick={() => void signOut()} aria-label="Sair" title="Sair" className="text-muted-foreground"><LogOut /><span className="hidden sm:inline">Sair</span></Button>
+
+          <Button variant="ghost" size="sm" onClick={signOut} aria-label="Sair" title="Sair" className="text-muted-foreground">
+            <LogOut /><span className="hidden sm:inline">Sair</span>
+          </Button>
         </nav>
       </header>
 
-        <main className="hud-main mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col">
-          <VoicePanel />
-          {initialMessages ? (
-            <ChatWindow key={threadId} threadId={threadId} initialMessages={initialMessages} />
-          ) : (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          )}
-        </main>
+      <main className="hud-main mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col">
+        <VoicePanel />
+        {initialMessages ? (
+          <ChatWindow key={threadId} threadId={threadId} initialMessages={initialMessages} />
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+      </main>
     </div>
   );
 }
