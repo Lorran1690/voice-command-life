@@ -697,3 +697,324 @@
 @media (prefers-reduced-motion: reduce) {
   .settings-choice, .settings-field input, .settings-field select, .settings-field textarea { transition: none !important; }
 }
+
+
+/* LOCAL JARVIS OPERATOR LOGIN */
+.jarvis-login-screen {
+  position: relative;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  padding: 28px 18px;
+  background:
+    radial-gradient(circle at 50% 28%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 28%),
+    radial-gradient(circle at 50% 100%, color-mix(in oklab, #000 60%, transparent), transparent 50%),
+    var(--background);
+}
+.jarvis-login-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 49.8%, color-mix(in oklab, var(--primary) 5%, transparent) 50%, transparent 50.2%),
+    linear-gradient(0deg, transparent 0 49.8%, color-mix(in oklab, var(--primary) 4%, transparent) 50%, transparent 50.2%);
+  background-size: 100% 100%, 100% 100%;
+}
+.jarvis-login-scan {
+  position: absolute;
+  inset: -30% 0 auto;
+  height: 70%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--primary) 10%, transparent), transparent);
+  filter: blur(10px);
+  animation: login-scan 5.5s ease-in-out infinite;
+}
+.jarvis-login-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image:
+    radial-gradient(circle, color-mix(in oklab, var(--primary) 75%, transparent) 0 1px, transparent 1.5px),
+    radial-gradient(circle, color-mix(in oklab, var(--foreground) 30%, transparent) 0 1px, transparent 1.5px);
+  background-size: 130px 170px, 210px 230px;
+  background-position: 14px 24px, 76px 110px;
+  animation: login-stars 16s linear infinite;
+}
+.jarvis-login-panel {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: min(430px, 100%);
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 22px 20px;
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
+  border-radius: 24px;
+  background:
+    linear-gradient(160deg, color-mix(in oklab, var(--card) 72%, transparent), color-mix(in oklab, #000 20%, transparent)),
+    radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--primary) 7%, transparent), transparent 45%);
+  box-shadow:
+    0 30px 100px color-mix(in oklab, #000 48%, transparent),
+    inset 0 1px 0 color-mix(in oklab, #fff 8%, transparent),
+    0 0 70px color-mix(in oklab, var(--primary) 6%, transparent);
+  backdrop-filter: blur(18px);
+  animation: login-panel-in 700ms cubic-bezier(.16,1,.3,1) both;
+}
+.jarvis-login-panel::before,
+.jarvis-login-panel::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-color: color-mix(in oklab, var(--primary) 26%, transparent);
+  border-style: solid;
+}
+.jarvis-login-panel::before {
+  inset: 14px;
+  border-width: 1px 0 0 1px;
+  border-radius: 18px 0 0 0;
+}
+.jarvis-login-panel::after {
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  height: 18px;
+  border-width: 0 1px 1px 0;
+  border-radius: 0 0 18px 0;
+}
+.jarvis-login-core {
+  position: relative;
+  display: grid;
+  width: 184px;
+  height: 184px;
+  place-items: center;
+  margin-top: -6px;
+  margin-bottom: 12px;
+}
+.jarvis-login-core img {
+  position: relative;
+  z-index: 4;
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px var(--primary));
+  animation: login-core-float 3.6s ease-in-out infinite;
+}
+.jarvis-login-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.jarvis-login-ring--outer {
+  inset: 6px;
+  border: 1px dashed color-mix(in oklab, var(--primary) 35%, transparent);
+  box-shadow: 0 0 25px color-mix(in oklab, var(--primary) 8%, transparent);
+  animation: ring-spin 11s linear infinite;
+}
+.jarvis-login-ring--inner {
+  inset: 24px;
+  border: 1px solid color-mix(in oklab, var(--primary) 25%, transparent);
+  border-top-color: var(--hud-amber);
+  border-bottom-color: var(--primary);
+  animation: ring-spin-reverse 6s linear infinite;
+}
+.jarvis-login-pulse {
+  position: absolute;
+  inset: 55px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  box-shadow: 0 0 35px color-mix(in oklab, var(--primary) 26%, transparent);
+  animation: login-core-pulse 1.8s ease-in-out infinite;
+}
+.jarvis-login-core-scan {
+  position: absolute;
+  z-index: 5;
+  left: 42px;
+  right: 42px;
+  top: 16px;
+  height: 2px;
+  border-radius: 99px;
+  background: var(--primary);
+  box-shadow: 0 0 12px 2px var(--primary);
+  animation: login-core-scan 2.2s ease-in-out infinite;
+}
+.jarvis-login-heading {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+}
+.jarvis-login-kicker {
+  display: block;
+  margin-bottom: 7px;
+  font: 500 8px/1.2 var(--font-display);
+  letter-spacing: .24em !important;
+  color: color-mix(in oklab, var(--primary) 70%, transparent);
+}
+.jarvis-login-heading h1 {
+  margin: 0;
+  font: 600 28px/1.1 var(--font-display);
+  letter-spacing: .22em !important;
+  color: var(--primary);
+  text-shadow: 0 0 25px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+.jarvis-login-heading p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.jarvis-login-form {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  width: 100%;
+  gap: 8px;
+  margin-top: 24px;
+}
+.jarvis-login-form label {
+  font: 600 9px/1.2 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: .16em !important;
+  color: color-mix(in oklab, var(--foreground) 74%, transparent);
+}
+.jarvis-login-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--background) 82%, transparent);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.jarvis-login-input-wrap:focus-within {
+  border-color: color-mix(in oklab, var(--primary) 58%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 7%, transparent), 0 0 24px color-mix(in oklab, var(--primary) 9%, transparent);
+  transform: translateY(-1px);
+}
+.jarvis-login-input-prefix {
+  padding-left: 13px;
+  padding-right: 8px;
+  font: 700 9px/1 var(--font-display);
+  color: var(--hud-amber);
+}
+.jarvis-login-input-wrap input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 12px 13px 12px 2px;
+  color: var(--foreground);
+  font-size: 14px;
+}
+.jarvis-login-input-wrap input::placeholder { color: color-mix(in oklab, var(--muted-foreground) 80%, transparent); }
+.jarvis-login-cursor {
+  width: 2px;
+  height: 18px;
+  margin-right: 12px;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: login-cursor 800ms steps(1) infinite;
+}
+.jarvis-login-form button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+  border: 1px solid color-mix(in oklab, var(--primary) 42%, transparent);
+  border-radius: 12px;
+  padding: 0 15px;
+  background: linear-gradient(90deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--primary) 6%, transparent));
+  color: var(--primary);
+  font: 700 9px/1 var(--font-display);
+  letter-spacing: .16em !important;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.jarvis-login-form button:not(:disabled):hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--primary) 72%, transparent);
+  box-shadow: 0 10px 30px color-mix(in oklab, var(--primary) 12%, transparent);
+  background: linear-gradient(90deg, color-mix(in oklab, var(--primary) 20%, transparent), color-mix(in oklab, var(--primary) 9%, transparent));
+}
+.jarvis-login-form button:disabled {
+  opacity: .7;
+  cursor: wait;
+}
+.jarvis-login-arrow {
+  font-size: 16px;
+  animation: login-arrow 1.8s ease-in-out infinite;
+}
+.jarvis-login-status {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 17px;
+  font: 500 7px/1.2 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: .13em !important;
+  color: color-mix(in oklab, var(--foreground) 55%, transparent);
+}
+.jarvis-login-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary);
+  animation: status-blink 1s ease-in-out infinite;
+}
+.jarvis-login-note {
+  position: relative;
+  z-index: 3;
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 8px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--muted-foreground) 72%, transparent);
+}
+@keyframes login-panel-in {
+  from { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes login-scan {
+  0%, 18% { transform: translateY(-35%); opacity: 0; }
+  45% { opacity: .9; }
+  75%, 100% { transform: translateY(125%); opacity: 0; }
+}
+@keyframes login-stars {
+  from { transform: translateY(0); }
+  to { transform: translateY(34px); }
+}
+@keyframes login-core-float {
+  50% { transform: translateY(-4px) scale(1.02); }
+}
+@keyframes login-core-pulse {
+  50% { transform: scale(1.23); opacity: .34; }
+}
+@keyframes login-core-scan {
+  0%, 100% { transform: translateY(0); opacity: .1; }
+  50% { transform: translateY(148px); opacity: .95; }
+}
+@keyframes login-cursor {
+  50% { opacity: 0; }
+}
+@keyframes login-arrow {
+  50% { transform: translate(2px, -2px); }
+}
+@media (max-width: 520px) {
+  .jarvis-login-panel { padding: 14px 16px 18px; }
+  .jarvis-login-core { width: 160px; height: 160px; }
+  .jarvis-login-heading h1 { font-size: 23px; }
+  .jarvis-login-status { gap: 8px; font-size: 6.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jarvis-login-scan, .jarvis-login-stars, .jarvis-login-panel, .jarvis-login-ring,
+  .jarvis-login-core img, .jarvis-login-pulse, .jarvis-login-core-scan,
+  .jarvis-login-cursor, .jarvis-login-arrow, .jarvis-login-status-dot { animation: none !important; }
+}
