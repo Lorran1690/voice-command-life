@@ -12,6 +12,7 @@ import { TasksPanel } from "@/components/jarvis/tasks-panel";
 import { ThreadSidebar } from "@/components/jarvis/thread-sidebar";
 import { VoicePanel } from "@/components/jarvis/voice-panel";
 import { supabase } from "@/integrations/supabase/client";
+import { isLocalMode } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
   head: () => ({
