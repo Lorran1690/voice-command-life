@@ -12,7 +12,7 @@ import { TasksPanel } from "@/components/jarvis/tasks-panel";
 import { ThreadSidebar } from "@/components/jarvis/thread-sidebar";
 import { VoicePanel } from "@/components/jarvis/voice-panel";
 import { supabase } from "@/integrations/supabase/client";
-import { isLocalMode } from "@/lib/local-mode";
+import { clearLocalUser, isLocalMode } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
   head: () => ({
@@ -36,6 +36,12 @@ function ChatPage() {
   useEffect(() => {
     let active = true;
     setInitialMessages(null);
+
+    if (isLocalMode()) {
+      setInitialMessages([]);
+      return;
+    }
+
     (async () => {
       const { data, error } = await supabase
         .from("messages")
@@ -61,7 +67,11 @@ function ChatPage() {
   }, [threadId, navigate]);
 
   async function signOut() {
-    await supabase.auth.signOut();
+    if (isLocalMode()) {
+      clearLocalUser();
+    } else {
+      await supabase.auth.signOut();
+    }
     navigate({ to: "/auth", replace: true });
   }
 
