@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
+import { isLocalMode } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [
