@@ -14,3 +14,8 @@
 
 ## Verificação pendente
 - [ ] Teste real da chamada de voz com microfone (não dá para validar áudio em ambiente headless)
+
+## HUD animada — em andamento
+- [ ] Escolher uma das três direções com paleta ciano/âmbar, JetBrains Mono + Work Sans e foco na conversa
+- [ ] Implementar a direção escolhida e movimento do núcleo ao iniciar a chamada
+- [ ] Verificar a HUD e a transição visual da chamada
