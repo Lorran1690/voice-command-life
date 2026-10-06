@@ -183,6 +183,83 @@ export function createJarvisTools(supabase: UserScopedSupabase, userId: string) 
       },
     }),
 
+    update_note: tool({
+      description: "Edita uma anotação existente pelo título.",
+      inputSchema: z.object({
+        title_match: z.string().describe("Parte do título atual da anotação"),
+        new_title: z.string().optional().describe("Novo título"),
+        content: z.string().optional().describe("Novo conteúdo"),
+      }).strict().refine((value) => value.new_title !== undefined || value.content !== undefined, {
+        message: "Informe pelo menos um campo para atualizar.",
+      }),
+      execute: async ({ title_match, new_title, content: newContent }) => {
+        const { data: matches, error: findError } = await supabase
+          .from("notes")
+          .select("id, title")
+          .ilike("title", "%" + title_match + "%")
+          .limit(5);
+        if (findError) return { ok: false as const, error: findError.message };
+        if (!matches?.length) return { ok: false as const, error: "Nenhuma anotação encontrada com esse nome." };
+        if (matches.length > 1) return {
+          ok: false as const,
+          error: "Mais de uma anotação corresponde; seja mais específico.",
+          candidates: matches.map((m) => m.title),
+        };
+        const patch: { title?: string; content?: string; updated_at: string } = { updated_at: new Date().toISOString() };
+        if (new_title !== undefined) patch.title = new_title;
+        if (newContent !== undefined) patch.content = newContent;
+        const { data, error } = await supabase
+          .from("notes")
+          .update(patch)
+          .eq("id", matches[0]!.id)
+          .select("id, title, content, updated_at")
+          .single();
+        if (error) return { ok: false as const, error: error.message };
+        return { ok: true as const, note: data };
+      },
+    }),
+
+    search_notes: tool({
+      description: "Pesquisa anotações por título ou conteúdo.",
+      inputSchema: z.object({
+        query: z.string().describe("Palavra ou frase para procurar"),
+      }).strict(),
+      execute: async ({ query }) => {
+        const { data, error } = await supabase
+          .from("notes")
+          .select("id, title, content, updated_at")
+          .or("title.ilike.%" + query + "%,content.ilike.%" + query + "%")
+          .order("updated_at", { ascending: false })
+          .limit(20);
+        if (error) return { ok: false as const, error: error.message };
+        return { ok: true as const, notes: data ?? [] };
+      },
+    }),
+
+    delete_note: tool({
+      description: "Exclui uma anotação pelo título.",
+      inputSchema: z.object({
+        title_match: z.string().describe("Parte do título da anotação a excluir"),
+      }).strict(),
+      execute: async ({ title_match }) => {
+        const { data: matches, error: findError } = await supabase
+          .from("notes")
+          .select("id, title")
+          .ilike("title", "%" + title_match + "%")
+          .limit(5);
+        if (findError) return { ok: false as const, error: findError.message };
+        if (!matches?.length) return { ok: false as const, error: "Nenhuma anotação encontrada com esse nome." };
+        if (matches.length > 1) return {
+          ok: false as const,
+          error: "Mais de uma anotação corresponde; seja mais específico.",
+          candidates: matches.map((m) => m.title),
+        };
+        const { error } = await supabase.from("notes").delete().eq("id", matches[0]!.id);
+        if (error) return { ok: false as const, error: error.message };
+        return { ok: true as const, deleted: matches[0] };
+      },
+    }),
+
     remember_fact: tool({
       description:
         "Memoriza um fato duradouro sobre o usuário (preferências, nomes, rotinas, dados pessoais que ele pedir para lembrar).",
