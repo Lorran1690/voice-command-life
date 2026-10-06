@@ -620,3 +620,80 @@
   .hud-processing, .hud-processing-orb, .hud-status-dot--active, .voice-signal--active,
   .voice-transcript-live, .voice-state-pulse, .voice-caption { animation: none !important; }
 }
+
+/* PERSONALIZATION CONSOLE */
+.settings-console { background: radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 38%); }
+.settings-card {
+  border: 1px solid color-mix(in oklab, var(--primary) 12%, transparent);
+  border-radius: 14px;
+  padding: 12px;
+  background: color-mix(in oklab, var(--card) 28%, transparent);
+}
+.settings-card-title {
+  display: flex; align-items: center; gap: 7px;
+  margin-bottom: 12px;
+  font: 600 9px/1 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: .16em !important;
+  color: var(--primary);
+}
+.settings-field { display: grid; gap: 6px; margin-top: 10px; }
+.settings-field > span { font-size: 11px; color: color-mix(in oklab, var(--foreground) 84%, transparent); }
+.settings-field small { font-size: 9px; line-height: 1.4; color: var(--muted-foreground); }
+.settings-field input:not([type="range"]),
+.settings-field select,
+.settings-field textarea {
+  width: 100%;
+  border: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
+  border-radius: 9px;
+  background: color-mix(in oklab, var(--background) 68%, transparent);
+  color: var(--foreground);
+  padding: 8px 9px;
+  outline: none;
+  font-size: 11px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.settings-field input:not([type="range"]):focus,
+.settings-field select:focus,
+.settings-field textarea:focus {
+  border-color: color-mix(in oklab, var(--primary) 48%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 7%, transparent), 0 0 20px color-mix(in oklab, var(--primary) 7%, transparent);
+  background: color-mix(in oklab, var(--primary) 3%, var(--background));
+}
+.settings-field input[type="range"] { accent-color: var(--primary); width: 100%; }
+.settings-field textarea { resize: vertical; min-height: 84px; }
+.settings-personality-grid { display: grid; gap: 6px; }
+.settings-choice {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  border: 1px solid color-mix(in oklab, var(--primary) 8%, transparent);
+  border-radius: 9px; padding: 9px;
+  background: color-mix(in oklab, var(--background) 30%, transparent);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+.settings-choice:hover { transform: translateX(2px); border-color: color-mix(in oklab, var(--primary) 22%, transparent); }
+.settings-choice--active { border-color: color-mix(in oklab, var(--primary) 40%, transparent); background: color-mix(in oklab, var(--primary) 7%, transparent); }
+.settings-choice strong { display: block; font-size: 10px; color: var(--foreground); }
+.settings-choice span { display: block; margin-left: 0; font-size: 9px; color: var(--muted-foreground); }
+.settings-toggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid color-mix(in oklab, var(--primary) 6%, transparent);
+}
+.settings-toggle:last-child { border-bottom: 0; }
+.settings-toggle span { display: grid; gap: 3px; }
+.settings-toggle strong { font-size: 10px; font-weight: 500; }
+.settings-toggle small { font-size: 9px; color: var(--muted-foreground); line-height: 1.35; }
+.settings-toggle input { appearance: none; width: 34px; height: 18px; flex: none; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--primary) 20%, transparent); background: var(--background); position: relative; cursor: pointer; }
+.settings-toggle input::after { content: ""; position: absolute; width: 12px; height: 12px; top: 2px; left: 2px; border-radius: 50%; background: var(--muted-foreground); transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease; }
+.settings-toggle input:checked { border-color: color-mix(in oklab, var(--primary) 55%, transparent); background: color-mix(in oklab, var(--primary) 16%, transparent); }
+.settings-toggle input:checked::after { transform: translateX(16px); background: var(--primary); box-shadow: 0 0 10px color-mix(in oklab, var(--primary) 45%, transparent); }
+:root[data-motion="low"] .orbital-ring,
+:root[data-motion="low"] .orbital-sweep,
+:root[data-motion="low"] .orbital-particle-field i { animation-duration: 28s; }
+:root[data-motion="medium"] .orbital-ring--radar { animation-duration: 2.8s; }
+:root[data-motion="high"] .orbital-core--active .orbital-ring--radar { animation-duration: 1s; }
+@media (max-width: 640px) {
+  .settings-card { padding: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-choice, .settings-field input, .settings-field select, .settings-field textarea { transition: none !important; }
+}
