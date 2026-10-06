@@ -7,6 +7,8 @@ import {
   withLovableAiGatewayRunIdHeader,
 } from "./ai-gateway-run-id.server";
 import { createJarvisTools, loadMemoriesForPrompt, JARVIS_PERSONA } from "./jarvis-tools.server";
+import { loadAssistantSettings } from "./assistant-settings.server";
+import { buildAssistantInstructions } from "./assistant-settings.shared";
 import { bearerToken, getUserScopedClient } from "./supabase-user.server";
 
 const GATEWAY_BASE_URL = "https://ai.gateway.lovable.dev/v1";
@@ -60,6 +62,7 @@ export async function handleChat(request: Request): Promise<Response> {
     if (insertError) console.error("Failed to persist user message", insertError);
   }
 
+  const settings = await loadAssistantSettings(auth.supabase, auth.userId);
   const memories = await loadMemoriesForPrompt(auth.supabase);
   const modelMessages = await convertToModelMessages(messages);
 
@@ -78,9 +81,10 @@ export async function handleChat(request: Request): Promise<Response> {
     stopWhen: stepCountIs(50),
     system:
       JARVIS_PERSONA +
+      "\n" + buildAssistantInstructions(settings) +
       `\nData e hora atuais do usuário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full", timeStyle: "short" })} (fuso America/Sao_Paulo). Use isso para interpretar "hoje", "amanhã" e prazos.` +
       "\nResponda em português do Brasil. Você pode usar markdown nas respostas de texto. " +
-      "Use as ferramentas para criar/listar/concluir tarefas, salvar/listar anotações e memorizar/consultar fatos; confirme ações com os dados reais retornados." +
+      "Use as ferramentas para criar, listar, editar, concluir e excluir tarefas; criar, listar, pesquisar, editar e excluir anotações; e memorizar, listar e esquecer fatos. Confirme ações com os dados reais retornados." +
       (memories ? `\nFatos memorizados sobre o usuário:\n${memories}` : ""),
     messages: modelMessages,
     tools: createJarvisTools(auth.supabase, auth.userId),
