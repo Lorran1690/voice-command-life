@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 
-import jarvisCore from "@/assets/jarvis-core.png";
 import {
   Conversation,
   ConversationContent,
@@ -57,9 +56,9 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
         <ConversationContent className="mx-auto w-full max-w-3xl gap-6 px-4 py-6">
           {!messages.length && (
             <ConversationEmptyState
-              icon={<img src={jarvisCore} alt="J.A.R.V.I.S." width={1024} height={1024} className="h-16 w-16" />}
               title="Às suas ordens."
-              description="Pergunte qualquer coisa, peça lembretes, anote ideias — ou use o botão de voz acima."
+              description=""
+              className="hud-greeting justify-start pt-3 pb-8"
             />
           )}
           {messages.map((message) => (
@@ -67,8 +66,8 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
               <MessageContent
                 className={
                   message.role === "user"
-                    ? "rounded-xl bg-primary px-4 py-2.5 text-primary-foreground"
-                    : "bg-transparent px-0"
+                    ? "rounded-md border border-input bg-secondary px-4 py-3 text-foreground hud-message"
+                    : "bg-transparent px-0 hud-message"
                 }
               >
                 {message.parts.map((part, index) => {
@@ -103,15 +102,17 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="border-t border-border bg-card/40 p-4">
-        <PromptInput onSubmit={handleSubmit} className="mx-auto w-full max-w-3xl">
+      <div className="hud-composer mx-auto w-full max-w-2xl px-4 pt-3 pb-6">
+        <PromptInput onSubmit={handleSubmit} className="hud-input-frame w-full rounded-sm border border-input bg-card/40">
           <PromptInputTextarea
             ref={textareaRef}
             placeholder="Escreva para o J.A.R.V.I.S…"
+            className="min-h-24 text-base"
             disabled={streaming}
           />
-          <PromptInputFooter className="justify-end">
-            <PromptInputSubmit status={status} disabled={streaming} />
+          <PromptInputFooter className="justify-between">
+            <span className="font-display text-[10px] text-muted-foreground">{streaming ? "PROCESSANDO" : "MENSAGEM"}</span>
+            <PromptInputSubmit status={status} disabled={streaming} aria-label="Enviar mensagem" />
           </PromptInputFooter>
         </PromptInput>
       </div>

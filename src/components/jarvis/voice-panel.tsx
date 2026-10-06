@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Phone, PhoneOff } from "lucide-react";
 
-import jarvisCore from "@/assets/jarvis-core.png";
+import { OrbitalCore } from "@/components/jarvis/orbital-core";
+import { Button } from "@/components/ui/button";
 import { useLiveVoice, type LiveEvent } from "@/hooks/use-live-voice";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -56,55 +57,44 @@ export function VoicePanel() {
   const active = call.status === "connected" || call.status === "connecting";
 
   return (
-    <div className="flex flex-col items-center gap-4 border-b border-border bg-card/40 px-4 py-5">
+    <section className="voice-stage hud-enter flex shrink-0 flex-col items-center gap-4 px-4 pt-8 pb-4" aria-label="Chamada de voz" data-status={call.status}>
       <audio ref={call.audioRef} controls className="hidden" />
-      <div className="relative">
-        <div
-          className={cn(
-            "absolute -inset-3 rounded-full border border-primary/30",
-            active && "jarvis-ring border-dashed",
-          )}
-        />
-        <img
-          src={jarvisCore}
-          alt="Núcleo do J.A.R.V.I.S."
-          width={1024}
-          height={1024}
-          className={cn("h-24 w-24 rounded-full", active && "jarvis-core-active")}
-        />
-      </div>
+      <OrbitalCore active={active} muted={call.muted} />
 
       <div className="flex items-center gap-3">
         {!active ? (
-          <button
+          <Button variant="outline"
             onClick={() => call.start()}
-            disabled={!liveUrl}
-            className="flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            disabled={!liveUrl || call.status === "stopping"}
+            className="voice-start rounded-full border-primary/30 bg-primary/5 px-6 font-display text-xs text-primary"
           >
             <Phone className="h-4 w-4" />
             Falar com J.A.R.V.I.S.
-          </button>
+          </Button>
         ) : (
           <>
-            <button
+            <Button variant="outline"
               onClick={() => call.setMuted(!call.muted)}
-              className="flex items-center gap-2 rounded-full border border-input bg-background px-4 py-2 text-sm text-foreground hover:bg-accent"
+              className="rounded-full"
             >
               {call.muted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               {call.muted ? "Reativar" : "Silenciar"}
-            </button>
-            <button
+            </Button>
+            <Button variant="destructive"
               onClick={() => call.stop()}
-              className="flex items-center gap-2 rounded-full bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90"
+              className="rounded-full"
             >
               <PhoneOff className="h-4 w-4" />
               Encerrar
-            </button>
+            </Button>
           </>
         )}
       </div>
 
-      <p className="text-xs uppercase tracking-widest text-muted-foreground">
+      <div className={cn("voice-frequency", active && !call.muted && "voice-frequency--active")} aria-hidden="true">
+        {Array.from({ length: 25 }, (_, i) => <span key={i} />)}
+      </div>
+      <p className="font-display text-[10px] uppercase text-hud-amber" role="status">
         {call.status === "connected"
           ? "Ouvindo…"
           : call.status === "connecting"
@@ -115,12 +105,12 @@ export function VoicePanel() {
       </p>
 
       {call.playbackBlocked && (
-        <button
+        <Button variant="outline" size="sm"
           onClick={() => call.resumePlayback()}
           className="rounded-md border border-primary px-3 py-1 text-xs text-primary"
         >
           Ativar som
-        </button>
+        </Button>
       )}
       {call.error && <p className="max-w-md text-center text-xs text-destructive">{call.error}</p>}
 
@@ -141,6 +131,6 @@ export function VoicePanel() {
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
