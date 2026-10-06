@@ -3,6 +3,8 @@ import { stepCountIs, streamText, type ModelMessage } from "ai";
 import process from "node:process";
 
 import { createJarvisTools, loadMemoriesForPrompt, JARVIS_PERSONA } from "./jarvis-tools.server";
+import { buildAssistantInstructions, DEFAULT_ASSISTANT_SETTINGS, type AssistantSettings } from "./assistant-settings.shared";
+import { loadAssistantSettings } from "./assistant-settings.server";
 import { getUserScopedClient, type UserScopedSupabase } from "./supabase-user.server";
 
 export type LiveConfig = {
@@ -126,10 +128,11 @@ export async function handleLiveRequest(request: Request): Promise<Response> {
   return new Response(null, response);
 }
 
-const conversationInstructions = () => `${JARVIS_PERSONA}
+const conversationInstructions = (settings: AssistantSettings) => `${JARVIS_PERSONA}
 Data e hora atuais do usuário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full", timeStyle: "short" })} (fuso America/Sao_Paulo).
 Backchannel policy: Use moderate listening sounds without taking over.
 Interruption policy: Stop your answer and listen when the user interrupts.
+${buildAssistantInstructions(settings)}
 Delegation policy:
 Backend tools: Criar, listar e concluir tarefas e lembretes; salvar e listar anotações; memorizar e consultar fatos sobre o usuário; responder perguntas que exigem raciocínio cuidadoso.
 Delegate to the backend when: The user asks to create, list or complete a task or reminder, save or read a note, remember or recall a fact, or when a correction changes a request already being worked on.
@@ -157,6 +160,7 @@ async function answerQuestion(
       "X-Lovable-AIG-SDK": "vercel-ai-sdk",
     },
   });
+  const settings = await loadAssistantSettings(auth.supabase, auth.userId);
   const memories = await loadMemoriesForPrompt(auth.supabase);
   let responseCursor = 0;
   consumeInput();
@@ -192,6 +196,7 @@ async function answerQuestion(
     },
     system:
       JARVIS_PERSONA +
+      "\n" + buildAssistantInstructions(settings) +
       `\nData e hora atuais do usuário: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full", timeStyle: "short" })} (fuso America/Sao_Paulo). Use isso para interpretar "hoje", "amanhã" e prazos. ` +
       "\nVocê é o cérebro de bastidores de uma conversa por voz. As transcrições podem estar incompletas ou corrigidas; use a correção mais recente. " +
       "Continue a partir de resultados de ferramentas já concluídos; não repita ações já feitas. " +
@@ -539,6 +544,7 @@ export function bindLiveConnection(
 
   async function startSession(sdp: string) {
     if (closing || browser.readyState !== 1) return;
+    const settings = await loadAssistantSettings(auth.supabase, auth.userId);
     clearTimeout(startTimer);
     startupTimer = setTimeout(() => {
       emit({ type: "app.error", error: { message: "Voice startup timed out" } });
@@ -569,8 +575,8 @@ export function bindLiveConnection(
         type: "session.start",
         session: {
           model: config.liveModel,
-          instructions: conversationInstructions(),
-          audio: { output: { voice: "tempo" } },
+          instructions: conversationInstructions(settings),
+          audio: { output: { voice: settings.voice || DEFAULT_ASSISTANT_SETTINGS.voice } },
           delegation: { type: "client" },
         },
         transport: { type: "webrtc", sdp },
