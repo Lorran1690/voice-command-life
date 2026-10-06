@@ -88,6 +88,68 @@ export function createJarvisTools(supabase: UserScopedSupabase, userId: string) 
       },
     }),
 
+    update_task: tool({
+      description: "Edita uma tarefa existente. Localiza pelo título e permite alterar título, prazo ou observações.",
+      inputSchema: z.object({
+        title_match: z.string().describe("Parte do título atual da tarefa"),
+        new_title: z.string().optional().describe("Novo título, se quiser alterar"),
+        due_at: z.string().nullable().optional().describe("Novo prazo em ISO 8601; null remove o prazo"),
+        notes: z.string().nullable().optional().describe("Novas observações; null limpa as observações"),
+      }).strict(),
+      execute: async ({ title_match, new_title, due_at, notes }) => {
+        const { data: matches, error: findError } = await supabase
+          .from("tasks")
+          .select("id, title")
+          .ilike("title", "%" + title_match + "%")
+          .limit(5);
+        if (findError) return { ok: false as const, error: findError.message };
+        if (!matches?.length) return { ok: false as const, error: "Nenhuma tarefa encontrada com esse nome." };
+        if (matches.length > 1) return {
+          ok: false as const,
+          error: "Mais de uma tarefa corresponde; seja mais específico.",
+          candidates: matches.map((m) => m.title),
+        };
+        const patch: { title?: string; due_at?: string | null; notes?: string | null; updated_at: string } = {
+          updated_at: new Date().toISOString(),
+        };
+        if (new_title !== undefined) patch.title = new_title;
+        if (due_at !== undefined) patch.due_at = due_at;
+        if (notes !== undefined) patch.notes = notes;
+        const { data, error } = await supabase
+          .from("tasks")
+          .update(patch)
+          .eq("id", matches[0]!.id)
+          .select("id, title, due_at, status, notes")
+          .single();
+        if (error) return { ok: false as const, error: error.message };
+        return { ok: true as const, task: data };
+      },
+    }),
+
+    delete_task: tool({
+      description: "Exclui uma tarefa do usuário, localizando-a pelo título. Peça confirmação somente quando houver ambiguidade.",
+      inputSchema: z.object({
+        title_match: z.string().describe("Parte do título da tarefa a excluir"),
+      }).strict(),
+      execute: async ({ title_match }) => {
+        const { data: matches, error: findError } = await supabase
+          .from("tasks")
+          .select("id, title")
+          .ilike("title", "%" + title_match + "%")
+          .limit(5);
+        if (findError) return { ok: false as const, error: findError.message };
+        if (!matches?.length) return { ok: false as const, error: "Nenhuma tarefa encontrada com esse nome." };
+        if (matches.length > 1) return {
+          ok: false as const,
+          error: "Mais de uma tarefa corresponde; seja mais específico.",
+          candidates: matches.map((m) => m.title),
+        };
+        const { error } = await supabase.from("tasks").delete().eq("id", matches[0]!.id);
+        if (error) return { ok: false as const, error: error.message };
+        return { ok: true as const, deleted: matches[0] };
+      },
+    }),
+
     create_note: tool({
       description: "Salva uma anotação para o usuário.",
       inputSchema: z
