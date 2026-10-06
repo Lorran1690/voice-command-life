@@ -4,6 +4,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/")({
+  head: () => ({ meta: [
+    { title: "Início — J.A.R.V.I.S." },
+    { name: "description", content: "Abra sua conversa pessoal com o J.A.R.V.I.S. por voz ou texto." },
+    { property: "og:title", content: "Início — J.A.R.V.I.S." },
+    { property: "og:description", content: "Seu assistente pessoal para conversas, tarefas e anotações." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: HomeRedirect,
 });
 

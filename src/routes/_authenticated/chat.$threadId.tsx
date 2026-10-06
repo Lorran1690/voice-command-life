@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
-import { LogOut } from "lucide-react";
+import { LogOut, MessagesSquare, ListTodo } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import jarvisCore from "@/assets/jarvis-core.png";
 import { ChatWindow } from "@/components/jarvis/chat-window";
@@ -62,24 +64,32 @@ function ChatPage() {
   }
 
   return (
-    <div className="jarvis-grid-bg flex h-screen flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2.5 backdrop-blur">
+    <div className="jarvis-grid-bg hud-shell flex h-dvh flex-col bg-background">
+      <header className="hud-header hud-enter flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-8">
         <div className="flex items-center gap-2.5">
           <img src={jarvisCore} alt="" width={1024} height={1024} className="h-7 w-7" />
-          <span className="text-sm font-semibold tracking-[0.25em] text-primary">J.A.R.V.I.S.</span>
+          <h1 className="font-display text-base font-semibold text-primary sm:text-lg">J.A.R.V.I.S.</h1>
         </div>
-        <button
-          onClick={() => void signOut()}
-          className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Sair
-        </button>
+        <nav className="flex items-center gap-1" aria-label="Painéis do Jarvis">
+          <Sheet>
+            <SheetTrigger asChild><Button variant="ghost" size="sm" aria-label="Conversas" title="Conversas"><MessagesSquare /><span className="hidden sm:inline">Conversas</span></Button></SheetTrigger>
+            <SheetContent side="left" className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
+              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Conversas</SheetTitle></SheetHeader>
+              <ThreadSidebar />
+            </SheetContent>
+          </Sheet>
+          <Sheet>
+            <SheetTrigger asChild><Button variant="ghost" size="sm" aria-label="Tarefas" title="Tarefas, notas e memória"><ListTodo /><span className="hidden sm:inline">Tarefas</span></Button></SheetTrigger>
+            <SheetContent className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
+              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-hud-amber">Organização pessoal</SheetTitle></SheetHeader>
+              <TasksPanel />
+            </SheetContent>
+          </Sheet>
+          <Button variant="ghost" size="sm" onClick={() => void signOut()} aria-label="Sair" title="Sair" className="text-muted-foreground"><LogOut /><span className="hidden sm:inline">Sair</span></Button>
+        </nav>
       </header>
 
-      <div className="flex min-h-0 flex-1">
-        <ThreadSidebar />
-        <main className="flex min-w-0 flex-1 flex-col">
+        <main className="hud-main mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col">
           <VoicePanel />
           {initialMessages ? (
             <ChatWindow key={threadId} threadId={threadId} initialMessages={initialMessages} />
@@ -89,8 +99,6 @@ function ChatPage() {
             </div>
           )}
         </main>
-        <TasksPanel />
-      </div>
     </div>
   );
 }
