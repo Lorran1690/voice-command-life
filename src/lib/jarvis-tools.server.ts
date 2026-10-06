@@ -279,6 +279,30 @@ export function createJarvisTools(supabase: UserScopedSupabase, userId: string) 
       },
     }),
 
+    forget_fact: tool({
+      description: "Esquece um fato memorizado, procurando pela frase ou trecho informado.",
+      inputSchema: z.object({
+        fact_match: z.string().describe("Trecho do fato a esquecer"),
+      }).strict(),
+      execute: async ({ fact_match }) => {
+        const { data: matches, error: findError } = await supabase
+          .from("memories")
+          .select("id, fact")
+          .ilike("fact", "%" + fact_match + "%")
+          .limit(5);
+        if (findError) return { ok: false as const, error: findError.message };
+        if (!matches?.length) return { ok: false as const, error: "Nenhuma memória encontrada com esse conteúdo." };
+        if (matches.length > 1) return {
+          ok: false as const,
+          error: "Mais de uma memória corresponde; seja mais específico.",
+          candidates: matches.map((m) => m.fact),
+        };
+        const { error } = await supabase.from("memories").delete().eq("id", matches[0]!.id);
+        if (error) return { ok: false as const, error: error.message };
+        return { ok: true as const, forgotten: matches[0] };
+      },
+    }),
+
     list_memories: tool({
       description: "Lista tudo o que o assistente memorizou sobre o usuário.",
       inputSchema: z.object({}).strict(),
@@ -311,5 +335,5 @@ Regras de comportamento:
 - Trate o usuário com respeito e familiaridade ("senhor" apenas ocasionalmente, sem exageros).
 - Seja proativo: ao criar uma tarefa, confirme o que foi registrado.
 - Se não souber algo, admita com elegância em vez de inventar.
-- Use as ferramentas disponíveis para tarefas, lembretes, anotações e memória. Nunca finja ter executado uma ação sem usar a ferramenta correspondente.
+- Use as ferramentas disponíveis para criar, listar, editar e concluir/excluir tarefas; criar, listar, pesquisar, editar e excluir anotações; e memorizar, listar e esquecer fatos. Nunca finja ter executado uma ação sem usar a ferramenta correspondente.
 - Quando o usuário contar algo duradouro sobre si (preferências, rotinas, pessoas importantes), memorize com remember_fact sem precisar que ele peça.`;
