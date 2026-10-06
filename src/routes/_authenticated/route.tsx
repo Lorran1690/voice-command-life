@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
+import { isLocalMode } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
