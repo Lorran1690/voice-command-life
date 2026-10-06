@@ -1,23 +1,16 @@
 import http from "node:http";
-import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 
 const HOST = process.env.JARVIS_HOST || "127.0.0.1";
 const PORT = Number(process.env.JARVIS_PORT || 3210);
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434/v1";
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
 const MODEL = process.env.JARVIS_MODEL || "qwen3:4b";
-
-const ollama = createOpenAI({
-  baseURL: OLLAMA_BASE_URL,
-  apiKey: "ollama-local",
-});
 
 const SYSTEM_PROMPT = [
   "Você é J.A.R.V.I.S., o assistente pessoal local do usuário.",
   "Responda sempre em português do Brasil, salvo pedido contrário.",
   "Seja natural, inteligente, calmo, direto e útil.",
-  "Não invente acesso a internet, arquivos, programas ou dispositivos.",
-  "Você está rodando localmente no computador do usuário usando Ollama.",
+  "Não invente acesso à internet, arquivos, programas ou dispositivos.",
+  "Você está rodando localmente no computador do usuário através do Ollama.",
   "Quando não souber algo, diga claramente que não sabe.",
 ].join("\n");
 
@@ -103,21 +96,39 @@ async function handleChat(req, res) {
   }
 
   try {
-    const result = await generateText({
-      model: ollama.chat(MODEL),
-      system: SYSTEM_PROMPT,
-      messages,
-      maxOutputTokens: 900,
-      temperature: 0.7,
+    const response = await fetch(OLLAMA_URL + "/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...messages.filter((message) => message.role !== "system"),
+        ],
+        stream: false,
+      }),
     });
 
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const detail = payload?.error || "Ollama recusou o pedido.";
+      throw new Error(String(detail));
+    }
+
+    const answer = cleanModelText(payload?.message?.content);
+
+    if (!answer) {
+      throw new Error("Ollama retornou uma resposta vazia.");
+    }
+
     return json(res, 200, {
-      text: cleanModelText(result.text),
+      text: answer,
       model: MODEL,
       provider: "ollama",
     });
   } catch (error) {
-    console.error("[JARVIS] Falha no modelo:", error);
+    console.error("[JARVIS] Falha no Ollama:", error);
     return json(res, 502, {
       error: error instanceof Error ? error.message : "Falha no Ollama.",
     });
@@ -134,7 +145,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === "/health") {
     try {
-      const response = await fetch(OLLAMA_BASE_URL.replace(/\/v1\/?$/, "") + "/api/tags");
+      const response = await fetch(OLLAMA_URL + "/api/tags");
       return json(res, 200, {
         ok: true,
         provider: "ollama",
@@ -160,5 +171,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log("JARVIS Core local: http://" + HOST + ":" + PORT);
+  console.log("Ollama: " + OLLAMA_URL);
   console.log("Modelo: " + MODEL);
 });
