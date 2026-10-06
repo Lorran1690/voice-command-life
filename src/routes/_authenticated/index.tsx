@@ -21,6 +21,11 @@ function HomeRedirect() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (isLocalMode()) {
+      void navigate({ to: "/chat/$threadId", params: { threadId: "local" }, replace: true });
+      return;
+    }
+
     let active = true;
     (async () => {
       const {
