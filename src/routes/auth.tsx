@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import jarvisCore from "@/assets/jarvis-core.png";
+import { isLocalMode } from "@/lib/local-mode";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,6 +27,11 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const local = isLocalMode();
+
+  async function enterLocalMode() {
+    await navigate({ to: "/" });
+  }
 
   async function handleEmail(event: React.FormEvent) {
     event.preventDefault();
