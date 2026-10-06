@@ -58,16 +58,26 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [ttsSettings, setTtsSettings] = useState<{ browser_voice: string | null; voice_speed: number } | null>(null);
 
   useEffect(() => {
     textareaRef.current?.focus();
   }, [threadId, status]);
 
   useEffect(() => {
+    let active = true;
+    void supabase
+      .from("assistant_settings")
+      .select("browser_voice, voice_speed")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (active && data) setTtsSettings({ browser_voice: data.browser_voice, voice_speed: Number(data.voice_speed ?? 1) });
+      });
     return () => {
+      active = false;
       if (typeof window !== "undefined") window.speechSynthesis?.cancel();
     };
-  }, []);
+  }, [threadId]);
 
   const streaming = status === "submitted" || status === "streaming";
 
@@ -95,13 +105,17 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text.replace(/[#>*_]/g, ""));
     utterance.lang = "pt-BR";
-    utterance.rate = 1.02;
+    utterance.rate = ttsSettings?.voice_speed ?? 1.02;
     utterance.pitch = 0.96;
+    if (ttsSettings?.browser_voice) {
+      const selectedVoice = window.speechSynthesis.getVoices().find((voice) => voice.name === ttsSettings.browser_voice);
+      if (selectedVoice) utterance.voice = selectedVoice;
+    }
     utterance.onend = () => setSpeakingId(null);
     utterance.onerror = () => setSpeakingId(null);
     window.speechSynthesis.speak(utterance);
     setSpeakingId(id);
-  }, [speakingId]);
+  }, [speakingId, ttsSettings]);
 
   function handleSubmit(message: PromptInputMessage) {
     const text = message.text.trim();
