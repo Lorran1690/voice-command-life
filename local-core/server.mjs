@@ -106,6 +106,13 @@ async function handleChat(req, res) {
           ...messages.filter((message) => message.role !== "system"),
         ],
         stream: false,
+        think: false,
+        options: {
+          temperature: 0.7,
+          top_p: 0.8,
+          top_k: 20,
+          presence_penalty: 1.5,
+        },
       }),
     });
 
@@ -113,7 +120,7 @@ async function handleChat(req, res) {
 
     if (!response.ok) {
       const detail = payload?.error || "Ollama recusou o pedido.";
-      throw new Error(String(detail));
+      throw new Error("Ollama HTTP " + response.status + ": " + String(detail));
     }
 
     const answer = cleanModelText(payload?.message?.content);
