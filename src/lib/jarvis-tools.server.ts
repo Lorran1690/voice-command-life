@@ -11,6 +11,31 @@ import { loadAssistantSettings } from "./assistant-settings.server";
  */
 export function createJarvisTools(supabase: UserScopedSupabase, userId: string) {
   return {
+    get_assistant_settings: tool({
+      description: "Mostra as configurações atuais do J.A.R.V.I.S. para o usuário.",
+      inputSchema: z.object({}).strict(),
+      execute: async () => {
+        const settings = await loadAssistantSettings(supabase, userId);
+        return {
+          ok: true as const,
+          settings: {
+            personality: settings.personality,
+            tone: settings.tone,
+            verbosity: settings.verbosity,
+            humor: settings.humor,
+            proactive: settings.proactive,
+            confirm_actions: settings.confirm_actions,
+            auto_memory: settings.auto_memory,
+            voice: settings.voice,
+            voice_speed: settings.voice_speed,
+            hud_accent: settings.hud_accent,
+            motion_intensity: settings.motion_intensity,
+            custom_instructions: settings.custom_instructions,
+          },
+        };
+      },
+    }),
+
     update_assistant_settings: tool({
       description: "Atualiza preferências do próprio J.A.R.V.I.S., como personalidade, tom, detalhamento, humor, proatividade, memória, velocidade da fala e voz.",
       inputSchema: z.object({
@@ -378,5 +403,5 @@ Regras de comportamento:
 - Trate o usuário com respeito e familiaridade ("senhor" apenas ocasionalmente, sem exageros).
 - Seja proativo: ao criar uma tarefa, confirme o que foi registrado.
 - Se não souber algo, admita com elegância em vez de inventar.
-- Use as ferramentas disponíveis para criar, listar, editar e concluir/excluir tarefas; criar, listar, pesquisar, editar e excluir anotações; e memorizar, listar e esquecer fatos. Nunca finja ter executado uma ação sem usar a ferramenta correspondente.
+- Use as ferramentas disponíveis para criar, listar, editar e concluir/excluir tarefas; criar, listar, pesquisar, editar e excluir anotações; memorizar, listar e esquecer fatos; e consultar/alterar as configurações do próprio assistente. Quando o usuário pedir mudança de voz, personalidade, humor, proatividade ou comportamento, use a ferramenta de configurações e confirme o novo perfil. Nunca finja ter executado uma ação sem usar a ferramenta correspondente.
 - Quando o usuário contar algo duradouro sobre si (preferências, rotinas, pessoas importantes), memorize com remember_fact sem precisar que ele peça.`;
