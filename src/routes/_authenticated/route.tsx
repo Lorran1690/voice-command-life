@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 
-import { supabase } from "@/integrations/supabase/client";
-import { getLocalUser, isLocalMode } from "@/lib/local-mode";
+import { getLocalUser } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -13,30 +12,11 @@ function AuthenticatedLayout() {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (isLocalMode()) {
-      if (getLocalUser()) setChecked(true);
-      else navigate({ to: "/auth", replace: true });
-      return;
+    if (getLocalUser()) {
+      setChecked(true);
+    } else {
+      navigate({ to: "/auth", replace: true });
     }
-
-    let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (!data.session) {
-        navigate({ to: "/auth", replace: true });
-      } else {
-        setChecked(true);
-      }
-    });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) navigate({ to: "/auth", replace: true });
-    });
-    return () => {
-      active = false;
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
   if (!checked) {
