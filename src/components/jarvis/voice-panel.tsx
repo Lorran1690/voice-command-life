@@ -12,19 +12,10 @@ type Caption = { role: "user" | "assistant"; text: string };
 
 export function VoicePanel() {
   const [captions, setCaptions] = useState<Caption[]>([]);
-  const [liveUrl, setLiveUrl] = useState<string | undefined>(undefined);
   const [showCaptions, setShowCaptions] = useState(true);
   const [copied, setCopied] = useState(false);
   const userCaption = useRef("");
   const assistantCaption = useRef("");
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setLiveUrl("/api/live?token=" + encodeURIComponent(data.session.access_token));
-      }
-    });
-  }, []);
 
   const onEvent = useCallback((event: LiveEvent) => {
     const delta = event["delta"];
@@ -48,7 +39,7 @@ export function VoicePanel() {
     }
   }, []);
 
-  const call = useLiveVoice({ ...(liveUrl ? { url: liveUrl } : {}), onEvent });
+  const call = useLiveVoice({ url: "/api/realtime-token", onEvent });
   const active = call.status === "connected" || call.status === "connecting";
   const transcriptText = captions.map((item) => (item.role === "user" ? "Você: " : "J.A.R.V.I.S.: ") + item.text).join("\n");
 
@@ -86,7 +77,7 @@ export function VoicePanel() {
           <Button
             variant="outline"
             onClick={() => call.start()}
-            disabled={!liveUrl || call.status === "stopping"}
+            disabled={call.status === "stopping"}
             className="voice-start rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary"
           >
             <Phone className="h-4 w-4" />
