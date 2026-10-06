@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistant_settings: {
+        Row: {
+          user_id: string
+          voice: string
+          browser_voice: string | null
+          personality: string
+          tone: string
+          verbosity: string
+          humor: number
+          proactive: boolean
+          confirm_actions: boolean
+          auto_memory: boolean
+          language: string
+          voice_speed: number
+          custom_instructions: string
+          hud_accent: string
+          motion_intensity: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          voice?: string
+          browser_voice?: string | null
+          personality?: string
+          tone?: string
+          verbosity?: string
+          humor?: number
+          proactive?: boolean
+          confirm_actions?: boolean
+          auto_memory?: boolean
+          language?: string
+          voice_speed?: number
+          custom_instructions?: string
+          hud_accent?: string
+          motion_intensity?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          voice?: string
+          browser_voice?: string | null
+          personality?: string
+          tone?: string
+          verbosity?: string
+          humor?: number
+          proactive?: boolean
+          confirm_actions?: boolean
+          auto_memory?: boolean
+          language?: string
+          voice_speed?: number
+          custom_instructions?: string
+          hud_accent?: string
+          motion_intensity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
       memories: {
         Row: {
           created_at: string
