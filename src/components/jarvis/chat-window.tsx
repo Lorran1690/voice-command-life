@@ -30,14 +30,12 @@ import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/componen
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
+const LOCAL_CORE_URL = "http://localhost:3210/api/chat";
+const LOCAL_CORE_HEALTH_URL = "http://localhost:3210/health";
+
 const transport = new DefaultChatTransport({
-  api: "/api/chat",
-  headers: async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session ? { Authorization: "Bearer " + session.access_token } : {};
-  },
+  api: LOCAL_CORE_URL,
+  headers: { "X-Jarvis-Client": "hud" },
 });
 
 const QUICK_COMMANDS = [
@@ -59,10 +57,34 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [ttsSettings, setTtsSettings] = useState<{ browser_voice: string | null; voice_speed: number } | null>(null);
+  const [localCoreOnline, setLocalCoreOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
     textareaRef.current?.focus();
   }, [threadId, status]);
+
+  useEffect(() => {
+    let active = true;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const checkCore = async () => {
+      try {
+        const response = await fetch(LOCAL_CORE_HEALTH_URL, { cache: "no-store" });
+        const data = await response.json().catch(() => null) as { ollama_ready?: boolean } | null;
+        if (active) setLocalCoreOnline(response.ok && data?.ollama_ready === true);
+      } catch {
+        if (active) setLocalCoreOnline(false);
+      }
+    };
+
+    void checkCore();
+    timer = window.setInterval(() => void checkCore(), 5000);
+
+    return () => {
+      active = false;
+      if (timer) window.clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -236,6 +258,12 @@ export function ChatWindow({ threadId, initialMessages }: { threadId: string; in
           <div className="flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
             <span className={cn("hud-status-dot", streaming && "hud-status-dot--active")} />
             <span>{streaming ? "Processando" : "Canal de texto ativo"}</span>
+            <span className={cn(
+              "font-display text-[9px] uppercase tracking-[0.16em]",
+              localCoreOnline === true ? "text-primary" : localCoreOnline === false ? "text-destructive" : "text-muted-foreground"
+            )}>
+              {localCoreOnline === true ? "CORE LOCAL ONLINE" : localCoreOnline === false ? "CORE LOCAL OFFLINE" : "CORE LOCAL…"}
+            </span>
           </div>
           <span className="hidden items-center gap-1 font-display text-[9px] text-muted-foreground/70 sm:flex">
             <Mic2 className="h-3 w-3" /> Voz disponível no núcleo
