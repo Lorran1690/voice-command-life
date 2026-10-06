@@ -12,7 +12,9 @@ import { buildAssistantInstructions } from "./assistant-settings.shared";
 import { bearerToken, getUserScopedClient } from "./supabase-user.server";
 
 const GATEWAY_BASE_URL = "https://ai.gateway.lovable.dev/v1";
-const CHAT_MODEL = "openai/gpt-6-astra";
+const DIRECT_BASE_URL = "https://api.openai.com/v1";
+const CHAT_MODEL = process.env["OPENAI_CHAT_MODEL"] || "gpt-6-luna";
+const GATEWAY_CHAT_MODEL = process.env["LOVABLE_CHAT_MODEL"] || "openai/gpt-6-luna";
 
 function jsonError(status: number, message: string) {
   return new Response(JSON.stringify({ error: message }), {
@@ -27,8 +29,16 @@ export async function handleChat(request: Request): Promise<Response> {
   const auth = await getUserScopedClient(token);
   if (!auth) return jsonError(401, "Sessão inválida ou expirada. Entre novamente.");
 
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) return jsonError(500, "Configuração de IA ausente no servidor.");
+  const directApiKey = process.env["OPENAI_API_KEY"];
+  const lovableApiKey = process.env["LOVABLE_API_KEY"];
+  const useDirectOpenAI = Boolean(directApiKey);
+  const apiKey = directApiKey || lovableApiKey;
+  if (!apiKey) {
+    return jsonError(
+      503,
+      "Nenhum provedor de IA está configurado. Configure OPENAI_API_KEY no ambiente do projeto.",
+    );
+  }
 
   let body: { messages?: UIMessage[]; threadId?: string; id?: string };
   try {
@@ -66,16 +76,22 @@ export async function handleChat(request: Request): Promise<Response> {
   const memories = await loadMemoriesForPrompt(auth.supabase);
   const modelMessages = await convertToModelMessages(messages);
 
-  const runIdFetch = createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
+  const runIdFetch = useDirectOpenAI
+    ? null
+    : createLovableAiGatewayRunIdFetch(getLovableAiGatewayRunId(request));
   const provider = createOpenAI({
-    baseURL: GATEWAY_BASE_URL,
+    baseURL: useDirectOpenAI ? DIRECT_BASE_URL : GATEWAY_BASE_URL,
     apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: runIdFetch.fetch,
+    ...(useDirectOpenAI
+      ? {}
+      : {
+          headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+          fetch: runIdFetch!.fetch,
+        }),
   });
 
   const result = streamText({
-    model: provider.responses(CHAT_MODEL),
+    model: provider.responses(useDirectOpenAI ? CHAT_MODEL : GATEWAY_CHAT_MODEL),
     abortSignal: request.signal,
     maxRetries: 0,
     stopWhen: stepCountIs(50),
@@ -127,5 +143,5 @@ export async function handleChat(request: Request): Promise<Response> {
     },
   });
 
-  return withLovableAiGatewayRunIdHeader(response, runIdFetch);
+  return useDirectOpenAI ? response : withLovableAiGatewayRunIdHeader(response, runIdFetch!);
 }
