@@ -107,10 +107,14 @@ export async function handleChat(request: Request): Promise<Response> {
     providerOptions: {
       openai: {
         store: false,
-        forceReasoning: true,
-        reasoningEffort: "medium",
-        reasoningSummary: "auto",
-        include: ["reasoning.encrypted_content"],
+        ...(useDirectOpenAI
+          ? { reasoningEffort: "low" }
+          : {
+              forceReasoning: true,
+              reasoningEffort: "medium",
+              reasoningSummary: "auto",
+              include: ["reasoning.encrypted_content"],
+            }),
       },
     },
   });
