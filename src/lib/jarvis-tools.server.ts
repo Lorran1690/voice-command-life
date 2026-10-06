@@ -102,6 +102,36 @@ export function createJarvisTools(supabase: UserScopedSupabase, userId: string) 
       },
     }),
 
+    get_task_summary: tool({
+      description: "Retorna um resumo útil das tarefas: pendentes, concluídas, atrasadas e próximas.",
+      inputSchema: z.object({}).strict(),
+      execute: async () => {
+        const { data, error } = await supabase
+          .from("tasks")
+          .select("id, title, due_at, status")
+          .order("due_at", { ascending: true, nullsFirst: false })
+          .limit(100);
+        if (error) return { ok: false as const, error: error.message };
+        const now = Date.now();
+        const pending = (data ?? []).filter((task) => task.status !== "done");
+        const overdue = pending.filter((task) => task.due_at && new Date(task.due_at).getTime() < now);
+        const next = pending
+          .filter((task) => task.due_at && new Date(task.due_at).getTime() >= now)
+          .slice(0, 5);
+        return {
+          ok: true as const,
+          summary: {
+            total: data?.length ?? 0,
+            pending: pending.length,
+            completed: (data ?? []).filter((task) => task.status === "done").length,
+            overdue: overdue.length,
+          },
+          overdue,
+          next,
+        };
+      },
+    }),
+
     list_tasks: tool({
       description: "Lista as tarefas do usuário, por padrão apenas as pendentes.",
       inputSchema: z
