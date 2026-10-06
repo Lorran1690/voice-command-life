@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import type { UserScopedSupabase } from "./supabase-user.server";
+import { loadAssistantSettings } from "./assistant-settings.server";
 
 /**
  * J.A.R.V.I.S. business tools. Every tool runs against a user-scoped Supabase
@@ -10,6 +11,48 @@ import type { UserScopedSupabase } from "./supabase-user.server";
  */
 export function createJarvisTools(supabase: UserScopedSupabase, userId: string) {
   return {
+    update_assistant_settings: tool({
+      description: "Atualiza preferências do próprio J.A.R.V.I.S., como personalidade, tom, detalhamento, humor, proatividade, memória, velocidade da fala e voz.",
+      inputSchema: z.object({
+        personality: z.enum(["jarvis", "friendly", "professional", "coach", "gamer"]).optional(),
+        tone: z.enum(["calm", "warm", "direct", "technical", "playful"]).optional(),
+        verbosity: z.enum(["concise", "normal", "detailed"]).optional(),
+        humor: z.number().min(0).max(100).optional(),
+        proactive: z.boolean().optional(),
+        confirm_actions: z.boolean().optional(),
+        auto_memory: z.boolean().optional(),
+        voice: z.string().min(1).max(64).optional(),
+        voice_speed: z.number().min(0.75).max(1.25).optional(),
+        custom_instructions: z.string().max(2000).optional(),
+        hud_accent: z.enum(["cyan", "blue", "violet", "amber", "green"]).optional(),
+        motion_intensity: z.enum(["low", "medium", "high"]).optional(),
+      }).strict(),
+      execute: async (changes) => {
+        const current = await loadAssistantSettings(supabase, userId);
+        const { data, error } = await supabase
+          .from("assistant_settings")
+          .upsert({ ...current, ...changes, user_id: userId, updated_at: new Date().toISOString() }, { onConflict: "user_id" })
+          .select("*")
+          .single();
+        if (error) return { ok: false as const, error: error.message };
+        return {
+          ok: true as const,
+          settings: {
+            personality: data.personality,
+            tone: data.tone,
+            verbosity: data.verbosity,
+            humor: data.humor,
+            proactive: data.proactive,
+            auto_memory: data.auto_memory,
+            voice: data.voice,
+            voice_speed: data.voice_speed,
+            hud_accent: data.hud_accent,
+            motion_intensity: data.motion_intensity,
+          },
+        };
+      },
+    }),
+
     create_task: tool({
       description:
         "Cria uma tarefa ou lembrete para o usuário. Use quando ele pedir para lembrar de algo, anotar um afazer ou agendar uma tarefa.",
