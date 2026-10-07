@@ -3,7 +3,7 @@ import http from "node:http";
 const HOST = process.env.JARVIS_HOST || "127.0.0.1";
 const PORT = Number(process.env.JARVIS_PORT || 3210);
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
-const MODEL = process.env.JARVIS_MODEL || "qwen3:4b";
+const MODEL = process.env.JARVIS_MODEL || "qwen3:4b-instruct";
 
 const SYSTEM_PROMPT = [
   "Você é J.A.R.V.I.S., o assistente pessoal local do usuário.",
