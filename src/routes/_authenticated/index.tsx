@@ -6,6 +6,10 @@ export const Route = createFileRoute("/_authenticated/")({
     meta: [
       { title: "Início — J.A.R.V.I.S." },
       { name: "description", content: "J.A.R.V.I.S. local." },
+      { property: "og:title", content: "Início — J.A.R.V.I.S." },
+      { property: "og:description", content: "Acesse seu centro de comando pessoal J.A.R.V.I.S." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomeRedirect,
