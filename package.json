@@ -12,7 +12,10 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "jarvis:local": "node local-core/server.mjs"
+    "jarvis:local": "node local-core/server.mjs",
+    "tauri": "tauri",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -111,6 +114,7 @@
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
     "vitest": "^4.1.10",
-    "ws": "^8.22.0"
+    "ws": "^8.22.0",
+    "@tauri-apps/cli": "^2.8.3"
   }
 }
