@@ -15,7 +15,9 @@
 ## Verificação pendente
 - [ ] Teste real da chamada de voz com microfone (não dá para validar áudio em ambiente headless)
 
-## HUD animada — em andamento
-- [ ] Escolher uma das três direções com paleta ciano/âmbar, JetBrains Mono + Work Sans e foco na conversa
-- [ ] Implementar a direção escolhida e movimento do núcleo ao iniciar a chamada
-- [ ] Verificar a HUD e a transição visual da chamada
+## Reformulação command center
+- [ ] Implementar header, relógio, colunas colapsáveis e drawers móveis
+- [ ] Reformular núcleo e estados reais da voz, chat e painel de comando
+- [ ] Refinar conversas, tarefas, notas e memória sem alterar integrações
+- [ ] Verificar página, painéis, chat e estados visuais; corrigir erros existentes
+- [ ] Validar integrações de nuvem e voz ao vivo: bloqueado pela versão atual local, sem login protegido ou transporte ao vivo conectado
