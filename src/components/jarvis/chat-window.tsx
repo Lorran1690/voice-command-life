@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { UIMessage } from "ai";
-import { Check, Clipboard, Mic2, Send, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Check, Clipboard, Mic2, Send, Terminal, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -20,6 +20,15 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Tool,
+  ToolHeader,
+  ToolContent,
+  ToolInput,
+  ToolOutput,
+  type ToolPart,
+} from "@/components/ai-elements/tool";
 
 const LOCAL_CORE_URL = "http://127.0.0.1:3210/api/chat";
 const LOCAL_CORE_HEALTH_URL = "http://127.0.0.1:3210/health";
@@ -29,6 +38,7 @@ type LocalMessage = {
   id: string;
   role: "user" | "assistant";
   text: string;
+  tools?: ToolPart[];
 };
 
 function messageId() {
@@ -77,8 +87,11 @@ function asLocalMessages(initialMessages: UIMessage[], threadId: string): LocalM
       .join("\n")
       .trim();
 
-    return text && (message.role === "user" || message.role === "assistant")
-      ? [{ id: message.id, role: message.role, text }]
+    const tools = message.parts.filter(
+      (part): part is ToolPart => part.type === "dynamic-tool" || part.type.startsWith("tool-"),
+    );
+    return (text || tools.length) && (message.role === "user" || message.role === "assistant")
+      ? [{ id: message.id, role: message.role, text, tools }]
       : [];
   });
 }
@@ -86,25 +99,33 @@ function asLocalMessages(initialMessages: UIMessage[], threadId: string): LocalM
 export function ChatWindow({
   threadId,
   initialMessages,
+  onConnectionChange,
 }: {
   threadId: string;
   initialMessages: UIMessage[];
+  onConnectionChange?: (online: boolean | null) => void;
 }) {
-  const [messages, setMessages] = useState<LocalMessage[]>(() => asLocalMessages(initialMessages, threadId));
+  const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [status, setStatus] = useState<"ready" | "submitted" | "error">("ready");
   const [localCoreOnline, setLocalCoreOnline] = useState<boolean | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const historyLoaded = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setMessages(asLocalMessages(initialMessages, threadId));
+    historyLoaded.current = true;
     textareaRef.current?.focus();
   }, [initialMessages, threadId]);
 
   useEffect(() => {
-    saveHistory(threadId, messages);
+    if (historyLoaded.current && messages.length) saveHistory(threadId, messages);
   }, [threadId, messages]);
+
+  useEffect(() => {
+    onConnectionChange?.(localCoreOnline);
+  }, [localCoreOnline, onConnectionChange]);
 
   useEffect(() => {
     let active = true;
@@ -148,7 +169,10 @@ export function ChatWindow({
           }),
         });
 
-        const data = (await response.json().catch(() => null)) as { text?: string; error?: string } | null;
+        const data = (await response.json().catch(() => null)) as {
+          text?: string;
+          error?: string;
+        } | null;
 
         if (!response.ok) {
           throw new Error(data?.error || "O núcleo local recusou o comando.");
@@ -157,19 +181,26 @@ export function ChatWindow({
         const answer = data?.text?.trim();
         if (!answer) throw new Error("O núcleo local retornou uma resposta vazia.");
 
-        setMessages((current) => [...current, { id: messageId(), role: "assistant", text: answer }]);
+        setMessages((current) => [
+          ...current,
+          { id: messageId(), role: "assistant", text: answer },
+        ]);
         setStatus("ready");
         setLocalCoreOnline(true);
       } catch (error) {
         setStatus("error");
         setLocalCoreOnline(false);
-        const errorMessage = error instanceof Error ? error.message : "Falha ao falar com o JARVIS local.";
+        const errorMessage =
+          error instanceof Error ? error.message : "Falha ao falar com o JARVIS local.";
         setMessages((current) => [
           ...current,
           {
             id: messageId(),
             role: "assistant",
-            text: "Não consegui processar seu comando. " + errorMessage + "\n\nVerifique se a janela do JARVIS Core continua aberta.",
+            text:
+              "Não consegui processar seu comando. " +
+              errorMessage +
+              "\n\nVerifique se a janela do JARVIS Core continua aberta.",
           },
         ]);
         toast.error("Falha no núcleo local.");
@@ -228,14 +259,14 @@ export function ChatWindow({
   const streaming = status === "submitted";
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="command-chat flex min-h-0 flex-1 flex-col">
       <Conversation className="flex-1">
-        <ConversationContent className="mx-auto w-full max-w-4xl gap-6 px-4 py-6 md:px-6">
+        <ConversationContent className="mx-auto w-full max-w-4xl gap-5 px-4 py-5 md:px-8">
           {!messages.length && (
             <div className="hud-welcome-panel">
               <ConversationEmptyState
                 title="Às suas ordens."
-                description="O núcleo local está pronto. Digite um comando para conversar com o Qwen3 4B."
+                description=""
                 className="hud-greeting justify-start py-2"
               />
               <div className="hud-quick-grid">
@@ -245,16 +276,19 @@ export function ChatWindow({
                   ["Como pode ajudar?", "Me diga o que você consegue fazer nesta versão local."],
                   ["Falar comigo", "Responda de forma natural e informal."],
                 ].map(([label, prompt]) => (
-                  <button
+                  <Button
                     key={label}
                     type="button"
-                    onClick={() => runQuickCommand(prompt)}
+                    variant="outline"
+                    onClick={() => {
+                      if (prompt) runQuickCommand(prompt);
+                    }}
                     className="hud-quick-command"
                     disabled={streaming}
                   >
-                    <Sparkles className="h-3.5 w-3.5" />
+                    <Terminal className="h-3.5 w-3.5" />
                     <span>{label}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -265,38 +299,67 @@ export function ChatWindow({
               <MessageContent
                 className={cn(
                   "hud-message max-w-[92%] border transition-all",
-                  message.role === "user"
-                    ? "ml-auto rounded-2xl border-primary/15 bg-primary/[0.07] px-4 py-3 text-foreground"
-                    : "rounded-2xl border-primary/10 bg-card/20 px-4 py-3",
+                  message.role === "user" ? "hud-message--user ml-auto" : "hud-message--assistant",
                 )}
               >
                 {message.role === "assistant" ? (
                   <div className="group relative">
+                    <div className="assistant-message-label">
+                      <Terminal className="size-3" />
+                      J.A.R.V.I.S.<span> / RESPOSTA</span>
+                    </div>
                     <MessageResponse>{message.text}</MessageResponse>
+                    {message.tools?.map((part, index) => (
+                      <Tool key={index} defaultOpen={false}>
+                        {part.type === "dynamic-tool" ? (
+                          <ToolHeader
+                            type={part.type}
+                            state={part.state}
+                            toolName={part.toolName}
+                          />
+                        ) : (
+                          <ToolHeader type={part.type} state={part.state} />
+                        )}
+                        <ToolContent>
+                          <ToolInput input={part.input} />
+                          <ToolOutput output={part.output} errorText={part.errorText} />
+                        </ToolContent>
+                      </Tool>
+                    ))}
                     <div className="hud-message-actions">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => void copyText(message.id, message.text)}
                         className="hud-icon-action"
                         title="Copiar"
                         aria-label="Copiar resposta"
                       >
-                        {copiedId === message.id ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
-                      </button>
-                      <button
+                        {copiedId === message.id ? (
+                          <Check className="h-3.5 w-3.5" />
+                        ) : (
+                          <Clipboard className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => speakText(message.id, message.text)}
                         className="hud-icon-action"
                         title={speakingId === message.id ? "Parar voz" : "Ouvir resposta"}
                         aria-label={speakingId === message.id ? "Parar voz" : "Ouvir resposta"}
                       >
-                        {speakingId === message.id ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-                      </button>
+                        {speakingId === message.id ? (
+                          <VolumeX className="h-3.5 w-3.5" />
+                        ) : (
+                          <Volume2 className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-start gap-3">
-                    <span className="mt-1 font-display text-[9px] uppercase tracking-[0.18em] text-hud-amber">Você</span>
+                    <span className="mt-1 font-display text-[9px] uppercase tracking-[0.18em] text-hud-amber">
+                      Você
+                    </span>
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.text}</p>
                   </div>
                 )}
@@ -306,49 +369,65 @@ export function ChatWindow({
 
           {streaming && (
             <div className="hud-processing">
-              <span className="hud-processing-orb" />
-              <Shimmer className="text-xs">J.A.R.V.I.S. processando localmente…</Shimmer>
+              <span className="processing-bars" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+              <Shimmer className="text-xs">J.A.R.V.I.S. está pensando…</Shimmer>
             </div>
           )}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="hud-composer mx-auto w-full max-w-4xl px-4 pt-3 pb-6 md:px-6">
-        <div className="mb-2 flex items-center justify-between px-1">
+      <div className="hud-composer mx-auto w-full max-w-4xl px-4 pt-3 pb-4 md:px-8">
+        <div className="composer-readout">
           <div className="flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
             <span className={cn("hud-status-dot", streaming && "hud-status-dot--active")} />
             <span>{streaming ? "Processando" : "Canal de texto ativo"}</span>
-            <span className={cn(
-              "font-display text-[9px] uppercase tracking-[0.16em]",
-              localCoreOnline === true ? "text-primary" : localCoreOnline === false ? "text-destructive" : "text-muted-foreground",
-            )}>
-              {localCoreOnline === true ? "CORE LOCAL ONLINE" : localCoreOnline === false ? "CORE LOCAL OFFLINE" : "CORE LOCAL…"}
+            <span
+              className={cn(
+                "font-display text-[9px] uppercase tracking-[0.16em]",
+                localCoreOnline === true
+                  ? "text-primary"
+                  : localCoreOnline === false
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+              )}
+            >
+              {localCoreOnline === true
+                ? "CORE LOCAL ONLINE"
+                : localCoreOnline === false
+                  ? "CORE LOCAL OFFLINE"
+                  : "CORE LOCAL…"}
             </span>
           </div>
           <span className="hidden items-center gap-1 font-display text-[9px] text-muted-foreground/70 sm:flex">
-            <Mic2 className="h-3 w-3" /> Voz local por navegador
+            <Mic2 className="h-3 w-3" /> CANAL LOCAL
           </span>
         </div>
 
-        <PromptInput
-          onSubmit={handleSubmit}
-          className="hud-input-frame w-full rounded-2xl border border-primary/15 bg-card/35 shadow-[0_15px_60px_rgba(0,0,0,0.2)]"
-        >
+        <PromptInput onSubmit={handleSubmit} className="hud-input-frame w-full">
           <PromptInputTextarea
             ref={textareaRef}
             placeholder="Comando para J.A.R.V.I.S…"
-            className="min-h-20 border-0 text-base md:min-h-24"
+            className="min-h-16 border-0 text-sm"
             disabled={streaming}
           />
           <PromptInputFooter className="justify-end gap-3 px-2 py-1.5">
             <span className="mr-auto hidden items-center gap-1 font-display text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:flex">
-              <Send className="h-3 w-3" /> Enter envia
+              <Send className="h-3 w-3" /> COMANDO
             </span>
             <span className="hidden font-display text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:inline">
               {status === "error" ? "ERRO" : streaming ? "PROCESSANDO" : "READY"}
             </span>
-            <PromptInputSubmit status={streaming ? "submitted" : "ready"} onStop={() => undefined} disabled={streaming} aria-label="Enviar mensagem" />
+            <PromptInputSubmit
+              status={streaming ? "submitted" : "ready"}
+              onStop={() => undefined}
+              disabled={streaming}
+              aria-label="Enviar mensagem"
+            />
           </PromptInputFooter>
         </PromptInput>
       </div>
