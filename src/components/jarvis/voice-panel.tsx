@@ -1,10 +1,17 @@
-import { useCallback, useState } from "react";
-import { Mic, MicOff, Phone, PhoneOff, Volume2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Mic, MicOff, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { OrbitalCore } from "@/components/jarvis/orbital-core";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  getPreferredVoice,
+  getVoicePreferences,
+  listLocalVoices,
+  speakWithFallback,
+  type LocalVoice,
+} from "@/lib/local-voice";
 
 type Recognition = {
   start: () => void;
@@ -23,10 +30,55 @@ export function VoicePanel() {
   const [active, setActive] = useState(false);
   const [listening, setListening] = useState(false);
   const [lastText, setLastText] = useState("");
+  const [voices, setVoices] = useState<LocalVoice[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    listLocalVoices()
+      .then((items) => {
+        if (mounted) setVoices(items);
+      })
+      .catch(() => {
+        // O fallback do navegador continua disponível mesmo sem o Core de voz.
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const speak = useCallback(
+    async (text: string) => {
+      const preferences = getVoicePreferences();
+      const selected = getPreferredVoice(voices);
+
+      try {
+        await speakWithFallback(text, {
+          voiceName: selected?.name || preferences.voiceName || undefined,
+          speed: preferences.speed,
+          volume: 1,
+        });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Falha no modo de voz.");
+      }
+    },
+    [voices],
+  );
 
   const runLocalVoice = useCallback(() => {
-    const SpeechRecognition = (window as unknown as { SpeechRecognition?: RecognitionConstructor; webkitSpeechRecognition?: RecognitionConstructor }).SpeechRecognition
-      ?? (window as unknown as { webkitSpeechRecognition?: RecognitionConstructor }).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (
+        window as unknown as {
+          SpeechRecognition?: RecognitionConstructor;
+          webkitSpeechRecognition?: RecognitionConstructor;
+        }
+      ).SpeechRecognition ??
+      (
+        window as unknown as {
+          webkitSpeechRecognition?: RecognitionConstructor;
+        }
+      ).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       toast.error("O navegador não oferece reconhecimento de voz.");
@@ -40,6 +92,7 @@ export function VoicePanel() {
     recognition.onresult = async (event) => {
       const transcript = event.results[0]?.[0]?.transcript?.trim() ?? "";
       if (!transcript) return;
+
       setLastText(transcript);
       setListening(false);
 
@@ -49,21 +102,19 @@ export function VoicePanel() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: [{ role: "user", content: transcript }] }),
         });
-        const data = await response.json() as { text?: string; error?: string };
+        const data = (await response.json()) as { text?: string; error?: string };
+
         if (!response.ok) throw new Error(data.error ?? "Falha no núcleo local.");
+
         const answer = data.text?.trim();
         if (!answer) throw new Error("O JARVIS retornou uma resposta vazia.");
 
-        const utterance = new SpeechSynthesisUtterance(answer);
-        utterance.lang = "pt-BR";
-        utterance.rate = 0.98;
-        utterance.pitch = 0.92;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
+        await speak(answer);
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Falha no modo de voz local.");
       }
     };
+
     recognition.onend = () => setListening(false);
     recognition.onerror = () => {
       setListening(false);
@@ -72,7 +123,7 @@ export function VoicePanel() {
 
     setListening(true);
     recognition.start();
-  }, []);
+  }, [speak]);
 
   function toggle() {
     if (listening) return;
@@ -99,12 +150,7 @@ export function VoicePanel() {
           variant="ghost"
           onClick={() => {
             const text = lastText ? "Entendi: " + lastText : "J.A.R.V.I.S. local online e pronto.";
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "pt-BR";
-            utterance.rate = 0.98;
-            utterance.pitch = 0.92;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
+            void speak(text);
           }}
           className="rounded-full"
         >
@@ -113,7 +159,9 @@ export function VoicePanel() {
       </div>
 
       <div className="voice-frequency" aria-hidden="true">
-        {Array.from({ length: 31 }, (_, i) => <span key={i} style={{ "--voice-index": i } as React.CSSProperties} />)}
+        {Array.from({ length: 31 }, (_, i) => (
+          <span key={i} style={{ "--voice-index": i } as React.CSSProperties} />
+        ))}
       </div>
 
       <div className="flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
