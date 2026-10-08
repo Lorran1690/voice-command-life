@@ -16,61 +16,61 @@ export type Database = {
     Tables: {
       assistant_settings: {
         Row: {
-          user_id: string
-          voice: string
-          browser_voice: string | null
-          personality: string
-          tone: string
-          verbosity: string
-          humor: number
-          proactive: boolean
-          confirm_actions: boolean
           auto_memory: boolean
-          language: string
-          voice_speed: number
+          browser_voice: string | null
+          confirm_actions: boolean
           custom_instructions: string
           hud_accent: string
+          humor: number
+          language: string
           motion_intensity: string
+          personality: string
+          proactive: boolean
+          tone: string
           updated_at: string
+          user_id: string
+          verbosity: string
+          voice: string
+          voice_speed: number
         }
         Insert: {
-          user_id: string
-          voice?: string
-          browser_voice?: string | null
-          personality?: string
-          tone?: string
-          verbosity?: string
-          humor?: number
-          proactive?: boolean
-          confirm_actions?: boolean
           auto_memory?: boolean
-          language?: string
-          voice_speed?: number
+          browser_voice?: string | null
+          confirm_actions?: boolean
           custom_instructions?: string
           hud_accent?: string
+          humor?: number
+          language?: string
           motion_intensity?: string
+          personality?: string
+          proactive?: boolean
+          tone?: string
           updated_at?: string
+          user_id: string
+          verbosity?: string
+          voice?: string
+          voice_speed?: number
         }
         Update: {
-          user_id?: string
-          voice?: string
-          browser_voice?: string | null
-          personality?: string
-          tone?: string
-          verbosity?: string
-          humor?: number
-          proactive?: boolean
-          confirm_actions?: boolean
           auto_memory?: boolean
-          language?: string
-          voice_speed?: number
+          browser_voice?: string | null
+          confirm_actions?: boolean
           custom_instructions?: string
           hud_accent?: string
+          humor?: number
+          language?: string
           motion_intensity?: string
+          personality?: string
+          proactive?: boolean
+          tone?: string
           updated_at?: string
+          user_id?: string
+          verbosity?: string
+          voice?: string
+          voice_speed?: number
         }
         Relationships: []
-      },
+      }
       memories: {
         Row: {
           created_at: string
