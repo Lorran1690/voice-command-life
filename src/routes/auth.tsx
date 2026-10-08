@@ -10,6 +10,10 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Entrar — J.A.R.V.I.S." },
       { name: "description", content: "Identificação local do J.A.R.V.I.S." },
+      { property: "og:title", content: "Entrar — J.A.R.V.I.S." },
+      { property: "og:description", content: "Identificação do operador do J.A.R.V.I.S." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
@@ -48,7 +52,7 @@ function AuthPage() {
         </div>
 
         <div className="jarvis-login-heading">
-          <span className="jarvis-login-kicker">LOCAL SYSTEM // VIOLET CORE</span>
+          <span className="jarvis-login-kicker">PERSONAL COMMAND CENTER</span>
           <h1>J.A.R.V.I.S.</h1>
           <p>Identificação do operador</p>
         </div>
@@ -85,7 +89,7 @@ function AuthPage() {
         <div className="jarvis-login-status">
           <span className="jarvis-login-status-dot" />
           <span>CORE LOCAL</span>
-          <span>OLLAMA // QWEN3 4B</span>
+          <span>J.A.R.V.I.S.</span>
         </div>
 
         <p className="jarvis-login-note">Sem senha, sem Google e sem nuvem. Identidade mantida neste computador.</p>

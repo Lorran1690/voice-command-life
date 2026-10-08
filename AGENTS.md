@@ -11,5 +11,5 @@
 
 ## Frontend architecture
 - Keep the orbital voice visualization in a shared OrbitalCore component, driven by the live call status; this isolates decorative motion from audio transport.
-- Show conversation history and personal organization in on-demand Sheet panels; this keeps the main chat in a single focused column without removing existing workflows.
+- Show conversation history and personal organization in collapsible desktop rails and mobile Sheet panels; this preserves a prioritized conversation while keeping workflows accessible.
 - Define HUD colors and animation styling in the global semantic token system; this keeps the chat and login visually consistent without hardcoded feature colors.

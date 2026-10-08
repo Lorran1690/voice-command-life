@@ -1,10 +1,9 @@
-import { useCallback, useState } from "react";
-import { Mic, MicOff, Phone, PhoneOff, Volume2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Mic, MicOff, Square, Volume2, AudioLines } from "lucide-react";
 import { toast } from "sonner";
-
 import { OrbitalCore } from "@/components/jarvis/orbital-core";
+import { voiceLabels, type VoicePhase } from "@/components/jarvis/hud-state";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 type Recognition = {
   start: () => void;
@@ -16,110 +15,200 @@ type Recognition = {
   continuous: boolean;
   interimResults: boolean;
 };
-
 type RecognitionConstructor = new () => Recognition;
-
-export function VoicePanel() {
-  const [active, setActive] = useState(false);
-  const [listening, setListening] = useState(false);
+export function VoicePanel({ onPhaseChange }: { onPhaseChange?: (phase: VoicePhase) => void }) {
+  const [phase, setPhase] = useState<VoicePhase>("ready");
   const [lastText, setLastText] = useState("");
-
+  const [error, setError] = useState("");
+  const recognitionRef = useRef<Recognition | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const generation = useRef(0);
+  useEffect(() => {
+    onPhaseChange?.(phase);
+  }, [phase, onPhaseChange]);
+  useEffect(
+    () => () => {
+      generation.current += 1;
+      recognitionRef.current?.stop();
+      abortRef.current?.abort();
+      window.speechSynthesis?.cancel();
+    },
+    [],
+  );
+  function speak(text: string, run: number) {
+    if (!("speechSynthesis" in window)) {
+      setError("Seu navegador não oferece reprodução de voz.");
+      setPhase("error");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "pt-BR";
+    utterance.rate = 0.98;
+    utterance.pitch = 0.92;
+    utterance.onstart = () => {
+      if (run === generation.current) setPhase("speaking");
+    };
+    utterance.onend = () => {
+      if (run === generation.current) setPhase("ready");
+    };
+    utterance.onerror = () => {
+      if (run === generation.current) {
+        setError("Não foi possível reproduzir a voz.");
+        setPhase("error");
+      }
+    };
+    window.speechSynthesis.speak(utterance);
+  }
   const runLocalVoice = useCallback(() => {
-    const SpeechRecognition = (window as unknown as { SpeechRecognition?: RecognitionConstructor; webkitSpeechRecognition?: RecognitionConstructor }).SpeechRecognition
-      ?? (window as unknown as { webkitSpeechRecognition?: RecognitionConstructor }).webkitSpeechRecognition;
-
+    const browser = window as unknown as {
+      SpeechRecognition?: RecognitionConstructor;
+      webkitSpeechRecognition?: RecognitionConstructor;
+    };
+    const SpeechRecognition = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
     if (!SpeechRecognition) {
+      setError("O navegador não oferece reconhecimento de voz.");
+      setPhase("error");
       toast.error("O navegador não oferece reconhecimento de voz.");
       return;
     }
-
+    const run = ++generation.current;
     const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    let captured = false;
     recognition.lang = "pt-BR";
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.onresult = async (event) => {
+      if (run !== generation.current) return;
       const transcript = event.results[0]?.[0]?.transcript?.trim() ?? "";
       if (!transcript) return;
+      captured = true;
       setLastText(transcript);
-      setListening(false);
-
+      setPhase("processing");
+      const controller = new AbortController();
+      abortRef.current = controller;
       try {
         const response = await fetch("http://127.0.0.1:3210/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: [{ role: "user", content: transcript }] }),
+          signal: controller.signal,
         });
-        const data = await response.json() as { text?: string; error?: string };
+        const data = (await response.json()) as { text?: string; error?: string };
         if (!response.ok) throw new Error(data.error ?? "Falha no núcleo local.");
         const answer = data.text?.trim();
         if (!answer) throw new Error("O JARVIS retornou uma resposta vazia.");
-
-        const utterance = new SpeechSynthesisUtterance(answer);
-        utterance.lang = "pt-BR";
-        utterance.rate = 0.98;
-        utterance.pitch = 0.92;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Falha no modo de voz local.");
+        if (run === generation.current) speak(answer, run);
+      } catch (failure) {
+        if (run !== generation.current) return;
+        const message = failure instanceof Error ? failure.message : "Falha no modo de voz local.";
+        setError(message);
+        setPhase("error");
+        toast.error(message);
       }
     };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => {
-      setListening(false);
-      toast.error("Não foi possível capturar a fala.");
+    recognition.onend = () => {
+      if (run === generation.current && !captured)
+        setPhase((previous) => (previous === "error" ? previous : "ready"));
     };
-
-    setListening(true);
-    recognition.start();
+    recognition.onerror = () => {
+      if (run === generation.current) {
+        setError("Não foi possível capturar a fala. Verifique a permissão do microfone.");
+        setPhase("error");
+      }
+    };
+    setError("");
+    setPhase("connecting");
+    try {
+      recognition.start();
+      // SpeechRecognition start is asynchronous; onstart is the actual listening signal.
+      (recognition as Recognition & { onstart: (() => void) | null }).onstart = () => {
+        if (run === generation.current) setPhase("listening");
+      };
+    } catch {
+      setError("Não foi possível ativar o microfone.");
+      setPhase("error");
+    }
   }, []);
-
-  function toggle() {
-    if (listening) return;
-    setActive((value) => !value);
-    runLocalVoice();
+  function stop() {
+    generation.current += 1;
+    recognitionRef.current?.stop();
+    abortRef.current?.abort();
+    window.speechSynthesis?.cancel();
+    setPhase("ready");
   }
-
+  const active = !["ready", "error"].includes(phase);
   return (
-    <section className="voice-stage hud-enter flex shrink-0 flex-col items-center gap-3 px-4 pt-5 pb-3" aria-label="Voz local">
-      <div className="voice-command-readout">
-        <span className={cn("voice-signal", active && "voice-signal--active")} />
-        <span>CANAL DE VOZ // LOCAL</span>
-        <span className="text-primary">OLLAMA</span>
+    <section className="command-voice" aria-label="Canal de voz" data-phase={phase}>
+      <div className="voice-section-heading">
+        <span className="hud-eyebrow">
+          <AudioLines className="size-3.5" />
+          JARVIS CORE
+        </span>
+        <span className="hud-eyebrow text-muted-foreground">CANAL LOCAL</span>
       </div>
-
-      <OrbitalCore active={active || listening} muted={!listening} />
-
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button variant="outline" onClick={toggle} className="rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary">
-          {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          {listening ? "Ouvindo..." : "Falar com JARVIS"}
+      <div className="core-stage">
+        <span className="core-caption core-caption--left">
+          VOICE
+          <br />
+          <span>INTERFACE</span>
+        </span>
+        <OrbitalCore phase={phase} active={active} muted={phase !== "listening"} />
+        <span className="core-caption core-caption--right">
+          {phase === "ready" ? "STANDBY" : phase === "error" ? "INTERRUPTED" : "ACTIVE"}
+          <br />
+          <span>J.A.R.V.I.S.</span>
+        </span>
+      </div>
+      <div className="voice-activity" data-phase={phase} aria-hidden="true">
+        {Array.from({ length: 35 }, (_, i) => (
+          <span key={i} />
+        ))}
+      </div>
+      <p className="voice-phase" role="status">
+        <span className="hud-status-dot" />
+        {voiceLabels[phase]}
+      </p>
+      <div className="voice-controls">
+        <Button variant="outline" onClick={active ? stop : runLocalVoice} className="voice-primary">
+          {active ? <Square /> : <Mic />}
+          {active ? "Encerrar" : "Falar com J.A.R.V.I.S."}
         </Button>
         <Button
           variant="ghost"
+          size="icon"
           onClick={() => {
-            const text = lastText ? "Entendi: " + lastText : "J.A.R.V.I.S. local online e pronto.";
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "pt-BR";
-            utterance.rate = 0.98;
-            utterance.pitch = 0.92;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
+            if (active) stop();
+            else runLocalVoice();
           }}
-          className="rounded-full"
+          aria-label={active ? "Parar microfone" : "Ativar microfone"}
+          title={active ? "Parar microfone" : "Ativar microfone"}
         >
-          <Volume2 className="h-4 w-4" /> Testar voz
+          {active ? <MicOff /> : <Mic />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={active}
+          onClick={() => {
+            setError("");
+            speak(
+              lastText ? "Entendi: " + lastText : "J.A.R.V.I.S. local pronto.",
+              ++generation.current,
+            );
+          }}
+          aria-label="Testar voz"
+          title="Testar voz"
+        >
+          <Volume2 />
         </Button>
       </div>
-
-      <div className="voice-frequency" aria-hidden="true">
-        {Array.from({ length: 31 }, (_, i) => <span key={i} style={{ "--voice-index": i } as React.CSSProperties} />)}
-      </div>
-
-      <div className="flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
-        <span className="voice-state-pulse" />
-        <span>{listening ? "Microfone ativo" : "Voz local pronta"}</span>
-      </div>
+      {error && (
+        <p className="voice-error" role="alert">
+          {error}
+        </p>
+      )}
     </section>
   );
 }
