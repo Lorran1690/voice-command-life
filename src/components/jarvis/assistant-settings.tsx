@@ -50,10 +50,7 @@ export function AssistantSettings() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.motion = settings.motion_intensity;
-    document.documentElement.style.setProperty("--hud", "#A855F7");
-    document.documentElement.style.setProperty("--primary", "#A855F7");
-    document.documentElement.style.setProperty("--ring", "#A855F7");
+    document.documentElement.dataset['motion'] = settings.motion_intensity;
   }, [settings.motion_intensity]);
 
   function update<K extends keyof Settings>(key: K, value: Settings[K]) {
@@ -133,7 +130,7 @@ export function AssistantSettings() {
           <div className="settings-card-title"><Palette className="h-4 w-4" /> Interface</div>
           <label className="settings-field">
             <span>Cor do núcleo</span>
-            <input value="Violeta" readOnly />
+            <input value="Ciano / âmbar" readOnly />
           </label>
           <label className="settings-field">
             <span>Intensidade das animações</span>
