@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Activity, Aperture, Crosshair, Cpu, Gauge, LogOut, Orbit, Radio, ShieldCheck, Sparkles, Zap } from "lucide-react";
 
-import { OrbitalCore } from "@/components/jarvis/orbital-core";
+import { VoicePanel } from "@/components/jarvis/voice-panel";
 import { clearLocalUser, getLocalUser } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
@@ -17,7 +16,6 @@ export const Route = createFileRoute("/_authenticated/chat/$threadId")({
 
 function VisualDemoPage() {
   const navigate = useNavigate();
-  const [boosted, setBoosted] = useState(false);
   const operator = getLocalUser()?.name ?? "OPERADOR";
 
   function signOut() {
@@ -96,7 +94,7 @@ function VisualDemoPage() {
 
           <div className="jarvis-demo-rail-note">
             <span className="jarvis-demo-note-mark">i</span>
-            <p>Prévia visual interativa: ative o avatar para observar a formação das partículas e o movimento facial. A integração com a voz local é controlada pelo painel de voz.</p>
+            <p>Inicie a chamada de voz para ver as partículas se organizarem em uma presença holográfica. Ao encerrar, ela se dissolve e volta a circular.</p>
           </div>
         </aside>
 
@@ -118,12 +116,12 @@ function VisualDemoPage() {
             <div className="jarvis-demo-axis jarvis-demo-axis--z">Z <span>AXIS</span></div>
             <div className="jarvis-demo-reticle jarvis-demo-reticle--one" aria-hidden="true" />
             <div className="jarvis-demo-reticle jarvis-demo-reticle--two" aria-hidden="true" />
-            <OrbitalCore active={boosted} speaking={boosted} muted={!boosted} className="jarvis-hero-core" />
+            <VoicePanel className="jarvis-demo-voice-panel" coreClassName="jarvis-hero-core" />
           </div>
 
           <div className="jarvis-demo-core-label">
             <span className="jarvis-demo-core-line" />
-            <div><strong>{boosted ? "AVATAR MANIFESTED" : "PARTICLE FIELD"}</strong><small>{boosted ? "HOLOGRAPHIC PRESENCE · SPEECH MOTION DEMO" : "LIVING PARTICLES · INTERACTIVE FLOW"}</small></div>
+            <div><strong>VOICE-REACTIVE AVATAR</strong><small>PARTICLE REST · LIVE VOICE · AUDIO LIP SYNC</small></div>
             <span className="jarvis-demo-core-line" />
           </div>
 
@@ -133,10 +131,7 @@ function VisualDemoPage() {
             <div className="jarvis-demo-stage-metric"><Radio size={15} /><span>POINTER PARALLAX</span><b>INTERACTIVE</b></div>
           </div>
 
-          <button type="button" className="jarvis-demo-boost-button" onClick={() => setBoosted((value) => !value)}>
-            <Zap size={15} />
-            {boosted ? "DISSOLVER AVATAR · ENTRAR EM REPOUSO" : "ATIVAR AVATAR HOLOGRÁFICA"}
-          </button>
+          
         </section>
 
         <aside className="jarvis-demo-rail jarvis-demo-rail--right">
@@ -161,7 +156,7 @@ function VisualDemoPage() {
               <span>LIGHT MODEL</span><strong>FRESNEL + SPECULAR</strong>
             </div>
             <div className="jarvis-demo-spec">
-              <span>ANIMATION</span><strong>{boosted ? "AVATAR MORPH" : "PARTICLE REST"}</strong>
+              <span>ANIMATION</span><strong>VOICE-DRIVEN MORPH</strong>
             </div>
             <div className="jarvis-demo-spec">
               <span>BACKGROUND</span><strong>TRANSPARENT WEBGL</strong>
