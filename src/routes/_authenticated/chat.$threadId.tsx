@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Activity, Aperture, Axis3D, Cpu, Gauge, LogOut, Orbit, Radio, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { Activity, Aperture, Crosshair, Cpu, Gauge, LogOut, Orbit, Radio, ShieldCheck, Sparkles, Zap } from "lucide-react";
 
 import { OrbitalCore } from "@/components/jarvis/orbital-core";
 import { clearLocalUser, getLocalUser } from "@/lib/local-mode";
@@ -124,7 +124,7 @@ function VisualDemoPage() {
 
           <div className="jarvis-demo-stage-bottom">
             <div className="jarvis-demo-stage-metric"><Activity size={15} /><span>DEPTH RENDERING</span><b>ENABLED</b></div>
-            <div className="jarvis-demo-stage-metric"><Axis3D size={15} /><span>SPATIAL AXES</span><b>X / Y / Z</b></div>
+            <div className="jarvis-demo-stage-metric"><Crosshair size={15} /><span>SPATIAL AXES</span><b>X / Y / Z</b></div>
             <div className="jarvis-demo-stage-metric"><Radio size={15} /><span>POINTER PARALLAX</span><b>INTERACTIVE</b></div>
           </div>
 
