@@ -438,18 +438,18 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       ref={hostRef}
       className="orbital-core-3d"
       data-active={active ? "true" : "false"}
-      style={{ position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }}
+      style={{ position: "absolute", inset: 0, overflow: "visible", pointerEvents: "auto", zIndex: 2 }}
       aria-hidden="true"
     >
       <canvas
         ref={canvasRef}
         className="orbital-core-3d-canvas"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none", zIndex: 1 }}
       />
-      <span className="orbital-3d-caption orbital-3d-caption--top">J.A.R.V.I.S. / 3D CORE</span>
-      <span className="orbital-3d-caption orbital-3d-caption--left">DEPTH · 3 AXIS</span>
-      <span className="orbital-3d-caption orbital-3d-caption--right">WEBGL / LIVE</span>
-      <span className="orbital-3d-target" />
+      <span className="orbital-3d-caption orbital-3d-caption--top" style={{ position: "absolute", zIndex: 4, top: "10%", left: "50%", transform: "translateX(-50%)", color: "rgba(201, 163, 255, .86)", font: "500 7px/1 monospace", letterSpacing: "0.16em", whiteSpace: "nowrap", pointerEvents: "none" }}>J.A.R.V.I.S. / 3D CORE</span>
+      <span className="orbital-3d-caption orbital-3d-caption--left" style={{ position: "absolute", zIndex: 4, top: "50%", left: "-5%", transform: "translateY(-50%) rotate(-90deg)", color: "rgba(177, 128, 255, .7)", font: "500 6px/1 monospace", letterSpacing: "0.15em", whiteSpace: "nowrap", pointerEvents: "none" }}>DEPTH · 3 AXIS</span>
+      <span className="orbital-3d-caption orbital-3d-caption--right" style={{ position: "absolute", zIndex: 4, top: "50%", right: "-7%", transform: "translateY(-50%) rotate(90deg)", color: "rgba(120, 223, 255, .75)", font: "500 6px/1 monospace", letterSpacing: "0.15em", whiteSpace: "nowrap", pointerEvents: "none" }}>WEBGL / LIVE</span>
+      <span className="orbital-3d-target" style={{ position: "absolute", zIndex: 3, inset: "20%", border: "1px solid rgba(170, 112, 255, .12)", borderRadius: "50%", boxShadow: "0 0 24px rgba(142, 60, 255, .08) inset", pointerEvents: "none" }} />
     </div>
   );
 }
@@ -462,11 +462,11 @@ export function OrbitalCore({ active = false, muted = false }: { active?: boolea
       aria-hidden="true"
     >
       <OrbitalCore3D active={active} />
-      <div className="orbital-core-hud" aria-hidden="true">
-        <span className="orbital-core-hud-crosshair" />
-        <span className="orbital-core-hud-node orbital-core-hud-node--one" />
-        <span className="orbital-core-hud-node orbital-core-hud-node--two" />
-        <span className="orbital-core-hud-node orbital-core-hud-node--three" />
+      <div className="orbital-core-hud" aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
+        <span className="orbital-core-hud-crosshair" style={{ position: "absolute", inset: "18px", borderLeft: "1px solid rgba(177, 128, 255, .14)", borderRight: "1px solid rgba(177, 128, 255, .14)" }} />
+        <span className="orbital-core-hud-node orbital-core-hud-node--one" style={{ position: "absolute", top: "22%", left: "20%", width: 5, height: 5, borderRadius: "50%", background: "#b17cff", boxShadow: "0 0 12px #9b4dff" }} />
+        <span className="orbital-core-hud-node orbital-core-hud-node--two" style={{ position: "absolute", top: "70%", right: "15%", width: 4, height: 4, borderRadius: "50%", background: "#78dfff", boxShadow: "0 0 10px #78dfff" }} />
+        <span className="orbital-core-hud-node orbital-core-hud-node--three" style={{ position: "absolute", bottom: "18%", left: "29%", width: 4, height: 4, borderRadius: "50%", background: "#d7a8ff", boxShadow: "0 0 10px #b17cff" }} />
       </div>
     </div>
   );
