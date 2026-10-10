@@ -499,7 +499,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
     function render(now = startedAt) {
       if (disposed) return;
       resize();
-      const elapsed = (now - startedAt) * 0.001;
+      const elapsed = reducedMotion ? 0 : (now - startedAt) * 0.001;
       const width = canvas.width;
       const height = canvas.height;
       gl.clearColor(0, 0, 0, 0);
