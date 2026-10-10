@@ -110,7 +110,6 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
-  * { letter-spacing: 0 !important; }
 }
 
 /* HUD flourishes */
@@ -1017,4 +1016,281 @@
   .jarvis-login-scan, .jarvis-login-stars, .jarvis-login-panel, .jarvis-login-ring,
   .jarvis-login-core img, .jarvis-login-pulse, .jarvis-login-core-scan,
   .jarvis-login-cursor, .jarvis-login-arrow, .jarvis-login-status-dot { animation: none !important; }
+}
+
+
+/* === J.A.R.V.I.S. VIOLET COMMAND CENTER / VISUAL DEMO === */
+:root {
+  --background: #05030a;
+  --card: #0b0814;
+  --card-foreground: #f2edff;
+  --secondary: #151020;
+  --secondary-foreground: #e8dcff;
+  --muted: #151020;
+  --muted-foreground: #9386ad;
+  --accent: #211436;
+  --accent-foreground: #f3eaff;
+  --border: rgb(168 85 247 / 17%);
+  --input: rgb(168 85 247 / 24%);
+  --primary: #a855f7;
+  --hud: #a855f7;
+  --hud-glow: rgb(168 85 247 / 23%);
+  --hud-grid: rgb(168 85 247 / 5%);
+  --hud-dim: #8570a7;
+  --hud-amber: #d8b4fe;
+  --hud-shadow: 0 0 36px rgb(124 58 237 / 15%);
+}
+body { letter-spacing: normal; }
+.jarvis-grid-bg {
+  background-color: #05030a;
+  background-image:
+    radial-gradient(ellipse at 50% 30%, rgb(76 29 149 / 11%), transparent 52%),
+    linear-gradient(rgb(168 85 247 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(168 85 247 / 4%) 1px, transparent 1px);
+  background-size: auto, 36px 36px, 36px 36px;
+  background-position: center, center, center;
+}
+.jarvis-grid-bg::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgb(0 0 0 / 42%) 100%);
+}
+.hud-shell { isolation: isolate; }
+.hud-header {
+  position: relative;
+  z-index: 2;
+  min-height: 70px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-bottom-color: rgb(168 85 247 / 20%);
+  box-shadow: 0 10px 38px rgb(0 0 0 / 22%);
+  backdrop-filter: blur(18px);
+}
+.jarvis-header-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 8px 12px;
+  border: 1px solid rgb(168 85 247 / 18%);
+  background: linear-gradient(90deg, rgb(168 85 247 / 7%), rgb(168 85 247 / 2%));
+  color: #bca8d9;
+  font: 500 9px/1.2 "JetBrains Mono", monospace;
+  letter-spacing: .12em;
+}
+.jarvis-header-status-title { color: #dfc5ff; }
+.jarvis-header-status-detail { color: #7e6d98; }
+.jarvis-header-divider { height: 13px; width: 1px; background: rgb(168 85 247 / 30%); }
+.jarvis-status-led {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 10px rgb(192 132 252 / 75%);
+  animation: jarvis-led-pulse 2.4s ease-in-out infinite;
+}
+.jarvis-command-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(190px, 225px) minmax(0, 1fr) minmax(190px, 225px);
+  align-items: stretch;
+  gap: clamp(12px, 1.4vw, 22px);
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  flex: 1;
+  padding: 18px clamp(12px, 1.7vw, 26px) 22px;
+  overflow: hidden;
+}
+.jarvis-side-rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 14px;
+  color: #b7a7d1;
+  animation: hud-enter 650ms ease-out both;
+}
+.jarvis-side-rail--right { animation-delay: 120ms; }
+.jarvis-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgb(168 85 247 / 17%);
+  color: #a896c6;
+  font: 500 9px/1.3 "JetBrains Mono", monospace;
+  letter-spacing: .12em;
+}
+.jarvis-panel-live {
+  color: #d8b4fe;
+  font-size: 8px;
+  letter-spacing: .1em;
+}
+.jarvis-operator-card, .jarvis-module-panel, .jarvis-rail-footer, .jarvis-orbit-panel, .jarvis-telemetry-panel, .jarvis-status-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(168 85 247 / 18%);
+  background: linear-gradient(145deg, rgb(20 13 32 / 88%), rgb(7 5 13 / 84%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%), 0 12px 32px rgb(0 0 0 / 12%);
+}
+.jarvis-operator-card { padding: 18px 16px 16px; }
+.jarvis-card-corners { position: absolute; inset: 6px; pointer-events: none; border: 1px solid transparent; border-left-color: rgb(192 132 252 / 24%); border-top-color: rgb(192 132 252 / 24%); width: 12px; height: 12px; }
+.jarvis-operator-emblem {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 16px;
+  color: #d8b4fe;
+  border: 1px solid rgb(168 85 247 / 35%);
+  background: radial-gradient(circle, rgb(168 85 247 / 17%), rgb(168 85 247 / 3%));
+  box-shadow: 0 0 26px rgb(124 58 237 / 10%);
+}
+.jarvis-micro-label { display: block; margin-bottom: 6px; color: #847397; font: 500 8px/1.4 "JetBrains Mono", monospace; letter-spacing: .12em; }
+.jarvis-operator-card > strong { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; color: #f1e9ff; font: 500 15px/1.3 "JetBrains Mono", monospace; letter-spacing: .04em; }
+.jarvis-operator-foot { display: block; margin-top: 9px; color: #9a7bb9; font: 500 8px/1.4 "JetBrains Mono", monospace; letter-spacing: .06em; }
+.jarvis-module-panel { padding: 12px 12px 4px; }
+.jarvis-module-panel .jarvis-panel-heading { margin-bottom: 4px; }
+.jarvis-module-row { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 12px 0; border-bottom: 1px solid rgb(168 85 247 / 9%); }
+.jarvis-module-row:last-child { border-bottom: 0; }
+.jarvis-module-index { align-self: flex-start; padding-top: 2px; color: #59456f; font: 8px "JetBrains Mono", monospace; }
+.jarvis-module-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; color: #b58adf; border: 1px solid rgb(168 85 247 / 17%); background: rgb(168 85 247 / 5%); }
+.jarvis-module-copy { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+.jarvis-module-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d9c9ee; font: 500 9px/1.2 "JetBrains Mono", monospace; letter-spacing: .02em; }
+.jarvis-module-copy small { color: #756587; font: 8px/1.2 "JetBrains Mono", monospace; letter-spacing: .04em; }
+.jarvis-module-dot { width: 5px; height: 5px; flex: 0 0 5px; margin-left: auto; border-radius: 50%; background: #53415f; }
+.jarvis-module-dot--active { background: #c084fc; box-shadow: 0 0 10px rgb(192 132 252 / 80%); }
+.jarvis-rail-footer { margin-top: auto; padding: 12px; }
+.jarvis-color-profile { display: flex; align-items: center; gap: 6px; padding-top: 12px; }
+.jarvis-color-swatch { width: 14px; height: 28px; border: 1px solid rgb(255 255 255 / 10%); }
+.jarvis-color-swatch--black { background: #05030a; }
+.jarvis-color-swatch--violet { background: #a855f7; }
+.jarvis-color-swatch--ice { background: #e9d5ff; }
+.jarvis-color-profile div { display: flex; flex-direction: column; gap: 4px; margin-left: 4px; }
+.jarvis-color-profile strong { color: #dfc9fa; font: 500 9px "JetBrains Mono", monospace; }
+.jarvis-color-profile small { color: #79658f; font: 8px "JetBrains Mono", monospace; }
+.jarvis-rail-grid { height: 30px; margin-top: 14px; opacity: .5; background: repeating-linear-gradient(90deg, rgb(168 85 247 / 30%) 0 1px, transparent 1px 8px), linear-gradient(0deg, transparent 45%, rgb(168 85 247 / 14%) 46% 48%, transparent 49%); }
+.jarvis-center-stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; gap: 12px; }
+.jarvis-stage-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; }
+.jarvis-eyebrow { display: flex; align-items: center; gap: 8px; color: #8e79aa; font: 500 8px/1.4 "JetBrains Mono", monospace; letter-spacing: .15em; }
+.jarvis-eyebrow i { width: 20px; height: 1px; background: #a855f7; box-shadow: 0 0 8px rgb(168 85 247 / 70%); }
+.jarvis-stage-heading h2 { margin-top: 4px; color: #f0e7ff; font: 400 clamp(18px, 1.5vw, 24px)/1.2 "Work Sans", sans-serif; letter-spacing: -.03em; }
+.jarvis-stage-chip { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid rgb(168 85 247 / 20%); color: #bfa5df; background: rgb(168 85 247 / 5%); font: 500 8px "JetBrains Mono", monospace; letter-spacing: .08em; white-space: nowrap; }
+.voice-stage {
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border: 1px solid rgb(168 85 247 / 18%);
+  background: radial-gradient(ellipse at 50% 45%, rgb(88 28 135 / 12%), transparent 55%), linear-gradient(145deg, rgb(17 11 27 / 95%), rgb(6 4 11 / 92%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%), 0 14px 38px rgb(0 0 0 / 17%);
+}
+.voice-command-readout { width: 100%; max-width: 540px; justify-content: center; gap: 12px; color: #9c86b8; font: 500 8px/1.4 "JetBrains Mono", monospace; letter-spacing: .13em; }
+.voice-command-readout .text-primary { color: #d8b4fe; }
+.orbital-core { width: clamp(150px, 16vw, 208px); height: clamp(150px, 16vw, 208px); filter: drop-shadow(0 0 24px rgb(124 58 237 / 10%)); }
+.orbital-ring--outer { inset: 6px; border: 1px dashed rgb(192 132 252 / 42%); }
+.orbital-ring--middle { inset: 20px; border-color: rgb(168 85 247 / 58%); border-top-color: #e9d5ff; border-bottom-color: #7e22ce; }
+.orbital-ring--inner { inset: 33px; border-color: rgb(192 132 252 / 40%); }
+.orbital-lens { border-color: rgb(216 180 254 / 80%); background: radial-gradient(circle at 35% 25%, #28113f, #08050d 72%); box-shadow: 0 0 24px rgb(168 85 247 / 26%), inset 0 0 22px rgb(168 85 247 / 16%); }
+.orbital-lens::after { content: ""; position: absolute; inset: -8px; border: 1px solid rgb(216 180 254 / 20%); border-radius: 50%; animation: jarvis-spin 18s linear infinite reverse; }
+.orbital-label { color: #bca3d6; font: 500 7px "JetBrains Mono", monospace; letter-spacing: .14em; }
+.orbital-label--top { top: -2px; }
+.orbital-label--left { left: -18px; }
+.orbital-label--right { right: -18px; }
+.orbital-aura { position: absolute; inset: 22%; border-radius: 50%; background: rgb(168 85 247 / 9%); filter: blur(20px); animation: orbital-breathe 4s ease-in-out infinite; }
+.orbital-sweep { position: absolute; inset: 8px; border-radius: 50%; background: conic-gradient(from 10deg, transparent 0 73%, rgb(192 132 252 / 25%) 80%, transparent 88%); animation: jarvis-spin 8s linear infinite; mask: radial-gradient(circle, transparent 52%, #000 53% 54%, transparent 56%); }
+.orbital-ring--ticks { position: absolute; inset: 2px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgb(192 132 252 / 55%) 0deg 1deg, transparent 1deg 12deg); mask: radial-gradient(circle, transparent 0 67%, #000 68% 69%, transparent 70%); animation: jarvis-spin 50s linear infinite; }
+.orbital-ring--radar { position: absolute; inset: 12px; border-radius: 50%; background: conic-gradient(transparent 0deg, rgb(168 85 247 / 18%) 28deg, transparent 65deg); mask: radial-gradient(circle, transparent 0 60%, #000 61% 62%, transparent 63%); animation: jarvis-spin 6s linear infinite; }
+.orbital-core--active { filter: drop-shadow(0 0 32px rgb(168 85 247 / 24%)); }
+.orbital-core--active .orbital-ring--outer { border-color: rgb(216 180 254 / 70%); animation-duration: 7s; }
+.orbital-core--active .orbital-ring--middle { animation-duration: 4s; }
+.orbital-core--active .orbital-ring--ticks { animation-duration: 12s; }
+.orbital-core--active .orbital-ring--radar { animation-duration: 2.5s; }
+.jarvis-chat-frame { display: flex; flex-direction: column; min-height: 0; flex: 1; overflow: hidden; border: 1px solid rgb(168 85 247 / 20%); background: linear-gradient(180deg, rgb(11 8 20 / 96%), rgb(5 3 10 / 96%)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%), 0 16px 36px rgb(0 0 0 / 14%); }
+.jarvis-chat-frame-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid rgb(168 85 247 / 16%); background: rgb(168 85 247 / 3%); color: #bca8d6; font: 500 8px "JetBrains Mono", monospace; letter-spacing: .12em; }
+.jarvis-chat-frame-header > div { display: flex; align-items: center; gap: 8px; }
+.jarvis-frame-icon { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid rgb(168 85 247 / 25%); color: #d8b4fe; background: rgb(168 85 247 / 8%); }
+.jarvis-frame-mode { color: #76628c; font-size: 8px; }
+.jarvis-chat-frame > .flex { flex: 1; min-height: 0; }
+.jarvis-chat-frame .hud-composer { padding-bottom: 14px; }
+.jarvis-chat-frame .hud-welcome-panel { border: 1px solid rgb(168 85 247 / 14%); padding: 18px; background: linear-gradient(120deg, rgb(168 85 247 / 5%), transparent 70%); }
+.jarvis-chat-frame .hud-quick-command { border: 1px solid rgb(168 85 247 / 20%); background: rgb(168 85 247 / 4%); transition: transform 200ms ease, border-color 200ms ease, background 200ms ease; }
+.jarvis-chat-frame .hud-quick-command:hover { transform: translateY(-2px); border-color: rgb(192 132 252 / 48%); background: rgb(168 85 247 / 10%); }
+.jarvis-orbit-panel { padding: 12px 10px 10px; }
+.jarvis-orbit-caption { display: flex; justify-content: space-between; color: #87739e; font: 500 8px "JetBrains Mono", monospace; letter-spacing: .1em; }
+.jarvis-mini-orbit { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1.25; min-height: 145px; overflow: hidden; background: radial-gradient(ellipse at center, rgb(124 58 237 / 14%), transparent 62%); }
+.jarvis-mini-orbit-ring { position: absolute; border: 1px solid rgb(192 132 252 / 30%); border-radius: 50%; }
+.jarvis-mini-orbit-ring--one { width: 90px; height: 90px; animation: jarvis-spin 12s linear infinite; }
+.jarvis-mini-orbit-ring--two { width: 124px; height: 58px; transform: rotate(-34deg); border-color: rgb(168 85 247 / 50%); animation: mini-orbit-tilt 10s ease-in-out infinite alternate; }
+.jarvis-mini-orbit-ring--three { width: 142px; height: 70px; transform: rotate(40deg); border-style: dashed; border-color: rgb(192 132 252 / 25%); animation: jarvis-spin 24s linear infinite reverse; }
+.jarvis-mini-orbit-core { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #d8b4fe; border-radius: 50%; background: radial-gradient(circle, #c084fc 0 12%, #2e1065 28%, #08050d 70%); box-shadow: 0 0 24px rgb(168 85 247 / 55%); }
+.jarvis-mini-orbit-core span { width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px #e9d5ff; }
+.jarvis-mini-orbit-node { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #e9d5ff; box-shadow: 0 0 10px rgb(192 132 252 / 90%); }
+.jarvis-mini-orbit-node--one { animation: mini-node-one 7s linear infinite; }
+.jarvis-mini-orbit-node--two { animation: mini-node-two 9s linear infinite; }
+.jarvis-mini-orbit-node--three { animation: mini-node-three 11s linear infinite; }
+.jarvis-orbit-readout { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid rgb(168 85 247 / 13%); font: 8px "JetBrains Mono", monospace; color: #8d79a4; }
+.jarvis-orbit-readout strong { color: #c9a9ed; font-weight: 500; }
+.jarvis-telemetry-panel { padding: 12px; }
+.jarvis-telemetry-panel .jarvis-panel-heading { margin-bottom: 4px; }
+.jarvis-telemetry-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid rgb(168 85 247 / 10%); font: 8px "JetBrains Mono", monospace; }
+.jarvis-telemetry-row span { color: #837093; }
+.jarvis-telemetry-row strong { color: #d3b7f0; font-weight: 500; text-align: right; }
+.jarvis-telemetry-bars { display: flex; align-items: end; gap: 3px; height: 27px; padding-top: 7px; margin-top: 4px; }
+.jarvis-telemetry-bars i { flex: 1; min-width: 2px; height: calc(5px + (var(--bar, 1) * 1px)); background: linear-gradient(0deg, #7e22ce, #d8b4fe); opacity: .65; animation: telemetry-flicker calc(1.2s + var(--n, 0) * .09s) ease-in-out infinite alternate; }
+.jarvis-telemetry-bars i:nth-child(5n + 1) { height: 10px; --n: 1; }
+.jarvis-telemetry-bars i:nth-child(5n + 2) { height: 19px; --n: 3; }
+.jarvis-telemetry-bars i:nth-child(5n + 3) { height: 14px; --n: 2; }
+.jarvis-telemetry-bars i:nth-child(5n + 4) { height: 22px; --n: 4; }
+.jarvis-telemetry-bars i:nth-child(5n) { height: 8px; --n: 2; }
+.jarvis-telemetry-note { margin-top: 9px; color: #655573; font: 8px/1.5 "JetBrains Mono", monospace; }
+.jarvis-status-card { margin-top: auto; padding: 12px; }
+.jarvis-status-title { margin-top: 14px; color: #e8d5ff; font: 400 17px/1.2 "Work Sans", sans-serif; }
+.jarvis-status-card p { margin-top: 8px; color: #9482a7; font: 10px/1.65 "Work Sans", sans-serif; }
+.jarvis-status-rule { display: flex; gap: 4px; margin-top: 14px; }
+.jarvis-status-rule span { height: 2px; flex: 1; background: #4c1d95; }
+.jarvis-status-rule span:first-child { background: #c084fc; box-shadow: 0 0 9px rgb(192 132 252 / 45%); }
+@keyframes jarvis-led-pulse { 0%, 100% { opacity: .65; box-shadow: 0 0 4px rgb(192 132 252 / 35%); } 50% { opacity: 1; box-shadow: 0 0 13px rgb(192 132 252 / 90%); } }
+@keyframes mini-orbit-tilt { from { transform: rotate(-34deg) scale(.96); } to { transform: rotate(-24deg) scale(1.04); } }
+@keyframes mini-node-one { from { transform: rotate(0deg) translateX(47px); } to { transform: rotate(360deg) translateX(47px); } }
+@keyframes mini-node-two { from { transform: rotate(120deg) translateX(65px); } to { transform: rotate(480deg) translateX(65px); } }
+@keyframes mini-node-three { from { transform: rotate(210deg) translateX(72px); } to { transform: rotate(570deg) translateX(72px); } }
+@keyframes telemetry-flicker { from { opacity: .28; } to { opacity: .9; } }
+@media (max-width: 1390px) {
+  .jarvis-command-layout { grid-template-columns: 190px minmax(0, 1fr) 190px; gap: 12px; padding-left: 12px; padding-right: 12px; }
+  .jarvis-header-status-detail { display: none; }
+}
+@media (max-width: 1150px) {
+  .jarvis-command-layout { grid-template-columns: minmax(0, 1fr) 210px; }
+  .jarvis-side-rail--left { display: none; }
+  .jarvis-header-status { margin-left: 12px; }
+}
+@media (max-width: 900px) {
+  .jarvis-command-layout { display: flex; flex-direction: column; overflow-y: auto; padding: 12px; }
+  .jarvis-side-rail { display: none; }
+  .jarvis-center-stage { min-height: 0; flex: 1; }
+  .jarvis-stage-heading { padding: 2px 2px 0; }
+  .jarvis-stage-chip { font-size: 7px; }
+  .jarvis-chat-frame { min-height: 440px; }
+  .jarvis-header-status { display: none; }
+  .voice-stage { padding: 10px; }
+  .orbital-core { width: 160px; height: 160px; }
+}
+@media (max-height: 780px) and (min-width: 901px) {
+  .jarvis-command-layout { padding-top: 10px; padding-bottom: 10px; }
+  .jarvis-stage-heading { min-height: 32px; }
+  .jarvis-side-rail { gap: 9px; }
+  .jarvis-operator-card { padding: 12px; }
+  .jarvis-mini-orbit { min-height: 110px; }
+  .jarvis-status-title { margin-top: 8px; font-size: 15px; }
+  .voice-stage { padding-top: 8px; padding-bottom: 6px; gap: 6px; }
+  .orbital-core { width: 148px; height: 148px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jarvis-status-led, .jarvis-mini-orbit-ring, .jarvis-mini-orbit-node, .jarvis-telemetry-bars i, .orbital-ring, .orbital-sweep, .orbital-ring--ticks, .orbital-ring--radar, .orbital-lens::after { animation-duration: 20s !important; }
 }
