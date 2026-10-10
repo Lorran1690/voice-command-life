@@ -216,7 +216,7 @@ function geodesicCage(
     const length = Math.hypot(point[0], point[1], point[2]) || 1;
     return [point[0] / length, point[1] / length, point[2] / length];
   };
-  for (let i = 0; i < vertices.length; i++) vertices[i] = normalize(vertices[i]);
+  for (let i = 0; i < vertices.length; i++) vertices[i] = normalize(vertices[i]!);
   let faces: Face[] = [
     [0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
     [1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
@@ -229,8 +229,8 @@ function geodesicCage(
       const key = String(a < b ? a : b) + ":" + String(a < b ? b : a);
       const found = midpointCache.get(key);
       if (found !== undefined) return found;
-      const pa = vertices[a];
-      const pb = vertices[b];
+      const pa = vertices[a]!;
+      const pb = vertices[b]!;
       const point = normalize([
         (pa[0] + pb[0]) / 2,
         (pa[1] + pb[1]) / 2,
@@ -255,12 +255,13 @@ function geodesicCage(
   const colors: number[] = [];
   const drawnEdges = new Set<string>();
   for (const [a, b, c] of faces) {
-    for (const [from, to] of [[a, b], [b, c], [c, a]] as Edge[]) {
+    const edges: Edge[] = [[a, b], [b, c], [c, a]];
+    for (const [from, to] of edges) {
       const key = String(from < to ? from : to) + ":" + String(from < to ? to : from);
       if (drawnEdges.has(key)) continue;
       drawnEdges.add(key);
-      const start = vertices[from];
-      const end = vertices[to];
+      const start = vertices[from]!;
+      const end = vertices[to]!;
       positions.push(start[0] * radius, start[1] * radius, start[2] * radius);
       positions.push(end[0] * radius, end[1] * radius, end[2] * radius);
       normals.push(...start, ...end);
@@ -323,7 +324,7 @@ function helix(gl: WebGLRenderingContext, turns: number, radius: number, height:
 }
 
 function crystal(gl: WebGLRenderingContext, radius: number, color: [number, number, number]) {
-  const points = [
+  const points: [number, number, number][] = [
     [0, 1.6, 0], [1, 0, 0], [0, 0, 1],
     [0, 1.6, 0], [0, 0, 1], [-1, 0, 0],
     [0, 1.6, 0], [-1, 0, 0], [0, 0, -1],
@@ -515,6 +516,12 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       return;
     }
 
+    const meshAt = (index: number): Mesh => {
+      const mesh = meshes[index];
+      if (!mesh) throw new Error("Geometria 3D ausente: " + index);
+      return mesh;
+    };
+
     const locations = {
       position: gl.getAttribLocation(sceneProgram, "aPosition"),
       normal: gl.getAttribLocation(sceneProgram, "aNormal"),
@@ -594,29 +601,29 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       const withScale = (model: Float32Array, amount: number) => multiply(model, scale(amount));
 
       // Background filigree cage and orbital skeleton.
-      draw(meshes[0], projectionMatrix, multiply(base, rotateY(-angle * 0.13)), 0.44, false, elapsed);
-      draw(meshes[1], projectionMatrix, multiply(base, rotateX(0.14 + Math.sin(angle * 0.22) * 0.05)), 0.82, false, elapsed);
-      draw(meshes[2], projectionMatrix, multiply(base, multiply(rotateX(1.02), rotateZ(0.58 + angle * 0.16))), 0.76, false, elapsed);
-      draw(meshes[3], projectionMatrix, multiply(base, multiply(rotateY(1.25), rotateZ(-0.38 - angle * 0.12))), 0.69, false, elapsed);
-      draw(meshes[4], projectionMatrix, multiply(base, multiply(rotateX(0.82), rotateZ(angle * 0.27))), 0.72, false, elapsed);
-      draw(meshes[5], projectionMatrix, multiply(base, multiply(rotateY(0.74), rotateX(1.37 - angle * 0.19))), 0.66, false, elapsed);
-      draw(meshes[6], projectionMatrix, multiply(base, multiply(rotateX(1.22), rotateZ(-angle * 0.24))), 0.60, false, elapsed);
-      draw(meshes[7], projectionMatrix, multiply(base, multiply(rotateY(0.43), rotateZ(angle * 0.18))), 0.72, false, elapsed);
-      draw(meshes[8], projectionMatrix, multiply(base, multiply(rotateX(1.42), rotateY(-angle * 0.11))), 0.65, false, elapsed);
-      draw(meshes[9], projectionMatrix, multiply(base, multiply(rotateX(0.22), rotateZ(angle * 0.17))), 0.74, false, elapsed);
+      draw(meshAt(0), projectionMatrix, multiply(base, rotateY(-angle * 0.13)), 0.44, false, elapsed);
+      draw(meshAt(1), projectionMatrix, multiply(base, rotateX(0.14 + Math.sin(angle * 0.22) * 0.05)), 0.82, false, elapsed);
+      draw(meshAt(2), projectionMatrix, multiply(base, multiply(rotateX(1.02), rotateZ(0.58 + angle * 0.16))), 0.76, false, elapsed);
+      draw(meshAt(3), projectionMatrix, multiply(base, multiply(rotateY(1.25), rotateZ(-0.38 - angle * 0.12))), 0.69, false, elapsed);
+      draw(meshAt(4), projectionMatrix, multiply(base, multiply(rotateX(0.82), rotateZ(angle * 0.27))), 0.72, false, elapsed);
+      draw(meshAt(5), projectionMatrix, multiply(base, multiply(rotateY(0.74), rotateX(1.37 - angle * 0.19))), 0.66, false, elapsed);
+      draw(meshAt(6), projectionMatrix, multiply(base, multiply(rotateX(1.22), rotateZ(-angle * 0.24))), 0.60, false, elapsed);
+      draw(meshAt(7), projectionMatrix, multiply(base, multiply(rotateY(0.43), rotateZ(angle * 0.18))), 0.72, false, elapsed);
+      draw(meshAt(8), projectionMatrix, multiply(base, multiply(rotateX(1.42), rotateY(-angle * 0.11))), 0.65, false, elapsed);
+      draw(meshAt(9), projectionMatrix, multiply(base, multiply(rotateX(0.22), rotateZ(angle * 0.17))), 0.74, false, elapsed);
 
       // Nested membranes: faint outer skin to a bright internal seed.
       gl.depthMask(false);
-      draw(meshes[10], projectionMatrix, withScale(base, 1 + breathing), 0.17, false, elapsed);
-      draw(meshes[11], projectionMatrix, multiply(base, rotateY(-angle * 0.28)), 0.25, false, elapsed);
-      draw(meshes[12], projectionMatrix, multiply(base, rotateZ(angle * 0.08)), 0.37, false, elapsed);
-      draw(meshes[13], projectionMatrix, multiply(base, rotateX(angle * 0.26)), 0.32, false, elapsed);
-      draw(meshes[14], projectionMatrix, multiply(base, rotateY(angle * 0.34)), 0.46, false, elapsed);
-      draw(meshes[15], projectionMatrix, withScale(multiply(base, rotateZ(-angle * 0.24)), 1 + breathing * 1.7), 0.72, false, elapsed);
-      draw(meshes[16], projectionMatrix, withScale(multiply(base, rotateY(angle * 0.42)), 1 + breathing * 2.5), 0.95, false, elapsed);
+      draw(meshAt(10), projectionMatrix, withScale(base, 1 + breathing), 0.17, false, elapsed);
+      draw(meshAt(11), projectionMatrix, multiply(base, rotateY(-angle * 0.28)), 0.25, false, elapsed);
+      draw(meshAt(12), projectionMatrix, multiply(base, rotateZ(angle * 0.08)), 0.37, false, elapsed);
+      draw(meshAt(13), projectionMatrix, multiply(base, rotateX(angle * 0.26)), 0.32, false, elapsed);
+      draw(meshAt(14), projectionMatrix, multiply(base, rotateY(angle * 0.34)), 0.46, false, elapsed);
+      draw(meshAt(15), projectionMatrix, withScale(multiply(base, rotateZ(-angle * 0.24)), 1 + breathing * 1.7), 0.72, false, elapsed);
+      draw(meshAt(16), projectionMatrix, withScale(multiply(base, rotateY(angle * 0.42)), 1 + breathing * 2.5), 0.95, false, elapsed);
 
       // A delicate filament threads through the core's interior.
-      draw(meshes[17], projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, elapsed);
+      draw(meshAt(17), projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, elapsed);
 
       // Faceted alien crystal shards and pearls orbit at individual depths.
       const orbitRadius = 0.86;
@@ -628,13 +635,13 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
         const nodeBase = multiply(base, translate(x, y, z));
         const shard = multiply(nodeBase, multiply(rotateY(orbit * 1.3), rotateZ(orbit * 0.7)));
         const crystalIndex = i % 2 === 0 ? 18 : 19;
-        draw(meshes[crystalIndex], projectionMatrix, withScale(shard, 0.64 + (i % 4) * 0.13), 0.9, false, elapsed);
+        draw(meshAt(crystalIndex), projectionMatrix, withScale(shard, 0.64 + (i % 4) * 0.13), 0.9, false, elapsed);
         const pearl = multiply(nodeBase, translate(0.03, 0.02, 0.01));
-        draw(meshes[20], projectionMatrix, withScale(pearl, i % 3 === 0 ? 1.5 : 0.9), 0.9, false, elapsed);
+        draw(meshAt(20), projectionMatrix, withScale(pearl, i % 3 === 0 ? 1.5 : 0.9), 0.9, false, elapsed);
       }
 
       // The dust halo extends beyond the geometry and catches light in depth.
-      draw(meshes[21], projectionMatrix, multiply(base, rotateY(-angle * 0.16)), active ? 0.9 : 0.66, true, elapsed);
+      draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), active ? 0.9 : 0.66, true, elapsed);
       gl.depthMask(true);
 
       frame = window.requestAnimationFrame(render);
