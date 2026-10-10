@@ -213,7 +213,7 @@ export function VoicePanel({ className = "", coreClassName = "" }: { className?:
 
       <OrbitalCore active={active || speaking || thinking} muted={!listening} speaking={speaking} className={coreClassName} />
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="jarvis-voice-actions flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" onClick={toggle} className="rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary">
           {active ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           {active ? (listening ? "Ouvindo... · Encerrar chamada" : "Encerrar chamada") : "Iniciar chamada"}
@@ -236,7 +236,7 @@ export function VoicePanel({ className = "", coreClassName = "" }: { className?:
         ))}
       </div>
 
-      <div className="flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="jarvis-voice-status flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
         <span className="voice-state-pulse" />
         <span>{speaking ? "JARVIS falando" : thinking ? "Processando resposta" : listening ? "Microfone ativo" : active ? "Chamada ativa" : "Voz local pronta"}</span>
       </div>
