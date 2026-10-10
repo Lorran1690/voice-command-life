@@ -27,7 +27,7 @@ type Recognition = {
 
 type RecognitionConstructor = new () => Recognition;
 
-export function VoicePanel({ className = "", coreClassName = "" }: { className?: string; coreClassName?: string } = {}) {
+export function VoicePanel({ className = "", coreClassName = "", particleAvatar = false }: { className?: string; coreClassName?: string; particleAvatar?: boolean } = {}) {
   const [active, setActive] = useState(false);
   const [listening, setListening] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -211,7 +211,7 @@ export function VoicePanel({ className = "", coreClassName = "" }: { className?:
         <span className="text-primary">OLLAMA</span>
       </div>
 
-      <OrbitalCore active={active || speaking || thinking} muted={!listening} speaking={speaking} className={coreClassName} />
+      <OrbitalCore active={active || speaking || thinking} muted={!listening} speaking={speaking} particleAvatar={particleAvatar} className={coreClassName} />
 
       <div className="jarvis-voice-actions flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" onClick={toggle} className="rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary">
