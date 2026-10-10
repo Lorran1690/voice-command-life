@@ -38,6 +38,25 @@ function program(gl: WebGLRenderingContext) {
     "varying vec3 vNormal;",
     "varying vec3 vColor;",
     "varying vec3 vPosition;",
+    "float hash31(vec3 p) {",
+    "  p = fract(p * 0.1031);",
+    "  p += dot(p, p.yzx + 33.33);",
+    "  return fract((p.x + p.y) * p.z);",
+    "}",
+    "float noise3(vec3 x) {",
+    "  vec3 i = floor(x);",
+    "  vec3 f = fract(x);",
+    "  f = f * f * (3.0 - 2.0 * f);",
+    "  float n000 = hash31(i + vec3(0.0,0.0,0.0));",
+    "  float n100 = hash31(i + vec3(1.0,0.0,0.0));",
+    "  float n010 = hash31(i + vec3(0.0,1.0,0.0));",
+    "  float n110 = hash31(i + vec3(1.0,1.0,0.0));",
+    "  float n001 = hash31(i + vec3(0.0,0.0,1.0));",
+    "  float n101 = hash31(i + vec3(1.0,0.0,1.0));",
+    "  float n011 = hash31(i + vec3(0.0,1.0,1.0));",
+    "  float n111 = hash31(i + vec3(1.0,1.0,1.0));",
+    "  return mix(mix(mix(n000,n100,f.x),mix(n010,n110,f.x),f.y),mix(mix(n001,n101,f.x),mix(n011,n111,f.x),f.y),f.z);",
+    "}",
     "void main() {",
     "  gl_Position = uMvp * vec4(aPosition, 1.0);",
     "  gl_PointSize = uPointSize * (0.85 + 0.3 * sin(uTime * 1.7 + aPosition.x * 31.0 + aPosition.y * 19.0));",
@@ -71,14 +90,21 @@ function program(gl: WebGLRenderingContext) {
     "  float facing = max(dot(n, vec3(0.0, 0.0, 1.0)), 0.0);",
     "  float rim = pow(1.0 - facing, 2.8);",
     "  float specular = pow(max(dot(reflect(-lightDirection, n), vec3(0.0, 0.0, 1.0)), 0.0), 26.0);",
+    "  float surfaceNoise = noise3(vPosition * 19.0 + vec3(0.0, uTime * 0.018, 0.0));",
+    "  float fineNoise = noise3(vPosition * 51.0 + vec3(uTime * 0.009, 0.0, 0.0));",
     "  float etched = abs(sin(vPosition.x * 37.0 + sin(vPosition.y * 13.0 + uTime * 0.035)) * sin(vPosition.z * 43.0 + vPosition.y * 17.0));",
-    "  float filigree = smoothstep(0.82, 0.985, etched);",
+    "  float striation = abs(sin((vPosition.x + surfaceNoise * 0.035) * 104.0 + sin(vPosition.z * 38.0 + surfaceNoise * 3.0)));",
+    "  float filigree = max(smoothstep(0.82, 0.985, etched), smoothstep(0.86, 0.99, striation));",
     "  float interference = 0.5 + 0.5 * sin(length(vPosition) * 92.0 - uTime * 0.2 + sin(vPosition.y * 19.0) * 0.5);",
+    "  float cellEdges = smoothstep(0.63, 0.94, abs(surfaceNoise - fineNoise * 0.42));",
+    "  float signalFlow = 0.5 + 0.5 * sin(vPosition.y * 43.0 + vPosition.x * 11.0 - uTime * 0.42 + surfaceNoise * 7.0);"
     "  vec3 color = vColor * (0.12 + diffuse * 0.86);",
     "  color += vec3(0.22, 0.05, 0.80) * rim * 1.65;",
     "  color += vec3(0.30, 0.78, 1.0) * pow(rim, 2.1) * 0.48;",
     "  color += vec3(0.62, 0.82, 1.0) * specular * 0.92;",
     "  color += vec3(0.50, 0.28, 1.0) * filigree * (0.1 + interference * 0.32) * min(uMaterial, 1.0);",
+    "  color += vec3(0.18, 0.72, 1.0) * cellEdges * signalFlow * 0.17 * min(uMaterial, 1.0);",
+    "  color += vec3(0.58, 0.3, 1.0) * smoothstep(0.6, 0.96, fineNoise) * 0.12 * min(uMaterial, 1.0);",
     "  if (uMaterial > 1.5) color *= 0.65 + 0.35 * interference;",
     "  gl_FragColor = vec4(color, uOpacity * (0.25 + rim * 0.86));",
     "}"
@@ -346,6 +372,74 @@ function crystal(gl: WebGLRenderingContext, radius: number, color: [number, numb
   return buildMesh(gl, positions, normals, colors, null, gl.TRIANGLES, 1);
 }
 
+function alienMembrane(
+  gl: WebGLRenderingContext,
+  turns: number,
+  innerRadius: number,
+  outerRadius: number,
+  halfWidth: number,
+  phase: number,
+  colorA: [number, number, number],
+  colorB: [number, number, number],
+  segments = 280,
+  across = 12
+) {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  const indices: number[] = [];
+
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const angle = phase + t * turns * Math.PI * 2;
+    const radius = innerRadius + (outerRadius - innerRadius) * t +
+      Math.sin(angle * 1.7 + phase) * 0.025;
+    const taper = Math.pow(Math.sin(Math.PI * t), 0.62);
+    const centerX = Math.cos(angle) * radius;
+    const centerZ = Math.sin(angle) * radius;
+    const centerY = (t - 0.5) * 0.64 + Math.sin(angle * 0.53 + phase) * 0.11;
+
+    const nx0 = Math.cos(angle) * 0.72;
+    const ny0 = Math.sin(angle * 1.31 + phase) * 0.52 + Math.cos(t * Math.PI * 2.0 + phase) * 0.16;
+    const nz0 = Math.sin(angle) * 0.72;
+    const nLength = Math.hypot(nx0, ny0, nz0) || 1;
+    const nx = nx0 / nLength;
+    const ny = ny0 / nLength;
+    const nz = nz0 / nLength;
+
+    for (let j = 0; j <= across; j++) {
+      const v = (j / across) * 2 - 1;
+      const rib = 1.0 - Math.pow(Math.abs(v), 1.8) * 0.24;
+      const width = v * halfWidth * taper * rib;
+      const bank = Math.sin(t * Math.PI * 7.0 + phase) * 0.11;
+      const sideX = Math.cos(angle + bank) * width;
+      const sideY = (Math.sin(angle * 0.7 + phase) * 0.22 + 0.14) * width;
+      const sideZ = Math.sin(angle + bank) * width;
+
+      positions.push(centerX + sideX, centerY + sideY, centerZ + sideZ);
+      normals.push(nx, ny, nz);
+
+      const blend = Math.min(1, Math.max(0, t * 0.65 + Math.abs(v) * 0.32));
+      const shimmer = 0.78 + 0.22 * Math.sin(angle * 4.0 + v * 8.0);
+      colors.push(
+        (colorA[0] * (1 - blend) + colorB[0] * blend) * shimmer,
+        (colorA[1] * (1 - blend) + colorB[1] * blend) * shimmer,
+        (colorA[2] * (1 - blend) + colorB[2] * blend) * shimmer
+      );
+    }
+  }
+
+  for (let i = 0; i < segments; i++) {
+    for (let j = 0; j < across; j++) {
+      const a = i * (across + 1) + j;
+      const b = a + across + 1;
+      indices.push(a, a + 1, b, a + 1, b + 1, b);
+    }
+  }
+
+  return buildMesh(gl, positions, normals, colors, indices, gl.TRIANGLES, 1);
+}
+
 function particleField(gl: WebGLRenderingContext, count = 360) {
   const positions: number[] = [];
   const normals: number[] = [];
@@ -509,7 +603,12 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
         crystal(gl, 0.054, [0.4, 0.18, 1.0]),
         crystal(gl, 0.026, [0.28, 0.8, 1.0]),
         sphere(gl, 0.018, [0.75, 0.55, 1.0], 12, 18, 1),
-        particleField(gl, 480)
+        particleField(gl, 620),
+        // Asymmetric translucent vanes: alien, organic geometry rather than stacked rings.
+        alienMembrane(gl, 1.22, 0.10, 0.86, 0.095, 0.22, [0.16, 0.60, 1.0], [0.62, 0.20, 1.0], 270, 12),
+        alienMembrane(gl, 1.05, 0.12, 0.78, 0.072, 2.12, [0.48, 0.18, 1.0], [0.14, 0.75, 1.0], 250, 10),
+        alienMembrane(gl, 1.42, 0.18, 0.72, 0.058, 4.22, [0.28, 0.36, 1.0], [0.72, 0.30, 1.0], 280, 10),
+        alienMembrane(gl, 0.92, 0.08, 0.66, 0.045, 5.30, [0.12, 0.70, 1.0], [0.55, 0.31, 1.0], 240, 8)
       ];
     } catch {
       host.dataset.webgl = "error";
@@ -624,6 +723,12 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
 
       // A delicate filament threads through the core's interior.
       draw(meshAt(17), projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, elapsed);
+
+      // Translucent alien vanes drift around the core on their own phase.
+      draw(meshAt(22), projectionMatrix, multiply(base, multiply(rotateX(0.22 + Math.sin(elapsed * 0.24) * 0.09), rotateZ(angle * 0.08))), 0.42, false, elapsed);
+      draw(meshAt(23), projectionMatrix, multiply(base, multiply(rotateY(0.52 + Math.sin(elapsed * 0.19) * 0.08), rotateZ(-angle * 0.07))), 0.34, false, elapsed);
+      draw(meshAt(24), projectionMatrix, multiply(base, multiply(rotateX(1.42 + Math.sin(elapsed * 0.16) * 0.07), rotateY(angle * 0.06))), 0.29, false, elapsed);
+      draw(meshAt(25), projectionMatrix, multiply(base, multiply(rotateY(1.02 + Math.sin(elapsed * 0.22) * 0.06), rotateZ(angle * 0.05))), 0.31, false, elapsed);
 
       // Faceted alien crystal shards and pearls orbit at individual depths.
       const orbitRadius = 0.86;
