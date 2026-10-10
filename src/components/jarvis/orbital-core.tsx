@@ -764,6 +764,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       if (disposed) return;
       resize();
       const elapsed = reducedMotion ? 0 : (now - startedAt) * 0.001;
+      const sceneTime = elapsed * (active ? 1.0 : 0.46);
       const width = canvas.width;
       const height = canvas.height;
       gl.clearColor(0, 0, 0, 0);
@@ -778,66 +779,70 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       smoothPointerX += (pointerX - smoothPointerX) * 0.035;
       smoothPointerY += (pointerY - smoothPointerY) * 0.035;
       angle += reducedMotion ? 0 : (active ? 0.012 : 0.0045);
-      const breathing = Math.sin(elapsed * 0.42) * 0.035;
+      const breathing = Math.sin(sceneTime * 0.42) * 0.035;
       const tilt = rotateX(0.2 + smoothPointerY * 0.28 + Math.sin(angle * 0.36) * 0.045);
       const yaw = rotateY(angle * 0.62 + smoothPointerX * 0.3);
-      const base = multiply(translateZ(-3.15), multiply(tilt, yaw));
+      const cameraX = -smoothPointerX * 0.075;
+      const cameraY = smoothPointerY * 0.055;
+      const cameraDepth = -3.15 + Math.sin(sceneTime * 0.22) * 0.055;
+      const breathingScale = 1 + Math.sin(sceneTime * 0.31) * 0.012;
+      const base = multiply(translate(cameraX, cameraY, cameraDepth), multiply(tilt, multiply(yaw, scale(breathingScale))));
       const withScale = (model: Float32Array, amount: number) => multiply(model, scale(amount));
 
       // Background filigree cage and orbital skeleton.
-      draw(meshAt(0), projectionMatrix, multiply(base, rotateY(-angle * 0.13)), 0.44, false, elapsed);
-      draw(meshAt(1), projectionMatrix, multiply(base, rotateX(0.14 + Math.sin(angle * 0.22) * 0.05)), 0.82, false, elapsed);
-      draw(meshAt(2), projectionMatrix, multiply(base, multiply(rotateX(1.02), rotateZ(0.58 + angle * 0.16))), 0.76, false, elapsed);
-      draw(meshAt(3), projectionMatrix, multiply(base, multiply(rotateY(1.25), rotateZ(-0.38 - angle * 0.12))), 0.69, false, elapsed);
-      draw(meshAt(4), projectionMatrix, multiply(base, multiply(rotateX(0.82), rotateZ(angle * 0.27))), 0.72, false, elapsed);
-      draw(meshAt(5), projectionMatrix, multiply(base, multiply(rotateY(0.74), rotateX(1.37 - angle * 0.19))), 0.66, false, elapsed);
-      draw(meshAt(6), projectionMatrix, multiply(base, multiply(rotateX(1.22), rotateZ(-angle * 0.24))), 0.60, false, elapsed);
-      draw(meshAt(7), projectionMatrix, multiply(base, multiply(rotateY(0.43), rotateZ(angle * 0.18))), 0.72, false, elapsed);
-      draw(meshAt(8), projectionMatrix, multiply(base, multiply(rotateX(1.42), rotateY(-angle * 0.11))), 0.65, false, elapsed);
-      draw(meshAt(9), projectionMatrix, multiply(base, multiply(rotateX(0.22), rotateZ(angle * 0.17))), 0.74, false, elapsed);
+      draw(meshAt(0), projectionMatrix, multiply(base, rotateY(-angle * 0.13)), 0.44, false, sceneTime);
+      draw(meshAt(1), projectionMatrix, multiply(base, rotateX(0.14 + Math.sin(angle * 0.22) * 0.05)), 0.82, false, sceneTime);
+      draw(meshAt(2), projectionMatrix, multiply(base, multiply(rotateX(1.02), rotateZ(0.58 + angle * 0.16))), 0.76, false, sceneTime);
+      draw(meshAt(3), projectionMatrix, multiply(base, multiply(rotateY(1.25), rotateZ(-0.38 - angle * 0.12))), 0.69, false, sceneTime);
+      draw(meshAt(4), projectionMatrix, multiply(base, multiply(rotateX(0.82), rotateZ(angle * 0.27))), 0.72, false, sceneTime);
+      draw(meshAt(5), projectionMatrix, multiply(base, multiply(rotateY(0.74), rotateX(1.37 - angle * 0.19))), 0.66, false, sceneTime);
+      draw(meshAt(6), projectionMatrix, multiply(base, multiply(rotateX(1.22), rotateZ(-angle * 0.24))), 0.60, false, sceneTime);
+      draw(meshAt(7), projectionMatrix, multiply(base, multiply(rotateY(0.43), rotateZ(angle * 0.18))), 0.72, false, sceneTime);
+      draw(meshAt(8), projectionMatrix, multiply(base, multiply(rotateX(1.42), rotateY(-angle * 0.11))), 0.65, false, sceneTime);
+      draw(meshAt(9), projectionMatrix, multiply(base, multiply(rotateX(0.22), rotateZ(angle * 0.17))), 0.74, false, sceneTime);
 
       // Nested membranes: faint outer skin to a bright internal seed.
       gl.depthMask(false);
-      draw(meshAt(10), projectionMatrix, withScale(base, 1 + breathing), 0.17, false, elapsed);
-      draw(meshAt(11), projectionMatrix, multiply(base, rotateY(-angle * 0.28)), 0.25, false, elapsed);
-      draw(meshAt(12), projectionMatrix, multiply(base, rotateZ(angle * 0.08)), 0.37, false, elapsed);
-      draw(meshAt(13), projectionMatrix, multiply(base, rotateX(angle * 0.26)), 0.32, false, elapsed);
-      draw(meshAt(14), projectionMatrix, multiply(base, rotateY(angle * 0.34)), 0.46, false, elapsed);
-      draw(meshAt(15), projectionMatrix, withScale(multiply(base, rotateZ(-angle * 0.24)), 1 + breathing * 1.7), 0.72, false, elapsed);
-      draw(meshAt(16), projectionMatrix, withScale(multiply(base, rotateY(angle * 0.42)), 1 + breathing * 2.5), 0.95, false, elapsed);
+      draw(meshAt(10), projectionMatrix, withScale(base, 1 + breathing), 0.17, false, sceneTime);
+      draw(meshAt(11), projectionMatrix, multiply(base, rotateY(-angle * 0.28)), 0.25, false, sceneTime);
+      draw(meshAt(12), projectionMatrix, multiply(base, rotateZ(angle * 0.08)), 0.37, false, sceneTime);
+      draw(meshAt(13), projectionMatrix, multiply(base, rotateX(angle * 0.26)), 0.32, false, sceneTime);
+      draw(meshAt(14), projectionMatrix, multiply(base, rotateY(angle * 0.34)), 0.46, false, sceneTime);
+      draw(meshAt(15), projectionMatrix, withScale(multiply(base, rotateZ(-angle * 0.24)), 1 + breathing * 1.7), 0.72, false, sceneTime);
+      draw(meshAt(16), projectionMatrix, withScale(multiply(base, rotateY(angle * 0.42)), 1 + breathing * 2.5), 0.95, false, sceneTime);
 
       // A delicate filament threads through the core's interior.
-      draw(meshAt(17), projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, elapsed);
+      draw(meshAt(17), projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, sceneTime);
 
       // Translucent alien vanes drift around the core on their own phase.
-      draw(meshAt(22), projectionMatrix, multiply(base, multiply(rotateX(0.22 + Math.sin(elapsed * 0.24) * 0.09), rotateZ(angle * 0.08))), 0.42, false, elapsed);
-      draw(meshAt(23), projectionMatrix, multiply(base, multiply(rotateY(0.52 + Math.sin(elapsed * 0.19) * 0.08), rotateZ(-angle * 0.07))), 0.34, false, elapsed);
-      draw(meshAt(24), projectionMatrix, multiply(base, multiply(rotateX(1.42 + Math.sin(elapsed * 0.16) * 0.07), rotateY(angle * 0.06))), 0.29, false, elapsed);
-      draw(meshAt(25), projectionMatrix, multiply(base, multiply(rotateY(1.02 + Math.sin(elapsed * 0.22) * 0.06), rotateZ(angle * 0.05))), 0.31, false, elapsed);
+      draw(meshAt(22), projectionMatrix, multiply(base, multiply(rotateX(0.22 + Math.sin(sceneTime * 0.24) * 0.09), rotateZ(angle * 0.08))), 0.42, false, sceneTime);
+      draw(meshAt(23), projectionMatrix, multiply(base, multiply(rotateY(0.52 + Math.sin(sceneTime * 0.19) * 0.08), rotateZ(-angle * 0.07))), 0.34, false, sceneTime);
+      draw(meshAt(24), projectionMatrix, multiply(base, multiply(rotateX(1.42 + Math.sin(sceneTime * 0.16) * 0.07), rotateY(angle * 0.06))), 0.29, false, sceneTime);
+      draw(meshAt(25), projectionMatrix, multiply(base, multiply(rotateY(1.02 + Math.sin(sceneTime * 0.22) * 0.06), rotateZ(angle * 0.05))), 0.31, false, sceneTime);
 
       // Impossible-looking intertwined topology, suspended inside the outer vanes.
-      draw(meshAt(26), projectionMatrix, multiply(base, multiply(rotateX(0.74 + Math.sin(elapsed * 0.17) * 0.08), rotateZ(angle * 0.12))), 0.52, false, elapsed);
-      draw(meshAt(27), projectionMatrix, multiply(base, multiply(rotateY(0.91 + Math.sin(elapsed * 0.21) * 0.07), rotateZ(-angle * 0.09))), 0.39, false, elapsed);
-      draw(meshAt(28), projectionMatrix, multiply(base, multiply(rotateX(1.10), rotateZ(angle * 0.13))), 0.7, false, elapsed);
-      draw(meshAt(29), projectionMatrix, multiply(base, multiply(rotateY(0.67), rotateX(-angle * 0.11))), 0.62, false, elapsed);
+      draw(meshAt(26), projectionMatrix, multiply(base, multiply(rotateX(0.74 + Math.sin(sceneTime * 0.17) * 0.08), rotateZ(angle * 0.12))), 0.52, false, sceneTime);
+      draw(meshAt(27), projectionMatrix, multiply(base, multiply(rotateY(0.91 + Math.sin(sceneTime * 0.21) * 0.07), rotateZ(-angle * 0.09))), 0.39, false, sceneTime);
+      draw(meshAt(28), projectionMatrix, multiply(base, multiply(rotateX(1.10), rotateZ(angle * 0.13))), 0.7, false, sceneTime);
+      draw(meshAt(29), projectionMatrix, multiply(base, multiply(rotateY(0.67), rotateX(-angle * 0.11))), 0.62, false, sceneTime);
 
       // Faceted alien crystal shards and pearls orbit at individual depths.
       const orbitRadius = 0.86;
       for (let i = 0; i < 9; i++) {
-        const orbit = elapsed * (0.16 + (i % 3) * 0.045) + (i / 9) * Math.PI * 2;
+        const orbit = sceneTime * (0.16 + (i % 3) * 0.045) + (i / 9) * Math.PI * 2;
         const x = Math.cos(orbit) * orbitRadius;
         const y = Math.sin(orbit * 1.1 + i) * 0.52;
         const z = Math.sin(orbit) * orbitRadius * 0.78;
         const nodeBase = multiply(base, translate(x, y, z));
         const shard = multiply(nodeBase, multiply(rotateY(orbit * 1.3), rotateZ(orbit * 0.7)));
         const crystalIndex = i % 2 === 0 ? 18 : 19;
-        draw(meshAt(crystalIndex), projectionMatrix, withScale(shard, 0.64 + (i % 4) * 0.13), 0.9, false, elapsed);
+        draw(meshAt(crystalIndex), projectionMatrix, withScale(shard, 0.64 + (i % 4) * 0.13), 0.9, false, sceneTime);
         const pearl = multiply(nodeBase, translate(0.03, 0.02, 0.01));
-        draw(meshAt(20), projectionMatrix, withScale(pearl, i % 3 === 0 ? 1.5 : 0.9), 0.9, false, elapsed);
+        draw(meshAt(20), projectionMatrix, withScale(pearl, i % 3 === 0 ? 1.5 : 0.9), 0.9, false, sceneTime);
       }
 
       // The dust halo extends beyond the geometry and catches light in depth.
-      draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), active ? 0.9 : 0.66, true, elapsed);
+      draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), active ? 0.9 : 0.66, true, sceneTime);
       gl.depthMask(true);
 
       frame = window.requestAnimationFrame(render);
