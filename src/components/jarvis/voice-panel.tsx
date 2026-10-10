@@ -52,6 +52,10 @@ export function VoicePanel() {
 
     return () => {
       mounted = false;
+      sessionRef.current = false;
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      stopVoicePlayback();
     };
   }, []);
 
