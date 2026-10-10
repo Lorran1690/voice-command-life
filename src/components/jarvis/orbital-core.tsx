@@ -631,6 +631,140 @@ function perspective(aspect: number) {
   return out;
 }
 
+
+type MorphParticleCloud = {
+  mesh: Mesh;
+  idle: Float32Array;
+  avatar: Float32Array;
+  phases: Float32Array;
+  roles: Uint8Array;
+  sides: Float32Array;
+};
+
+function makeMorphParticleCloud(gl: WebGLRenderingContext, count = 3600): MorphParticleCloud {
+  const idle = new Float32Array(count * 3);
+  const avatar = new Float32Array(count * 3);
+  const phases = new Float32Array(count);
+  const roles = new Uint8Array(count);
+  const sides = new Float32Array(count);
+  const normals: number[] = [];
+  const colors: number[] = [];
+  let seed = 73129;
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+
+  for (let i = 0; i < count; i++) {
+    const k = i * 3;
+    phases[i] = random() * Math.PI * 2;
+    idle[k] = (random() * 2 - 1) * 2.15;
+    idle[k + 1] = (random() * 2 - 1) * 1.35;
+    idle[k + 2] = (random() * 2 - 1) * 0.72;
+
+    let x = 0, y = 0, z = 0;
+    let color: [number, number, number] = [0.30, 0.55, 1.0];
+    let role = 3;
+    let side = 0;
+
+    if (i < 1150) {
+      // A softly volumetric face plane, tapered into a jaw and rounded temples.
+      y = -0.39 + random() * 1.10;
+      const ellipse = Math.sqrt(Math.max(0.025, 1 - Math.pow((y - 0.16) / 0.56, 2)));
+      const jawTaper = y < 0.12 ? 0.66 + 0.34 * Math.max(0, (y + 0.39) / 0.51) : 1;
+      const halfWidth = 0.365 * ellipse * jawTaper;
+      x = (random() * 2 - 1) * halfWidth;
+      const depth = Math.sqrt(Math.max(0.06, 1 - Math.pow(x / Math.max(0.01, halfWidth), 2)));
+      z = 0.11 + depth * 0.17 + random() * 0.035;
+      color = [0.32 + random() * 0.12, 0.43 + random() * 0.19, 0.92 + random() * 0.08];
+      role = 3;
+    } else if (i < 1900) {
+      // Long, separate particle strands form a luminous, flowing hair silhouette.
+      const t = random();
+      side = random() < 0.5 ? -1 : 1;
+      x = side * (0.085 + 0.43 * Math.sin(t * 1.28)) + (random() - 0.5) * 0.065;
+      y = 0.72 - t * 1.30;
+      z = 0.07 + 0.12 * Math.sin(t * Math.PI) + random() * 0.06;
+      color = [0.48 + random() * 0.22, 0.22 + random() * 0.10, 0.94 + random() * 0.06];
+      role = 3;
+    } else if (i < 2550) {
+      // Shoulder line and upper torso, separated from the moving head.
+      y = -0.37 - random() * 0.61;
+      const depthRatio = Math.max(0, 1 - Math.pow((y + 0.40) / 0.63, 2));
+      const width = 0.20 + 0.49 * Math.sqrt(depthRatio);
+      x = (random() * 2 - 1) * width;
+      z = -0.07 + 0.17 * Math.sqrt(Math.max(0, 1 - Math.pow(x / width, 2))) + (random() - 0.5) * 0.05;
+      color = [0.20 + random() * 0.12, 0.48 + random() * 0.22, 0.97];
+      role = 4;
+    } else {
+      const f = i - 2550;
+      if (f < 280) {
+        // Two independently blinking orbital eye contours.
+        side = f % 2 === 0 ? -1 : 1;
+        const a = random() * Math.PI * 2;
+        x = side * 0.16 + Math.cos(a) * 0.098;
+        y = 0.255 + Math.sin(a) * 0.037;
+        z = 0.405 + random() * 0.018;
+        color = [0.40, 0.83, 1.0];
+        role = 6;
+      } else if (f < 400) {
+        side = f % 2 === 0 ? -1 : 1;
+        const a = random() * Math.PI * 2;
+        const radius = Math.sqrt(random()) * 0.022;
+        x = side * 0.16 + Math.cos(a) * radius;
+        y = 0.255 + Math.sin(a) * radius;
+        z = 0.432;
+        color = [0.62, 0.92, 1.0];
+        role = 5;
+      } else if (f < 600) {
+        side = f % 2 === 0 ? -1 : 1;
+        const t = random();
+        x = side * (0.16 + (t - 0.5) * 0.21);
+        y = 0.355 + Math.sin(t * Math.PI) * 0.035;
+        z = 0.402;
+        color = [0.68, 0.39, 1.0];
+        role = 3;
+      } else if (f < 800) {
+        const t = random();
+        y = 0.28 - t * 0.30;
+        x = (random() - 0.5) * (0.018 + 0.062 * t);
+        z = 0.405 + 0.025 * Math.sin(t * Math.PI);
+        color = [0.42, 0.72, 1.0];
+        role = 3;
+      } else if (f < 1000) {
+        const t = random() * 2 - 1;
+        const lowerLip = f % 2 === 0;
+        x = t * 0.145;
+        y = lowerLip ? -0.107 - 0.037 * (1 - t * t) : -0.104 + 0.022 * Math.sin((t + 1) * Math.PI * 0.5);
+        z = 0.425 + random() * 0.012;
+        color = lowerLip ? [0.42, 0.63, 1.0] : [0.76, 0.38, 1.0];
+        role = lowerLip ? 1 : 2;
+      } else {
+        const a = Math.PI + random() * Math.PI;
+        x = 0.33 * Math.cos(a);
+        y = 0.10 + 0.46 * Math.sin(a);
+        z = 0.29;
+        color = [0.47, 0.63, 1.0];
+        role = 3;
+      }
+    }
+
+    avatar[k] = x;
+    avatar[k + 1] = y;
+    avatar[k + 2] = z;
+    roles[i] = role;
+    sides[i] = side;
+    normals.push(0, 0, 1);
+    colors.push(color[0], color[1], color[2]);
+  }
+
+  const mesh = buildMesh(gl, Array.from(idle), normals, colors, null, gl.POINTS, 3);
+  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.positions);
+  gl.bufferData(gl.ARRAY_BUFFER, idle, gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  return { mesh, idle, avatar, phases, roles, sides };
+}
+
 function disposeMesh(gl: WebGLRenderingContext, mesh: Mesh) {
   gl.deleteBuffer(mesh.positions);
   gl.deleteBuffer(mesh.normals);
@@ -638,14 +772,19 @@ function disposeMesh(gl: WebGLRenderingContext, mesh: Mesh) {
   if (mesh.indices) gl.deleteBuffer(mesh.indices);
 }
 
-export function OrbitalCore3D({ active = false }: { active?: boolean }) {
+export function OrbitalCore3D({ active = false, speaking = false }: { active?: boolean; speaking?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(active);
+  const speakingRef = useRef(speaking);
 
   useEffect(() => {
     activeRef.current = active;
   }, [active]);
+
+  useEffect(() => {
+    speakingRef.current = speaking;
+  }, [speaking]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -667,6 +806,8 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
     let smoothPointerX = 0;
     let smoothPointerY = 0;
     let angle = 0;
+    let avatarBlend = 0;
+    let particleCloud: MorphParticleCloud | null = null;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     try {
@@ -708,6 +849,8 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
         alienKnot(gl, 0.47, 0.135, 2, 3, 0.35, [0.44, 0.22, 1.0], 1400),
         alienKnot(gl, 0.39, 0.11, 3, 2, 2.05, [0.14, 0.68, 1.0], 1300)
       ];
+      particleCloud = makeMorphParticleCloud(gl, 3600);
+      meshes.push(particleCloud.mesh);
     } catch {
       host.dataset.webgl = "error";
       return;
@@ -759,12 +902,13 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
     }
 
     function draw(mesh: Mesh, projectionMatrix: Float32Array, model: Float32Array, opacity: number, pointMode: boolean, elapsed: number) {
+      if (mesh.material < 3) opacity *= 1 - avatarBlend * 0.985;
       const mvp = multiply(projectionMatrix, model);
       bindMesh(mesh);
       gl.uniformMatrix4fv(locations.mvp, false, mvp);
       gl.uniformMatrix4fv(locations.model, false, model);
       gl.uniform1f(locations.opacity, opacity);
-      gl.uniform1f(locations.pointSize, Math.max(2, Math.min(5, canvas.width / 92)));
+      gl.uniform1f(locations.pointSize, mesh.material >= 3 ? Math.max(1.5, Math.min(3.4, canvas.width / 230)) : Math.max(2, Math.min(5, canvas.width / 92)));
       gl.uniform1f(locations.pointMode, pointMode ? 1 : 0);
       gl.uniform1f(locations.time, elapsed);
       gl.uniform1f(locations.material, mesh.material);
@@ -800,6 +944,12 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       const cameraDepth = -3.15 + Math.sin(sceneTime * 0.22) * 0.055;
       const breathingScale = 1 + Math.sin(sceneTime * 0.31) * 0.012;
       const base = multiply(translate(cameraX, cameraY, cameraDepth), multiply(tilt, multiply(yaw, scale(breathingScale))));
+      const avatarTarget = activeRef.current ? 1 : 0;
+      avatarBlend += (avatarTarget - avatarBlend) * (reducedMotion ? 1 : 0.024);
+      if (Math.abs(avatarTarget - avatarBlend) < 0.0008) avatarBlend = avatarTarget;
+      const avatarTilt = rotateX(0.07 + smoothPointerY * 0.13 + Math.sin(sceneTime * 0.48) * 0.018);
+      const avatarYaw = rotateY(angle * 0.055 + smoothPointerX * 0.15);
+      const avatarBase = multiply(translate(cameraX * 0.3, cameraY * 0.3, cameraDepth), multiply(avatarTilt, multiply(avatarYaw, scale(1 + avatarBlend * 0.16))));
       const withScale = (model: Float32Array, amount: number) => multiply(model, scale(amount));
 
       // Background filigree cage and orbital skeleton.
@@ -856,6 +1006,50 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
 
       // The dust halo extends beyond the geometry and catches light in depth.
       draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), activeRef.current ? 0.9 : 0.66, true, sceneTime);
+
+      // The same points flow through the scene in standby and assemble into a living face on call.
+      if (particleCloud) {
+        const cloud = particleCloud;
+        const positions = new Float32Array(cloud.idle.length);
+        const blinkPhase = elapsed % 4.8;
+        const blink = Math.max(0, 1 - Math.abs(blinkPhase - 4.55) / 0.13);
+        const speechWave = speakingRef.current ? Math.max(0, Math.sin(elapsed * 11.4 + Math.sin(elapsed * 2.2) * 0.65)) : 0;
+        const mouthOpen = speechWave * 0.058;
+        for (let i = 0; i < cloud.phases.length; i++) {
+          const k = i * 3;
+          const phase = cloud.phases[i]!;
+          const role = cloud.roles[i]!;
+          const flowX = cloud.idle[k]! + Math.sin(elapsed * 0.63 + phase) * 0.14 + Math.sin(elapsed * 0.21 + phase * 1.7) * 0.07 + smoothPointerX * 0.14;
+          const flowY = cloud.idle[k + 1]! + Math.cos(elapsed * 0.49 + phase * 1.2) * 0.11 + Math.sin(elapsed * 0.17 + phase) * 0.06 + smoothPointerY * 0.12;
+          const flowZ = cloud.idle[k + 2]! + Math.sin(elapsed * 0.38 + phase * 1.4) * 0.14;
+          let ax = cloud.avatar[k]!;
+          let ay = cloud.avatar[k + 1]!;
+          let az = cloud.avatar[k + 2]!;
+
+          if (role === 3 || role === 5 || role === 6) {
+            ax += Math.sin(sceneTime * 0.62) * 0.012 + smoothPointerX * 0.012;
+            ay += Math.sin(sceneTime * 0.43) * 0.008 - smoothPointerY * 0.009;
+          } else if (role === 4) {
+            ay += Math.sin(sceneTime * 1.4 + phase * 0.2) * 0.012;
+          }
+          if (role === 1) ay -= mouthOpen;
+          if (role === 2) ay += mouthOpen * 0.3;
+          if (role === 5) {
+            ax += smoothPointerX * 0.025;
+            ay -= smoothPointerY * 0.018;
+          }
+          if (role === 6) ay = 0.255 + (ay - 0.255) * (1 - blink);
+
+          const mix = avatarBlend;
+          positions[k] = flowX * (1 - mix) + ax * mix;
+          positions[k + 1] = flowY * (1 - mix) + ay * mix;
+          positions[k + 2] = flowZ * (1 - mix) + az * mix;
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, cloud.mesh.positions);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, positions);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        draw(cloud.mesh, projectionMatrix, avatarBase, 0.86, true, sceneTime);
+      }
       gl.depthMask(true);
 
       frame = window.requestAnimationFrame(render);
@@ -909,14 +1103,14 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
   );
 }
 
-export function OrbitalCore({ active = false, muted = false, className = "" }: { active?: boolean; muted?: boolean; className?: string }) {
+export function OrbitalCore({ active = false, muted = false, speaking = false, className = "" }: { active?: boolean; muted?: boolean; speaking?: boolean; className?: string }) {
   return (
     <div
       className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted")}
       data-active={active}
       aria-hidden="true"
     >
-      <OrbitalCore3D active={active} />
+      <OrbitalCore3D active={active} speaking={speaking} />
       <div className="orbital-core-hud" aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
         <span className="orbital-core-hud-crosshair" style={{ position: "absolute", inset: "18px", borderLeft: "1px solid rgba(177, 128, 255, .14)", borderRight: "1px solid rgba(177, 128, 255, .14)" }} />
         <span className="orbital-core-hud-node orbital-core-hud-node--one" style={{ position: "absolute", top: "22%", left: "20%", width: 5, height: 5, borderRadius: "50%", background: "#b17cff", boxShadow: "0 0 12px #9b4dff" }} />
