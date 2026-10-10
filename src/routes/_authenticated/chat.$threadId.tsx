@@ -116,7 +116,7 @@ function VisualDemoPage() {
             <div className="jarvis-demo-axis jarvis-demo-axis--z">Z <span>AXIS</span></div>
             <div className="jarvis-demo-reticle jarvis-demo-reticle--one" aria-hidden="true" />
             <div className="jarvis-demo-reticle jarvis-demo-reticle--two" aria-hidden="true" />
-            <VoicePanel className="jarvis-demo-voice-panel" coreClassName="jarvis-hero-core" />
+            <VoicePanel className="jarvis-demo-voice-panel" coreClassName="jarvis-hero-core" particleAvatar />
           </div>
 
           <div className="jarvis-demo-core-label">
