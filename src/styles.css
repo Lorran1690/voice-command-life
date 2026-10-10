@@ -1791,3 +1791,200 @@ body { letter-spacing: normal; }
 @media (prefers-reduced-motion: reduce) {
   .jarvis-demo-nebula, .jarvis-demo-depth-ring { animation: none !important; }
 }
+
+
+/* IMMERSIVE MODE: THE CORE OWNS THE ROOM */
+@media (min-width: 981px) {
+  .jarvis-visual-command {
+    background:
+      radial-gradient(ellipse at 50% 46%, rgba(100, 47, 168, .17), transparent 37%),
+      radial-gradient(ellipse at 50% 48%, rgba(39, 101, 151, .055), transparent 56%),
+      #030207;
+  }
+  .jarvis-visual-header {
+    grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr);
+    border-bottom-color: rgba(180, 139, 255, .1);
+    background: linear-gradient(180deg, rgba(4, 2, 8, .94), rgba(4, 2, 8, .64));
+    backdrop-filter: blur(22px);
+  }
+  .jarvis-visual-layout {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    isolation: isolate;
+  }
+  .jarvis-demo-stage {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    min-height: 0;
+    border: 0;
+    background:
+      radial-gradient(ellipse at 50% 48%, rgba(78, 29, 139, .115), transparent 37%),
+      radial-gradient(ellipse at 50% 48%, transparent 20%, rgba(3, 2, 7, .12) 76%);
+  }
+  .jarvis-demo-stage-corners { inset: 15px; opacity: .75; }
+  .jarvis-demo-stage-corners i { width: 26px; height: 26px; border-color: rgba(182, 135, 255, .32); }
+  .jarvis-demo-stage-top {
+    top: 26px;
+    left: 50%;
+    right: auto;
+    width: max-content;
+    max-width: min(90%, 620px);
+    transform: translateX(-50%);
+    flex-direction: column;
+    align-items: center;
+    gap: 13px;
+    text-align: center;
+  }
+  .jarvis-demo-eyebrow { color: rgba(179, 156, 207, .7); letter-spacing: .27em; font-size: 8px; }
+  .jarvis-demo-stage-top h2 { margin-top: 8px; font-size: clamp(20px, 1.75vw, 29px); letter-spacing: .24em; text-shadow: 0 0 28px rgba(144, 82, 225, .16); }
+  .jarvis-demo-live-tag {
+    gap: 9px;
+    padding: 7px 12px;
+    border-color: rgba(177, 124, 255, .13);
+    background: rgba(7, 4, 13, .26);
+    color: rgba(191, 164, 224, .74);
+    font-size: 7px;
+    letter-spacing: .22em;
+  }
+  .jarvis-demo-orbital-field {
+    position: absolute;
+    inset: 34px 0 12px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .jarvis-demo-orbital-field::before {
+    width: min(58vw, 760px, 80vh);
+    border-color: rgba(186, 139, 255, .07);
+    box-shadow: 0 0 120px rgba(119, 50, 202, .08), inset 0 0 80px rgba(119, 50, 202, .025);
+  }
+  .jarvis-demo-orbital-field::after {
+    top: 50%;
+    width: min(75%, 1080px);
+    left: 12.5%;
+    background: linear-gradient(90deg, transparent, rgba(150, 113, 226, .11), rgba(113, 203, 255, .13), transparent);
+    filter: blur(.25px);
+  }
+  .jarvis-hero-core {
+    width: min(69vw, 790px, 78vh) !important;
+    height: min(69vw, 790px, 78vh) !important;
+    filter: drop-shadow(0 0 44px rgba(99, 44, 179, .2)) drop-shadow(0 0 120px rgba(43, 92, 150, .075));
+  }
+  .jarvis-demo-nebula {
+    inset: -19%;
+    background:
+      radial-gradient(ellipse at 37% 44%, rgba(108, 49, 190, .19), transparent 28%),
+      radial-gradient(ellipse at 64% 53%, rgba(35, 117, 164, .13), transparent 25%),
+      radial-gradient(ellipse at 52% 34%, rgba(152, 74, 228, .11), transparent 38%),
+      radial-gradient(ellipse at 49% 80%, rgba(71, 28, 121, .14), transparent 35%);
+    filter: blur(38px);
+  }
+  .jarvis-demo-starfield {
+    opacity: .65;
+    background-image:
+      radial-gradient(circle at 8% 14%, rgba(212,190,255,.72) 0 .8px, transparent 1.6px),
+      radial-gradient(circle at 18% 36%, rgba(136,214,255,.52) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 83% 29%, rgba(136,214,255,.64) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 22% 74%, rgba(185,142,255,.69) 0 .7px, transparent 1.5px),
+      radial-gradient(circle at 76% 80%, rgba(197,170,255,.58) 0 .8px, transparent 1.6px),
+      radial-gradient(circle at 64% 15%, rgba(218,204,255,.65) 0 .7px, transparent 1.5px),
+      radial-gradient(circle at 39% 87%, rgba(121,211,255,.48) 0 .7px, transparent 1.5px),
+      radial-gradient(circle at 92% 58%, rgba(196,157,255,.5) 0 .8px, transparent 1.6px),
+      radial-gradient(circle at 71% 8%, rgba(164,126,255,.52) 0 .8px, transparent 1.5px),
+      radial-gradient(circle at 5% 83%, rgba(164,126,255,.4) 0 .8px, transparent 1.5px),
+      radial-gradient(circle at 31% 17%, rgba(164,126,255,.4) 0 .8px, transparent 1.5px),
+      radial-gradient(circle at 97% 39%, rgba(164,126,255,.4) 0 .8px, transparent 1.5px);
+  }
+  .jarvis-demo-depth-ring { box-shadow: 0 0 30px rgba(118, 62, 204, .05), inset 0 0 22px rgba(118, 62, 204, .04); }
+  .jarvis-demo-depth-ring--one { border-left-color: rgba(179, 131, 255, .43); border-right-color: rgba(109, 206, 255, .34); }
+  .jarvis-demo-depth-ring--two { border-top-color: rgba(194, 159, 255, .32); }
+  .jarvis-demo-depth-ring--three { border-bottom-color: rgba(122, 202, 255, .28); }
+  .jarvis-demo-axis { color: rgba(195, 156, 255, .38); font-size: 7px; }
+  .jarvis-demo-axis--x { right: 22%; top: 39%; }
+  .jarvis-demo-axis--y { left: 22%; top: 35%; }
+  .jarvis-demo-axis--z { right: 26%; bottom: 24%; }
+  .jarvis-demo-core-label {
+    position: absolute;
+    left: 50%;
+    bottom: 73px;
+    transform: translateX(-50%);
+    width: min(31vw, 420px);
+    margin: 0;
+    opacity: .8;
+  }
+  .jarvis-demo-stage-bottom {
+    position: absolute;
+    left: 50%;
+    bottom: 17px;
+    transform: translateX(-50%);
+    width: min(520px, 45%);
+    gap: 22px;
+    margin: 0;
+    padding-top: 10px;
+    border-top-color: rgba(177, 124, 255, .09);
+  }
+  .jarvis-demo-stage-metric { column-gap: 6px; }
+  .jarvis-demo-stage-metric span { color: rgba(134, 118, 151, .73); }
+  .jarvis-demo-stage-metric b { color: rgba(204, 181, 239, .78); }
+  .jarvis-demo-boost-button {
+    right: max(28px, calc(50% - 560px));
+    bottom: 45%;
+    border-color: rgba(180, 124, 255, .18);
+    background: rgba(7, 4, 13, .48);
+    opacity: .72;
+  }
+  .jarvis-demo-boost-button:hover { opacity: 1; }
+  .jarvis-demo-rail {
+    position: absolute;
+    z-index: 7;
+    top: 24px;
+    bottom: 20px;
+    width: clamp(158px, 13.3vw, 218px);
+    gap: 17px;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .jarvis-demo-rail--left { left: clamp(24px, 2.6vw, 42px); }
+  .jarvis-demo-rail--right { right: clamp(24px, 2.6vw, 42px); }
+  .jarvis-demo-section-title { color: rgba(155, 138, 181, .74); }
+  .jarvis-demo-panel {
+    overflow: visible;
+    border: 0;
+    border-left: 1px solid rgba(170, 116, 255, .23);
+    background: linear-gradient(90deg, rgba(16, 8, 27, .22), transparent);
+    box-shadow: none;
+    padding: 10px 0 10px 12px;
+  }
+  .jarvis-demo-panel::before { left: -1px; width: 25px; opacity: .68; }
+  .jarvis-demo-panel-topline { color: rgba(182, 154, 223, .78); margin-bottom: 13px; }
+  .jarvis-demo-identity-main strong { max-width: 145px; }
+  .jarvis-demo-feature strong, .jarvis-demo-pipeline-step strong { color: rgba(213, 200, 233, .86); }
+  .jarvis-demo-feature small, .jarvis-demo-pipeline-step small { color: rgba(118, 105, 137, .8); }
+  .jarvis-demo-rail-note { border-top-color: rgba(177, 124, 255, .1); opacity: .8; }
+  .jarvis-demo-status-panel {
+    border-color: rgba(177, 124, 255, .13);
+    background: rgba(17, 9, 28, .25);
+    backdrop-filter: blur(8px);
+  }
+  .jarvis-visual-footer {
+    border-top-color: rgba(177,124,255,.08);
+    background: rgba(4,2,8,.78);
+  }
+}
+@media (min-width: 981px) and (max-width: 1250px) {
+  .jarvis-demo-rail { width: 168px; }
+  .jarvis-demo-rail--left { left: 19px; }
+  .jarvis-demo-rail--right { right: 19px; }
+  .jarvis-hero-core { width: min(69vw, 690px, 74vh) !important; height: min(69vw, 690px, 74vh) !important; }
+  .jarvis-demo-axis--x { right: 17%; }
+  .jarvis-demo-axis--y { left: 17%; }
+  .jarvis-demo-stage-bottom { width: min(440px, 45%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jarvis-demo-starfield { opacity: .4; }
+}
