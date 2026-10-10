@@ -962,6 +962,8 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       const avatarTarget = activeRef.current ? 1 : 0;
       avatarBlend += (avatarTarget - avatarBlend) * (reducedMotion ? 1 : 0.024);
       if (Math.abs(avatarTarget - avatarBlend) < 0.0008) avatarBlend = avatarTarget;
+      // Prevent the fading core from writing invisible surfaces into the depth buffer.
+      gl.depthMask(avatarBlend < 0.025);
       const avatarTilt = rotateX(0.07 + smoothPointerY * 0.13 + Math.sin(sceneTime * 0.48) * 0.018);
       const avatarYaw = rotateY(angle * 0.055 + smoothPointerX * 0.15);
       const avatarBase = multiply(translate(cameraX * 0.3, cameraY * 0.3, cameraDepth), multiply(avatarTilt, multiply(avatarYaw, scale(1 + avatarBlend * 0.65))));
@@ -988,6 +990,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       draw(meshAt(14), projectionMatrix, multiply(base, rotateY(angle * 0.34)), 0.46, false, sceneTime);
       draw(meshAt(15), projectionMatrix, withScale(multiply(base, rotateZ(-angle * 0.24)), 1 + breathing * 1.7), 0.72, false, sceneTime);
       draw(meshAt(16), projectionMatrix, withScale(multiply(base, rotateY(angle * 0.42)), 1 + breathing * 2.5), 0.95, false, sceneTime);
+      gl.depthMask(avatarBlend < 0.025);
 
       // A delicate filament threads through the core's interior.
       draw(meshAt(17), projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, sceneTime);
@@ -1081,6 +1084,8 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
         gl.bindBuffer(gl.ARRAY_BUFFER, cloud.mesh.positions);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, positions);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        // Let the point cloud depth-test against itself, not against the fading core.
+        gl.depthMask(true);
         draw(cloud.mesh, projectionMatrix, avatarBase, 0.86, true, sceneTime);
       }
       gl.depthMask(true);
