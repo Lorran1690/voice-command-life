@@ -878,7 +878,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       meshes.forEach((mesh) => disposeMesh(gl, mesh));
       gl.deleteProgram(sceneProgram);
     };
-  }, [active]);
+  }, []);
 
   return (
     <div
