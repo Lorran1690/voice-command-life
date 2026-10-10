@@ -260,7 +260,13 @@
   .hud-composer { padding-bottom: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  /* Respect reduced-motion preferences for page navigation and small UI transitions,
+     but do not freeze the JARVIS hologram's requestAnimationFrame particle renderer. */
+  html:focus-within { scroll-behavior: auto; }
+  .hud-message-actions, .hud-icon-action, .settings-choice,
+  .settings-field input, .settings-field select, .settings-field textarea {
+    transition-duration: .01ms !important;
+  }
 }
 
 
@@ -2068,9 +2074,24 @@ body { letter-spacing: normal; }
 }
 
 
-/* Dedicated 2D particle renderer keeps the avatar visible even when WebGL is unavailable. */
+/* Dedicated 2D particle portrait: the dots are the only visible holographic material. */
+.orbital-core--particle-avatar {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+.orbital-core--particle-avatar::before,
+.orbital-core--particle-avatar::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
 .jarvis-demo-voice-panel .orbital-core--particle-avatar .orbital-core-3d {
-  opacity: .16;
+  display: none !important;
 }
 .jarvis-demo-voice-panel .orbital-core--particle-avatar .orbital-core-hud,
 .jarvis-demo-voice-panel .orbital-core--particle-avatar .orbital-3d-caption,
@@ -2085,6 +2106,9 @@ body { letter-spacing: normal; }
   height: 100%;
   pointer-events: none;
   z-index: 3;
+  filter: none !important;
+  box-shadow: none !important;
+  image-rendering: auto;
 }
 
 
