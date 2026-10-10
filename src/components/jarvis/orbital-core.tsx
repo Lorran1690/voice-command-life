@@ -777,6 +777,8 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
   const hostRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(active);
   const speakingRef = useRef(speaking);
+  const speakingLevelRef = useRef(0);
+  const measuredSpeechRef = useRef(false);
 
   useEffect(() => {
     activeRef.current = active;
@@ -785,6 +787,16 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
   useEffect(() => {
     speakingRef.current = speaking;
   }, [speaking]);
+
+  useEffect(() => {
+    const onVoiceLevel = (event: Event) => {
+      const detail = (event as CustomEvent<{ level?: number; measured?: boolean }>).detail;
+      speakingLevelRef.current = Math.max(0, Math.min(1, detail?.level ?? 0));
+      measuredSpeechRef.current = detail?.measured === true;
+    };
+    window.addEventListener("jarvis:voice-level", onVoiceLevel);
+    return () => window.removeEventListener("jarvis:voice-level", onVoiceLevel);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -807,6 +819,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
     let smoothPointerY = 0;
     let angle = 0;
     let avatarBlend = 0;
+    let smoothedVoiceLevel = 0;
     let particleCloud: MorphParticleCloud | null = null;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -1013,8 +1026,14 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
         const positions = new Float32Array(cloud.idle.length);
         const blinkPhase = elapsed % 4.8;
         const blink = Math.max(0, 1 - Math.abs(blinkPhase - 4.55) / 0.13);
-        const speechWave = speakingRef.current ? Math.max(0, Math.sin(elapsed * 11.4 + Math.sin(elapsed * 2.2) * 0.65)) : 0;
-        const mouthOpen = speechWave * 0.058;
+        smoothedVoiceLevel += (speakingLevelRef.current - smoothedVoiceLevel) * 0.38;
+        const syntheticSpeech = Math.max(0, Math.sin(elapsed * 11.4 + Math.sin(elapsed * 2.2) * 0.65));
+        const speechWave = speakingRef.current
+          ? measuredSpeechRef.current
+            ? smoothedVoiceLevel
+            : syntheticSpeech
+          : 0;
+        const mouthOpen = speechWave * 0.074;
         for (let i = 0; i < cloud.phases.length; i++) {
           const k = i * 3;
           const phase = cloud.phases[i]!;
