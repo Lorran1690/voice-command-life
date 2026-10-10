@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/chat/$threadId")({
 
 function VisualDemoPage() {
   const navigate = useNavigate();
-  const [boosted, setBoosted] = useState(true);
+  const [boosted, setBoosted] = useState(false);
   const operator = getLocalUser()?.name ?? "OPERADOR";
 
   function signOut() {
@@ -96,7 +96,7 @@ function VisualDemoPage() {
 
           <div className="jarvis-demo-rail-note">
             <span className="jarvis-demo-note-mark">i</span>
-            <p>Esta tela é uma prévia visual. Voz, chat e integração com o modelo não fazem parte desta demonstração.</p>
+            <p>Prévia visual interativa: ative o avatar para observar a formação das partículas e o movimento facial. A integração com a voz local é controlada pelo painel de voz.</p>
           </div>
         </aside>
 
@@ -118,12 +118,12 @@ function VisualDemoPage() {
             <div className="jarvis-demo-axis jarvis-demo-axis--z">Z <span>AXIS</span></div>
             <div className="jarvis-demo-reticle jarvis-demo-reticle--one" aria-hidden="true" />
             <div className="jarvis-demo-reticle jarvis-demo-reticle--two" aria-hidden="true" />
-            <OrbitalCore active={boosted} muted={!boosted} className="jarvis-hero-core" />
+            <OrbitalCore active={boosted} speaking={boosted} muted={!boosted} className="jarvis-hero-core" />
           </div>
 
           <div className="jarvis-demo-core-label">
             <span className="jarvis-demo-core-line" />
-            <div><strong>CORE {boosted ? "ENERGIZED" : "STANDARD"}</strong><small>3D GEOMETRY · DEPTH · LIGHT</small></div>
+            <div><strong>{boosted ? "AVATAR MANIFESTED" : "PARTICLE FIELD"}</strong><small>{boosted ? "HOLOGRAPHIC PRESENCE · SPEECH MOTION DEMO" : "LIVING PARTICLES · INTERACTIVE FLOW"}</small></div>
             <span className="jarvis-demo-core-line" />
           </div>
 
@@ -135,7 +135,7 @@ function VisualDemoPage() {
 
           <button type="button" className="jarvis-demo-boost-button" onClick={() => setBoosted((value) => !value)}>
             <Zap size={15} />
-            {boosted ? "REDUZIR VELOCIDADE ORBITAL" : "ACELERAR NÚCLEO"}
+            {boosted ? "DISSOLVER AVATAR · ENTRAR EM REPOUSO" : "ATIVAR AVATAR HOLOGRÁFICA"}
           </button>
         </section>
 
@@ -161,7 +161,7 @@ function VisualDemoPage() {
               <span>LIGHT MODEL</span><strong>FRESNEL + SPECULAR</strong>
             </div>
             <div className="jarvis-demo-spec">
-              <span>ANIMATION</span><strong>{boosted ? "ORBITAL BOOST" : "BASE ORBIT"}</strong>
+              <span>ANIMATION</span><strong>{boosted ? "AVATAR MORPH" : "PARTICLE REST"}</strong>
             </div>
             <div className="jarvis-demo-spec">
               <span>BACKGROUND</span><strong>TRANSPARENT WEBGL</strong>
@@ -170,14 +170,14 @@ function VisualDemoPage() {
 
           <section className="jarvis-demo-status-panel">
             <div className="jarvis-demo-status-icon"><Zap size={16} /></div>
-            <div><strong>VISUAL DEMO</strong><p>Core 3D em primeiro plano. Sem chamadas externas ou métricas falsas de sistema.</p></div>
+            <div><strong>PARTICLE LIFE SYSTEM</strong><p>As partículas circulam em repouso e se organizam em um avatar holográfico com movimento facial. Nesta prévia, a boca simula fala; no painel de voz, o estado acompanha a reprodução sonora.</p></div>
           </section>
         </aside>
       </main>
 
       <footer className="jarvis-visual-footer">
         <div><span className="jarvis-demo-led" /><span>J.A.R.V.I.S. VISUAL LAB</span></div>
-        <span>VOLUMETRIC CORE <i /> SPATIAL ORBITS <i /> REAL-TIME SHADING</span>
+        <span>LIVING PARTICLES <i /> AVATAR MORPH <i /> VOICE-REACTIVE MOTION</span>
         <span>BUILD / 3D CONCEPT</span>
       </footer>
     </div>
