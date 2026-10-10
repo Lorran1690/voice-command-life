@@ -10,6 +10,7 @@ import {
   getVoicePreferences,
   listLocalVoices,
   speakWithFallback,
+  stopVoicePlayback,
   type LocalVoice,
 } from "@/lib/local-voice";
 
@@ -184,7 +185,7 @@ export function VoicePanel() {
       processingRef.current = false;
       recognitionRef.current?.stop();
       recognitionRef.current = null;
-      window.speechSynthesis?.cancel();
+      stopVoicePlayback();
       setActive(false);
       setListening(false);
       setThinking(false);
