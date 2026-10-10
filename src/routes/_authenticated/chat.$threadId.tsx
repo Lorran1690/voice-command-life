@@ -108,6 +108,11 @@ function VisualDemoPage() {
           </div>
 
           <div className="jarvis-demo-orbital-field">
+            <div className="jarvis-demo-nebula" aria-hidden="true" />
+            <div className="jarvis-demo-starfield" aria-hidden="true" />
+            <div className="jarvis-demo-depth-ring jarvis-demo-depth-ring--one" aria-hidden="true" />
+            <div className="jarvis-demo-depth-ring jarvis-demo-depth-ring--two" aria-hidden="true" />
+            <div className="jarvis-demo-depth-ring jarvis-demo-depth-ring--three" aria-hidden="true" />
             <div className="jarvis-demo-axis jarvis-demo-axis--x">X <span>AXIS</span></div>
             <div className="jarvis-demo-axis jarvis-demo-axis--y">Y <span>AXIS</span></div>
             <div className="jarvis-demo-axis jarvis-demo-axis--z">Z <span>AXIS</span></div>
