@@ -1,231 +1,180 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import type { UIMessage } from "ai";
-import { Activity, Cpu, Gauge, LogOut, MessagesSquare, ListTodo, Settings2, ShieldCheck, Sparkles, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Activity, Aperture, Axis3D, Cpu, Gauge, LogOut, Orbit, Radio, ShieldCheck, Sparkles, Zap } from "lucide-react";
 
-import jarvisCore from "@/assets/jarvis-core.png";
-import { AssistantSettings } from "@/components/jarvis/assistant-settings";
-import { ChatWindow } from "@/components/jarvis/chat-window";
-import { TasksPanel } from "@/components/jarvis/tasks-panel";
-import { ThreadSidebar } from "@/components/jarvis/thread-sidebar";
-import { VoicePanel } from "@/components/jarvis/voice-panel";
+import { OrbitalCore } from "@/components/jarvis/orbital-core";
 import { clearLocalUser, getLocalUser } from "@/lib/local-mode";
 
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
   head: () => ({
     meta: [
-      { title: "J.A.R.V.I.S. — Local" },
-      { name: "description", content: "J.A.R.V.I.S. rodando localmente." },
+      { title: "J.A.R.V.I.S. — 3D Visual Demo" },
+      { name: "description", content: "Demonstração visual do núcleo 3D J.A.R.V.I.S." },
     ],
   }),
-  component: ChatPage,
+  component: VisualDemoPage,
 });
 
-function ChatPage() {
-  const { threadId } = Route.useParams();
+function VisualDemoPage() {
   const navigate = useNavigate();
-  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null);
-
-  useEffect(() => {
-    setInitialMessages([]);
-  }, [threadId]);
+  const [boosted, setBoosted] = useState(true);
+  const operator = getLocalUser()?.name ?? "OPERADOR";
 
   function signOut() {
     clearLocalUser();
     navigate({ to: "/auth", replace: true });
   }
 
-  const operator = getLocalUser()?.name ?? "Operador";
-
   return (
-    <div className="jarvis-grid-bg hud-shell flex h-dvh flex-col bg-background">
-      <header className="hud-header hud-enter flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-8">
-        <div className="flex items-center gap-2.5">
-          <img src={jarvisCore} alt="" width={1024} height={1024} className="h-7 w-7" />
+    <div className="jarvis-visual-command">
+      <div className="jarvis-visual-grid" aria-hidden="true" />
+      <div className="jarvis-visual-vignette" aria-hidden="true" />
+
+      <header className="jarvis-visual-header">
+        <div className="jarvis-visual-brand">
+          <div className="jarvis-visual-brand-mark"><Aperture size={21} /></div>
           <div>
-            <h1 className="font-display text-base font-semibold text-primary sm:text-lg">J.A.R.V.I.S.</h1>
-            <p className="font-display text-[8px] uppercase tracking-[0.14em] text-muted-foreground">Operador: {operator}</p>
+            <h1>J.A.R.V.I.S.</h1>
+            <p>PERSONAL COMMAND SYSTEM <span>//</span> VISUAL LAB</p>
           </div>
         </div>
 
-        <div className="jarvis-header-status" aria-label="Demonstração visual">
-          <span className="jarvis-status-led" />
-          <span className="jarvis-header-status-title">HUD // DEMO VISUAL</span>
-          <span className="jarvis-header-divider" />
-          <span className="jarvis-header-status-detail">BLACK / VIOLET SYSTEM</span>
+        <div className="jarvis-visual-header-center">
+          <span className="jarvis-demo-led" />
+          <span>3D CORE PREVIEW</span>
+          <i />
+          <span className="jarvis-visual-muted">WEBGL / SPATIAL RENDER</span>
         </div>
 
-        <nav className="flex items-center gap-1" aria-label="Painéis do Jarvis">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" aria-label="Configurações" title="Configurações">
-                <Settings2 /><span className="hidden sm:inline">Configurar</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
-              <SheetHeader className="border-b border-border p-5">
-                <SheetTitle className="font-display text-primary">Configurações locais</SheetTitle>
-              </SheetHeader>
-              <AssistantSettings />
-            </SheetContent>
-          </Sheet>
-
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" aria-label="Conversas" title="Conversas">
-                <MessagesSquare /><span className="hidden sm:inline">Conversas</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
-              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Conversas locais</SheetTitle></SheetHeader>
-              <ThreadSidebar />
-            </SheetContent>
-          </Sheet>
-
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" aria-label="Organização" title="Tarefas, notas e memória">
-                <ListTodo /><span className="hidden sm:inline">Organização</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="hud-drawer flex flex-col p-0" aria-describedby={undefined}>
-              <SheetHeader className="border-b border-border p-5"><SheetTitle className="font-display text-primary">Organização local</SheetTitle></SheetHeader>
-              <TasksPanel />
-            </SheetContent>
-          </Sheet>
-
-          <Button variant="ghost" size="sm" onClick={signOut} aria-label="Sair" title="Sair" className="text-muted-foreground">
-            <LogOut /><span className="hidden sm:inline">Sair</span>
-          </Button>
-        </nav>
+        <div className="jarvis-visual-header-actions">
+          <div className="jarvis-visual-operator">
+            <span>OPERATOR</span>
+            <strong>{operator.toUpperCase()}</strong>
+          </div>
+          <button type="button" className="jarvis-visual-icon-button" onClick={signOut} aria-label="Sair da demo" title="Sair">
+            <LogOut size={16} />
+          </button>
+        </div>
       </header>
 
-      <main className="jarvis-command-layout hud-main">
-        <aside className="jarvis-side-rail jarvis-side-rail--left" aria-label="Painel do operador">
-          <div className="jarvis-panel-heading">
-            <span>01 / OPERATOR</span>
-            <span className="jarvis-panel-live">SESSION</span>
+      <main className="jarvis-visual-layout">
+        <aside className="jarvis-demo-rail jarvis-demo-rail--left">
+          <div className="jarvis-demo-section-title">
+            <span>01</span><b>SCENE OVERVIEW</b><i />
           </div>
 
-          <section className="jarvis-operator-card">
-            <div className="jarvis-operator-emblem"><ShieldCheck size={22} /></div>
-            <span className="jarvis-micro-label">IDENTIDADE DO OPERADOR</span>
-            <strong>{operator.toUpperCase()}</strong>
-            <span className="jarvis-operator-foot">LOCAL PROFILE // ACTIVE</span>
-            <div className="jarvis-card-corners" aria-hidden="true" />
+          <section className="jarvis-demo-panel jarvis-demo-identity">
+            <div className="jarvis-demo-panel-topline"><ShieldCheck size={14} /><span>LOCAL VISUAL SESSION</span></div>
+            <div className="jarvis-demo-identity-main">
+              <div className="jarvis-demo-avatar"><Sparkles size={20} /></div>
+              <div><small>OPERATOR PROFILE</small><strong>{operator.toUpperCase()}</strong></div>
+            </div>
+            <div className="jarvis-demo-divider" />
+            <div className="jarvis-demo-readout"><span>SCENE TYPE</span><b>VOLUMETRIC CORE</b></div>
+            <div className="jarvis-demo-readout"><span>RENDER PATH</span><b>WEBGL / GPU</b></div>
+            <div className="jarvis-demo-readout"><span>COLOUR PROFILE</span><b>BLACK / VIOLET</b></div>
           </section>
 
-          <section className="jarvis-module-panel">
-            <div className="jarvis-panel-heading">
-              <span>MÓDULOS</span>
-              <span>04</span>
+          <section className="jarvis-demo-panel">
+            <div className="jarvis-demo-panel-topline"><Orbit size={14} /><span>SPATIAL GEOMETRY</span></div>
+            <div className="jarvis-demo-feature">
+              <span className="jarvis-demo-feature-icon"><Aperture size={15} /></span>
+              <div><strong>Volumetric sphere</strong><small>SHADER-LIT SURFACE</small></div>
+              <span className="jarvis-demo-feature-led" />
             </div>
-            <div className="jarvis-module-row">
-              <span className="jarvis-module-index">01</span>
-              <span className="jarvis-module-icon"><Cpu size={15} /></span>
-              <span className="jarvis-module-copy"><strong>NÚCLEO JARVIS</strong><small>ARQUITETURA LOCAL</small></span>
-              <span className="jarvis-module-dot" />
+            <div className="jarvis-demo-feature">
+              <span className="jarvis-demo-feature-icon"><Orbit size={15} /></span>
+              <div><strong>3 orbital toruses</strong><small>TILTED IN 3D SPACE</small></div>
+              <span className="jarvis-demo-feature-led" />
             </div>
-            <div className="jarvis-module-row">
-              <span className="jarvis-module-index">02</span>
-              <span className="jarvis-module-icon"><Activity size={15} /></span>
-              <span className="jarvis-module-copy"><strong>INTERFACE HUD</strong><small>CAMADA VISUAL</small></span>
-              <span className="jarvis-module-dot jarvis-module-dot--active" />
-            </div>
-            <div className="jarvis-module-row">
-              <span className="jarvis-module-index">03</span>
-              <span className="jarvis-module-icon"><MessagesSquare size={15} /></span>
-              <span className="jarvis-module-copy"><strong>CONVERSAS</strong><small>PAINEL DE SESSÃO</small></span>
-              <span className="jarvis-module-dot" />
-            </div>
-            <div className="jarvis-module-row">
-              <span className="jarvis-module-index">04</span>
-              <span className="jarvis-module-icon"><Gauge size={15} /></span>
-              <span className="jarvis-module-copy"><strong>DIAGNÓSTICO</strong><small>VISUALIZAÇÃO</small></span>
-              <span className="jarvis-module-dot" />
+            <div className="jarvis-demo-feature">
+              <span className="jarvis-demo-feature-icon"><Sparkles size={15} /></span>
+              <div><strong>Particle field</strong><small>DEPTH POSITIONED</small></div>
+              <span className="jarvis-demo-feature-led" />
             </div>
           </section>
 
-          <section className="jarvis-rail-footer">
-            <div className="jarvis-panel-heading"><span>DESIGN PROFILE</span><Sparkles size={13} /></div>
-            <div className="jarvis-color-profile">
-              <span className="jarvis-color-swatch jarvis-color-swatch--black" />
-              <span className="jarvis-color-swatch jarvis-color-swatch--violet" />
-              <span className="jarvis-color-swatch jarvis-color-swatch--ice" />
-              <div><strong>VIOLET CORE</strong><small>VISUAL PRESET / 01</small></div>
-            </div>
-            <div className="jarvis-rail-grid" aria-hidden="true" />
-          </section>
+          <div className="jarvis-demo-rail-note">
+            <span className="jarvis-demo-note-mark">i</span>
+            <p>Esta tela é uma prévia visual. Voz, chat e integração com o modelo não fazem parte desta demonstração.</p>
+          </div>
         </aside>
 
-        <section className="jarvis-center-stage" aria-label="Centro de comando JARVIS">
-          <div className="jarvis-stage-heading">
-            <div>
-              <span className="jarvis-eyebrow">TACTICAL INTERFACE <i /> BUILD 01.07</span>
-              <h2>Centro de comando</h2>
-            </div>
-            <div className="jarvis-stage-chip"><span className="jarvis-status-led" /> VISUAL PREVIEW</div>
+        <section className="jarvis-demo-stage" aria-label="Núcleo tridimensional JARVIS">
+          <div className="jarvis-demo-stage-corners" aria-hidden="true"><i /><i /><i /><i /></div>
+          <div className="jarvis-demo-stage-top">
+            <div><span className="jarvis-demo-eyebrow">NEURAL INTERFACE / VISUALIZATION 001</span><h2>J.A.R.V.I.S. <em>CORE</em></h2></div>
+            <div className="jarvis-demo-live-tag"><span /> LIVE RENDER</div>
           </div>
 
-          <VoicePanel />
+          <div className="jarvis-demo-orbital-field">
+            <div className="jarvis-demo-axis jarvis-demo-axis--x">X <span>AXIS</span></div>
+            <div className="jarvis-demo-axis jarvis-demo-axis--y">Y <span>AXIS</span></div>
+            <div className="jarvis-demo-axis jarvis-demo-axis--z">Z <span>AXIS</span></div>
+            <div className="jarvis-demo-reticle jarvis-demo-reticle--one" aria-hidden="true" />
+            <div className="jarvis-demo-reticle jarvis-demo-reticle--two" aria-hidden="true" />
+            <OrbitalCore active={boosted} muted={!boosted} className="jarvis-hero-core" />
+          </div>
 
-          <section className="jarvis-chat-frame">
-            <div className="jarvis-chat-frame-header">
-              <div><span className="jarvis-frame-icon"><Zap size={13} /></span><span>CONSOLE // INTERAÇÃO</span></div>
-              <span className="jarvis-frame-mode">INTERFACE DEMO</span>
-            </div>
-            {initialMessages ? (
-              <ChatWindow key={threadId} threadId={threadId} initialMessages={initialMessages} />
-            ) : (
-              <div className="flex flex-1 items-center justify-center">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              </div>
-            )}
-          </section>
+          <div className="jarvis-demo-core-label">
+            <span className="jarvis-demo-core-line" />
+            <div><strong>CORE {boosted ? "ENERGIZED" : "STANDARD"}</strong><small>3D GEOMETRY · DEPTH · LIGHT</small></div>
+            <span className="jarvis-demo-core-line" />
+          </div>
+
+          <div className="jarvis-demo-stage-bottom">
+            <div className="jarvis-demo-stage-metric"><Activity size={15} /><span>DEPTH RENDERING</span><b>ENABLED</b></div>
+            <div className="jarvis-demo-stage-metric"><Axis3D size={15} /><span>SPATIAL AXES</span><b>X / Y / Z</b></div>
+            <div className="jarvis-demo-stage-metric"><Radio size={15} /><span>POINTER PARALLAX</span><b>INTERACTIVE</b></div>
+          </div>
+
+          <button type="button" className="jarvis-demo-boost-button" onClick={() => setBoosted((value) => !value)}>
+            <Zap size={15} />
+            {boosted ? "REDUZIR VELOCIDADE ORBITAL" : "ACELERAR NÚCLEO"}
+          </button>
         </section>
 
-        <aside className="jarvis-side-rail jarvis-side-rail--right" aria-label="Telemetria visual demonstrativa">
-          <div className="jarvis-panel-heading">
-            <span>02 / SYSTEM VIEW</span>
-            <span className="jarvis-panel-live">PREVIEW</span>
+        <aside className="jarvis-demo-rail jarvis-demo-rail--right">
+          <div className="jarvis-demo-section-title">
+            <span>02</span><b>RENDER PIPELINE</b><i />
           </div>
 
-          <section className="jarvis-orbit-panel">
-            <div className="jarvis-orbit-caption"><span>CORE VISUALIZER</span><span>FIG. 01</span></div>
-            <div className="jarvis-mini-orbit" aria-hidden="true">
-              <span className="jarvis-mini-orbit-ring jarvis-mini-orbit-ring--one" />
-              <span className="jarvis-mini-orbit-ring jarvis-mini-orbit-ring--two" />
-              <span className="jarvis-mini-orbit-ring jarvis-mini-orbit-ring--three" />
-              <span className="jarvis-mini-orbit-core"><span /></span>
-              <span className="jarvis-mini-orbit-node jarvis-mini-orbit-node--one" />
-              <span className="jarvis-mini-orbit-node jarvis-mini-orbit-node--two" />
-              <span className="jarvis-mini-orbit-node jarvis-mini-orbit-node--three" />
-            </div>
-            <div className="jarvis-orbit-readout"><span>ORBITAL VISUAL</span><strong>ACTIVE LAYER</strong></div>
+          <section className="jarvis-demo-panel jarvis-demo-pipeline">
+            <div className="jarvis-demo-panel-topline"><Cpu size={14} /><span>GRAPHICS ENGINE</span></div>
+            <div className="jarvis-demo-pipeline-step"><div className="jarvis-demo-pipeline-number">01</div><div><strong>Vertex Geometry</strong><small>SPHERE / TORUS MESHES</small></div><span>✓</span></div>
+            <div className="jarvis-demo-pipeline-step"><div className="jarvis-demo-pipeline-number">02</div><div><strong>Depth Projection</strong><small>PERSPECTIVE MATRIX</small></div><span>✓</span></div>
+            <div className="jarvis-demo-pipeline-step"><div className="jarvis-demo-pipeline-number">03</div><div><strong>Lighting Shader</strong><small>RIM / DIFFUSE / SPECULAR</small></div><span>✓</span></div>
+            <div className="jarvis-demo-pipeline-step"><div className="jarvis-demo-pipeline-number">04</div><div><strong>Motion Layer</strong><small>ROTATION / PARALLAX</small></div><span>✓</span></div>
           </section>
 
-          <section className="jarvis-telemetry-panel">
-            <div className="jarvis-panel-heading"><span>INTERFACE TELEMETRY</span><Activity size={13} /></div>
-            <div className="jarvis-telemetry-row"><span>VISUAL LAYER</span><strong>ACTIVE</strong></div>
-            <div className="jarvis-telemetry-row"><span>COLOR SYSTEM</span><strong>VIOLET / BLACK</strong></div>
-            <div className="jarvis-telemetry-row"><span>MOTION PROFILE</span><strong>ORBITAL</strong></div>
-            <div className="jarvis-telemetry-row"><span>VOICE / AI</span><strong>NOT IN DEMO</strong></div>
-            <div className="jarvis-telemetry-bars" aria-hidden="true">
-              <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
+          <section className="jarvis-demo-panel jarvis-demo-spec-panel">
+            <div className="jarvis-demo-panel-topline"><Gauge size={14} /><span>SCENE PARAMETERS</span></div>
+            <div className="jarvis-demo-spec">
+              <span>COORDINATES</span><div><b> X </b><b> Y </b><b> Z </b></div>
             </div>
-            <p className="jarvis-telemetry-note">Elementos gráficos demonstrativos. Os dados não representam medições reais do computador.</p>
+            <div className="jarvis-demo-spec">
+              <span>LIGHT MODEL</span><strong>FRESNEL + SPECULAR</strong>
+            </div>
+            <div className="jarvis-demo-spec">
+              <span>ANIMATION</span><strong>{boosted ? "ORBITAL BOOST" : "BASE ORBIT"}</strong>
+            </div>
+            <div className="jarvis-demo-spec">
+              <span>BACKGROUND</span><strong>TRANSPARENT WEBGL</strong>
+            </div>
           </section>
 
-          <section className="jarvis-status-card">
-            <div className="jarvis-panel-heading"><span>DESIGN INTENT</span><ShieldCheck size={13} /></div>
-            <div className="jarvis-status-title">Inteligência em foco.</div>
-            <p>Uma interface cinematográfica, modular e legível. O visual não depende de conexão com serviços externos.</p>
-            <div className="jarvis-status-rule"><span /><span /><span /></div>
+          <section className="jarvis-demo-status-panel">
+            <div className="jarvis-demo-status-icon"><Zap size={16} /></div>
+            <div><strong>VISUAL DEMO</strong><p>Core 3D em primeiro plano. Sem chamadas externas ou métricas falsas de sistema.</p></div>
           </section>
         </aside>
       </main>
+
+      <footer className="jarvis-visual-footer">
+        <div><span className="jarvis-demo-led" /><span>J.A.R.V.I.S. VISUAL LAB</span></div>
+        <span>VOLUMETRIC CORE <i /> SPATIAL ORBITS <i /> REAL-TIME SHADING</span>
+        <span>BUILD / 3D CONCEPT</span>
+      </footer>
     </div>
   );
 }
