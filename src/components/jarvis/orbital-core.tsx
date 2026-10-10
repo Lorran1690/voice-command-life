@@ -80,7 +80,7 @@ function program(gl: WebGLRenderingContext) {
     "  color += vec3(0.62, 0.82, 1.0) * specular * 0.92;",
     "  color += vec3(0.50, 0.28, 1.0) * filigree * (0.1 + interference * 0.32) * min(uMaterial, 1.0);",
     "  if (uMaterial > 1.5) color *= 0.65 + 0.35 * interference;",
-    "  gl_FragColor = vec4(color, uOpacity * (0.25 + rim * 0.86));"
+    "  gl_FragColor = vec4(color, uOpacity * (0.25 + rim * 0.86));",
     "}"
   ].join("\n");
 
