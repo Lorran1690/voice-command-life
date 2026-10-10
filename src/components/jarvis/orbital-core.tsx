@@ -633,6 +633,11 @@ function disposeMesh(gl: WebGLRenderingContext, mesh: Mesh) {
 export function OrbitalCore3D({ active = false }: { active?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef(active);
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -764,7 +769,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       if (disposed) return;
       resize();
       const elapsed = reducedMotion ? 0 : (now - startedAt) * 0.001;
-      const sceneTime = elapsed * (active ? 1.0 : 0.46);
+      const sceneTime = elapsed * (activeRef.current ? 1.0 : 0.46);
       const width = canvas.width;
       const height = canvas.height;
       gl.clearColor(0, 0, 0, 0);
@@ -778,7 +783,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       const projectionMatrix = perspective(width / Math.max(1, height));
       smoothPointerX += (pointerX - smoothPointerX) * 0.035;
       smoothPointerY += (pointerY - smoothPointerY) * 0.035;
-      angle += reducedMotion ? 0 : (active ? 0.012 : 0.0045);
+      angle += reducedMotion ? 0 : (activeRef.current ? 0.012 : 0.0045);
       const breathing = Math.sin(sceneTime * 0.42) * 0.035;
       const tilt = rotateX(0.2 + smoothPointerY * 0.28 + Math.sin(angle * 0.36) * 0.045);
       const yaw = rotateY(angle * 0.62 + smoothPointerX * 0.3);
@@ -842,7 +847,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       }
 
       // The dust halo extends beyond the geometry and catches light in depth.
-      draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), active ? 0.9 : 0.66, true, sceneTime);
+      draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), activeRef.current ? 0.9 : 0.66, true, sceneTime);
       gl.depthMask(true);
 
       frame = window.requestAnimationFrame(render);
