@@ -62,7 +62,7 @@ function program(gl: WebGLRenderingContext) {
     "    if (d > 0.5) discard;",
     "    float glow = 1.0 - smoothstep(0.08, 0.5, d);",
     "    float pulse = 0.72 + 0.28 * sin(uTime * 1.8 + vPosition.x * 25.0 + vPosition.y * 34.0);",
-    "    gl_FragColor = vec4(vColor * (0.8 + glow * 2.2) * pulse, glow * uOpacity * pulse);"
+    "    gl_FragColor = vec4(vColor * (0.8 + glow * 2.2) * pulse, glow * uOpacity * pulse);",
     "    return;",
     "  }",
     "  vec3 n = normalize(vNormal);",
