@@ -2008,11 +2008,12 @@ body { letter-spacing: normal; }
 }
 .jarvis-demo-voice-panel .jarvis-hero-core {
   position: absolute !important;
-  top: 47%;
-  left: 50%;
-  width: min(48vw, 450px, 43vh) !important;
-  height: min(48vw, 450px, 43vh) !important;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none;
   z-index: 3;
   filter: drop-shadow(0 0 32px rgba(117, 52, 207, .24));
 }
@@ -2051,9 +2052,10 @@ body { letter-spacing: normal; }
 
 @media (max-width: 900px) {
   .jarvis-demo-voice-panel .jarvis-hero-core {
-    width: min(74vw, 380px, 40vh) !important;
-    height: min(74vw, 380px, 40vh) !important;
-    top: 46%;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0;
+    left: 0;
   }
   .jarvis-demo-voice-panel .jarvis-voice-actions {
     bottom: 28px;
