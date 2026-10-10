@@ -27,6 +27,12 @@ function VisualDemoPage() {
     <div className="jarvis-visual-command">
       <div className="jarvis-visual-grid" aria-hidden="true" />
       <div className="jarvis-visual-vignette" aria-hidden="true" />
+      <style>{`.jarvis-demo-stage--particle-only { background: transparent !important; }
+.jarvis-demo-stage--particle-only .jarvis-demo-nebula, .jarvis-demo-stage--particle-only .jarvis-demo-starfield, .jarvis-demo-stage--particle-only .jarvis-demo-depth-ring, .jarvis-demo-stage--particle-only .jarvis-demo-axis, .jarvis-demo-stage--particle-only .jarvis-demo-reticle { display: none !important; }
+.jarvis-demo-stage--particle-only .jarvis-demo-orbital-field::before, .jarvis-demo-stage--particle-only .jarvis-demo-orbital-field::after { content: none !important; display: none !important; }
+.jarvis-demo-stage--particle-only .jarvis-hero-core { filter: none !important; box-shadow: none !important; }
+.jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-core-3d, .jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-core-hud, .jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-3d-caption, .jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-3d-target { display: none !important; }
+.jarvis-demo-stage--particle-only .jarvis-demo-stage::before, .jarvis-demo-stage--particle-only .jarvis-demo-stage::after { content: none !important; }`}</style>
 
       <header className="jarvis-visual-header">
         <div className="jarvis-visual-brand">
@@ -98,7 +104,7 @@ function VisualDemoPage() {
           </div>
         </aside>
 
-        <section className="jarvis-demo-stage jarvis-demo-stage--particle-only" aria-label="Avatar holográfico de partículas JARVIS">
+        <section className="jarvis-demo-stage jarvis-demo-stage--particle-only" aria-label="Avatar holográfico de partículas JARVIS" style={{ background: "transparent" }}>
           <div className="jarvis-demo-stage-corners" aria-hidden="true"><i /><i /><i /><i /></div>
           <div className="jarvis-demo-stage-top">
             <div><span className="jarvis-demo-eyebrow">NEURAL INTERFACE / VISUALIZATION 001</span><h2>J.A.R.V.I.S. <em>CORE</em></h2></div>
@@ -106,16 +112,7 @@ function VisualDemoPage() {
           </div>
 
           <div className="jarvis-demo-orbital-field">
-            <div className="jarvis-demo-nebula" aria-hidden="true" />
-            <div className="jarvis-demo-starfield" aria-hidden="true" />
-            <div className="jarvis-demo-depth-ring jarvis-demo-depth-ring--one" aria-hidden="true" />
-            <div className="jarvis-demo-depth-ring jarvis-demo-depth-ring--two" aria-hidden="true" />
-            <div className="jarvis-demo-depth-ring jarvis-demo-depth-ring--three" aria-hidden="true" />
-            <div className="jarvis-demo-axis jarvis-demo-axis--x">X <span>AXIS</span></div>
-            <div className="jarvis-demo-axis jarvis-demo-axis--y">Y <span>AXIS</span></div>
-            <div className="jarvis-demo-axis jarvis-demo-axis--z">Z <span>AXIS</span></div>
-            <div className="jarvis-demo-reticle jarvis-demo-reticle--one" aria-hidden="true" />
-            <div className="jarvis-demo-reticle jarvis-demo-reticle--two" aria-hidden="true" />
+            
             <VoicePanel className="jarvis-demo-voice-panel" coreClassName="jarvis-hero-core" particleAvatar />
           </div>
 
