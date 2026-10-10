@@ -1294,3 +1294,407 @@ body { letter-spacing: normal; }
 @media (prefers-reduced-motion: reduce) {
   .jarvis-status-led, .jarvis-mini-orbit-ring, .jarvis-mini-orbit-node, .jarvis-telemetry-bars i, .orbital-ring, .orbital-sweep, .orbital-ring--ticks, .orbital-ring--radar, .orbital-lens::after { animation-duration: 20s !important; }
 }
+
+
+/* J.A.R.V.I.S. IMMERSIVE WEBGL VISUAL DEMO */
+.jarvis-visual-command {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  min-height: 600px;
+  overflow: hidden;
+  color: #eee7ff;
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(83, 34, 151, .16), transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(51, 21, 90, .13), transparent 45%),
+    #05030a;
+  font-family: var(--font-sans);
+}
+.jarvis-visual-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(164, 106, 255, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(164, 106, 255, .055) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: radial-gradient(ellipse at 50% 48%, black 12%, transparent 82%);
+}
+.jarvis-visual-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  box-shadow: inset 0 0 150px rgba(0, 0, 0, .8);
+}
+.jarvis-visual-header {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr);
+  align-items: center;
+  gap: 24px;
+  min-height: 78px;
+  padding: 0 28px;
+  border-bottom: 1px solid rgba(177, 124, 255, .16);
+  background: rgba(7, 4, 13, .82);
+  backdrop-filter: blur(20px);
+}
+.jarvis-visual-brand, .jarvis-visual-header-center, .jarvis-visual-header-actions {
+  display: flex;
+  align-items: center;
+}
+.jarvis-visual-brand { gap: 12px; min-width: 0; }
+.jarvis-visual-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: #c39bff;
+  border: 1px solid rgba(177, 124, 255, .45);
+  border-radius: 50%;
+  box-shadow: 0 0 28px rgba(131, 61, 222, .18), inset 0 0 18px rgba(131, 61, 222, .1);
+}
+.jarvis-visual-brand h1 {
+  margin: 0;
+  font: 500 20px/1.1 var(--font-display);
+  letter-spacing: .13em;
+}
+.jarvis-visual-brand p {
+  margin: 5px 0 0;
+  color: #8f83a7;
+  font: 400 8px/1.2 var(--font-display);
+  letter-spacing: .11em;
+}
+.jarvis-visual-brand p span { color: #b17cff; margin: 0 4px; }
+.jarvis-visual-header-center {
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+  font: 500 9px/1 var(--font-display);
+  letter-spacing: .13em;
+  color: #d8c9f2;
+}
+.jarvis-visual-header-center i { height: 14px; width: 1px; background: rgba(177, 124, 255, .28); }
+.jarvis-visual-muted { color: #76678e; font-size: 8px; }
+.jarvis-demo-led {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #bd8cff;
+  box-shadow: 0 0 12px rgba(177, 124, 255, .9);
+  animation: jarvis-demo-led-pulse 1.8s ease-in-out infinite;
+}
+.jarvis-visual-header-actions { justify-content: flex-end; gap: 16px; }
+.jarvis-visual-operator { display: flex; flex-direction: column; gap: 4px; text-align: right; min-width: 0; }
+.jarvis-visual-operator span { font: 400 8px/1 var(--font-display); letter-spacing: .13em; color: #776a8a; }
+.jarvis-visual-operator strong { max-width: 190px; overflow: hidden; text-overflow: ellipsis; font: 500 10px/1.2 var(--font-display); color: #dcd1f1; }
+.jarvis-visual-icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(177, 124, 255, .2);
+  border-radius: 7px;
+  color: #a99abf;
+  background: rgba(27, 15, 42, .65);
+  transition: color .2s, border-color .2s, background .2s;
+}
+.jarvis-visual-icon-button:hover { color: #eee7ff; border-color: #a56cff; background: rgba(84, 35, 133, .35); }
+.jarvis-visual-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(205px, 250px) minmax(0, 1fr) minmax(225px, 270px);
+  flex: 1;
+  min-height: 0;
+  gap: clamp(14px, 1.8vw, 28px);
+  padding: 22px clamp(16px, 2.1vw, 34px) 14px;
+}
+.jarvis-demo-rail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.jarvis-demo-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 25px;
+  color: #9b8ab5;
+  font: 500 8px/1 var(--font-display);
+  letter-spacing: .13em;
+}
+.jarvis-demo-section-title > span { color: #b88aff; }
+.jarvis-demo-section-title > b { font-weight: 500; white-space: nowrap; }
+.jarvis-demo-section-title > i { height: 1px; flex: 1; background: linear-gradient(90deg, rgba(177,124,255,.32), transparent); }
+.jarvis-demo-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(170, 116, 255, .17);
+  background: linear-gradient(145deg, rgba(20, 12, 32, .86), rgba(8, 5, 15, .88));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.018), 0 15px 50px rgba(0,0,0,.15);
+  padding: 15px 14px;
+}
+.jarvis-demo-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 28px;
+  height: 1px;
+  background: #bd8cff;
+  box-shadow: 0 0 9px #9b4dff;
+}
+.jarvis-demo-panel-topline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  color: #b69adf;
+  font: 500 8px/1.2 var(--font-display);
+  letter-spacing: .12em;
+}
+.jarvis-demo-panel-topline svg { color: #b88aff; }
+.jarvis-demo-identity-main { display: flex; align-items: center; gap: 11px; margin: 4px 0 15px; }
+.jarvis-demo-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(177,124,255,.35);
+  border-radius: 8px;
+  color: #c6a5ff;
+  background: radial-gradient(circle at 30% 25%, rgba(138,75,218,.3), rgba(16,8,27,.6));
+}
+.jarvis-demo-identity-main > div:last-child { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.jarvis-demo-identity-main small { font: 400 7px/1 var(--font-display); color: #736584; letter-spacing: .12em; }
+.jarvis-demo-identity-main strong { max-width: 160px; overflow: hidden; text-overflow: ellipsis; font: 500 11px/1.3 var(--font-display); color: #e5d8ff; }
+.jarvis-demo-divider { height: 1px; margin: 0 0 12px; background: linear-gradient(90deg, rgba(177,124,255,.3), transparent); }
+.jarvis-demo-readout { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 10px; }
+.jarvis-demo-readout span { color: #766b87; font: 400 7px/1.3 var(--font-display); letter-spacing: .08em; }
+.jarvis-demo-readout b { text-align: right; color: #c7b7e1; font: 500 7px/1.3 var(--font-display); letter-spacing: .04em; }
+.jarvis-demo-feature { display: grid; grid-template-columns: 30px minmax(0,1fr) 5px; align-items: center; gap: 9px; margin-top: 14px; }
+.jarvis-demo-feature-icon { display: grid; place-items: center; width: 30px; height: 30px; color: #ba95ff; border: 1px solid rgba(177,124,255,.15); background: rgba(121,64,184,.08); }
+.jarvis-demo-feature > div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.jarvis-demo-feature strong { color: #d5c8e9; font: 500 9px/1.2 var(--font-display); }
+.jarvis-demo-feature small { color: #766987; font: 400 6px/1.2 var(--font-display); letter-spacing: .08em; }
+.jarvis-demo-feature-led { width: 4px; height: 4px; border-radius: 50%; background: #a56cff; box-shadow: 0 0 9px rgba(165,108,255,.8); }
+.jarvis-demo-rail-note { display: flex; gap: 9px; margin-top: auto; padding: 11px 2px 4px; border-top: 1px solid rgba(177,124,255,.14); }
+.jarvis-demo-note-mark { display: grid; place-items: center; width: 14px; height: 14px; flex: 0 0 14px; border: 1px solid rgba(177,124,255,.45); border-radius: 50%; color: #b88aff; font: 500 9px/1 var(--font-display); }
+.jarvis-demo-rail-note p { margin: 0; color: #7d718f; font-size: 9px; line-height: 1.6; }
+.jarvis-demo-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(161, 105, 255, .13);
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(100, 43, 165, .08), transparent 55%),
+    linear-gradient(180deg, rgba(12,7,20,.32), rgba(8,4,14,.12));
+}
+.jarvis-demo-stage-corners { position: absolute; inset: 10px; pointer-events: none; z-index: 5; }
+.jarvis-demo-stage-corners i { position: absolute; width: 19px; height: 19px; border-color: rgba(186,139,255,.52); border-style: solid; }
+.jarvis-demo-stage-corners i:nth-child(1) { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.jarvis-demo-stage-corners i:nth-child(2) { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.jarvis-demo-stage-corners i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.jarvis-demo-stage-corners i:nth-child(4) { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
+.jarvis-demo-stage-top {
+  position: absolute;
+  z-index: 4;
+  top: 25px;
+  left: 26px;
+  right: 26px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+.jarvis-demo-eyebrow { color: #827294; font: 400 7px/1.3 var(--font-display); letter-spacing: .17em; }
+.jarvis-demo-stage-top h2 { margin: 6px 0 0; font: 300 clamp(17px, 2vw, 25px)/1.1 var(--font-display); letter-spacing: .1em; }
+.jarvis-demo-stage-top h2 em { color: #bd8cff; font-style: normal; }
+.jarvis-demo-live-tag { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid rgba(177,124,255,.18); color: #ae9bc7; font: 400 7px/1 var(--font-display); letter-spacing: .11em; white-space: nowrap; }
+.jarvis-demo-live-tag span { width: 4px; height: 4px; border-radius: 50%; background: #c19aff; box-shadow: 0 0 8px #b17cff; }
+.jarvis-demo-orbital-field {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  isolation: isolate;
+}
+.jarvis-demo-orbital-field::before {
+  content: "";
+  position: absolute;
+  width: min(56%, 450px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(171,119,255,.09);
+  border-radius: 50%;
+  box-shadow: 0 0 70px rgba(119,50,202,.055), inset 0 0 70px rgba(119,50,202,.035);
+  pointer-events: none;
+}
+.jarvis-demo-orbital-field::after {
+  content: "";
+  position: absolute;
+  width: 72%;
+  height: 1px;
+  top: 50%;
+  left: 14%;
+  background: linear-gradient(90deg, transparent, rgba(164,111,255,.18), transparent);
+  pointer-events: none;
+}
+.jarvis-hero-core {
+  position: relative !important;
+  z-index: 2;
+  width: min(48vw, 510px, 58vh) !important;
+  height: min(48vw, 510px, 58vh) !important;
+  filter: drop-shadow(0 0 28px rgba(117,52,207,.15));
+}
+.jarvis-demo-axis { position: absolute; z-index: 3; color: rgba(195,156,255,.5); font: 500 8px/1 var(--font-display); letter-spacing: .1em; }
+.jarvis-demo-axis span { display: block; margin-top: 4px; color: rgba(138,116,163,.65); font-size: 6px; }
+.jarvis-demo-axis--x { right: 13%; top: 37%; }
+.jarvis-demo-axis--y { left: 14%; top: 29%; }
+.jarvis-demo-axis--z { right: 22%; bottom: 25%; }
+.jarvis-demo-reticle { position: absolute; z-index: 1; width: 12px; height: 12px; border: 1px solid rgba(180,124,255,.25); transform: rotate(45deg); }
+.jarvis-demo-reticle--one { left: 15%; bottom: 30%; }
+.jarvis-demo-reticle--two { right: 18%; top: 30%; width: 7px; height: 7px; border-color: rgba(111,218,255,.4); }
+.jarvis-demo-core-label { display: flex; align-items: center; justify-content: center; gap: 13px; width: min(75%, 440px); margin: -1px 0 13px; text-align: center; }
+.jarvis-demo-core-label > div { display: flex; flex-direction: column; gap: 5px; }
+.jarvis-demo-core-label strong { color: #d7c6f5; font: 500 8px/1.2 var(--font-display); letter-spacing: .16em; }
+.jarvis-demo-core-label small { color: #81728f; font: 400 6px/1.2 var(--font-display); letter-spacing: .12em; white-space: nowrap; }
+.jarvis-demo-core-line { height: 1px; flex: 1; background: linear-gradient(90deg, transparent, rgba(177,124,255,.4)); }
+.jarvis-demo-core-line:last-child { transform: rotate(180deg); }
+.jarvis-demo-stage-bottom { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); width: calc(100% - 50px); gap: 10px; margin-bottom: 15px; padding-top: 13px; border-top: 1px solid rgba(177,124,255,.13); }
+.jarvis-demo-stage-metric { display: grid; grid-template-columns: 16px minmax(0,1fr); align-items: center; column-gap: 7px; row-gap: 5px; min-width: 0; }
+.jarvis-demo-stage-metric svg { grid-row: span 2; color: #aa83dd; }
+.jarvis-demo-stage-metric span { overflow: hidden; color: #867697; font: 400 6px/1.2 var(--font-display); letter-spacing: .05em; text-overflow: ellipsis; white-space: nowrap; }
+.jarvis-demo-stage-metric b { color: #ccb5ef; font: 500 7px/1.2 var(--font-display); letter-spacing: .04em; }
+.jarvis-demo-boost-button {
+  position: absolute;
+  z-index: 6;
+  right: 25px;
+  bottom: 72px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(180,124,255,.3);
+  padding: 10px 12px;
+  color: #d8c4f9;
+  background: rgba(23,11,38,.9);
+  font: 500 7px/1 var(--font-display);
+  letter-spacing: .09em;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.jarvis-demo-boost-button:hover { border-color: #b17cff; background: rgba(68,31,106,.7); box-shadow: 0 0 20px rgba(123,53,197,.13); }
+.jarvis-demo-pipeline-step { display: grid; grid-template-columns: 26px minmax(0,1fr) auto; align-items: center; gap: 9px; margin-top: 16px; }
+.jarvis-demo-pipeline-number { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid rgba(177,124,255,.18); color: #9f84c3; background: rgba(94,49,142,.12); font: 400 8px/1 var(--font-display); }
+.jarvis-demo-pipeline-step > div:nth-child(2) { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.jarvis-demo-pipeline-step strong { color: #d2c3e7; font: 500 8px/1.2 var(--font-display); }
+.jarvis-demo-pipeline-step small { color: #786b89; font: 400 6px/1.2 var(--font-display); letter-spacing: .05em; }
+.jarvis-demo-pipeline-step > span { color: #be91ff; font-size: 11px; }
+.jarvis-demo-spec { display: flex; flex-direction: column; gap: 7px; padding: 10px 0; border-bottom: 1px solid rgba(177,124,255,.1); }
+.jarvis-demo-spec:last-child { border-bottom: 0; padding-bottom: 0; }
+.jarvis-demo-spec > span { color: #776984; font: 400 7px/1 var(--font-display); letter-spacing: .12em; }
+.jarvis-demo-spec > strong { color: #c3afd9; font: 500 8px/1.3 var(--font-display); letter-spacing: .03em; overflow-wrap: anywhere; }
+.jarvis-demo-spec > div { display: flex; gap: 5px; }
+.jarvis-demo-spec > div b { display: grid; place-items: center; width: 25px; height: 22px; border: 1px solid rgba(177,124,255,.2); color: #c5a4f7; background: rgba(106,51,166,.12); font: 500 8px/1 var(--font-display); }
+.jarvis-demo-status-panel { display: flex; gap: 11px; margin-top: auto; padding: 14px 12px; border: 1px solid rgba(177,124,255,.18); background: rgba(22,12,35,.5); }
+.jarvis-demo-status-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; color: #b88aff; border: 1px solid rgba(177,124,255,.27); }
+.jarvis-demo-status-panel strong { color: #cdb5f2; font: 500 8px/1.2 var(--font-display); letter-spacing: .1em; }
+.jarvis-demo-status-panel p { margin: 6px 0 0; color: #7f728f; font-size: 8px; line-height: 1.55; }
+.jarvis-visual-footer {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 37px;
+  padding: 0 28px;
+  border-top: 1px solid rgba(177,124,255,.13);
+  background: rgba(6,3,10,.87);
+  color: #776986;
+  font: 400 7px/1.2 var(--font-display);
+  letter-spacing: .12em;
+}
+.jarvis-visual-footer > div { display: flex; align-items: center; gap: 8px; color: #a797bc; }
+.jarvis-visual-footer > span { display: flex; align-items: center; gap: 9px; }
+.jarvis-visual-footer i { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: #a878f1; }
+@keyframes jarvis-demo-led-pulse { 50% { opacity: .5; box-shadow: 0 0 4px rgba(177,124,255,.55); } }
+@media (max-width: 1250px) {
+  .jarvis-visual-header { grid-template-columns: minmax(200px,1fr) auto minmax(190px,1fr); padding: 0 18px; gap: 12px; }
+  .jarvis-visual-muted { display: none; }
+  .jarvis-visual-layout { grid-template-columns: minmax(180px, 220px) minmax(0,1fr) minmax(190px, 225px); gap: 12px; padding: 16px 14px 12px; }
+  .jarvis-demo-panel { padding: 12px 10px; }
+  .jarvis-demo-stage-top { top: 18px; left: 19px; right: 19px; }
+  .jarvis-demo-stage-bottom { width: calc(100% - 38px); }
+  .jarvis-demo-boost-button { right: 20px; bottom: 65px; }
+}
+@media (max-width: 980px) {
+  .jarvis-visual-command { height: 100dvh; overflow-y: auto; }
+  .jarvis-visual-header { grid-template-columns: minmax(0,1fr) auto; min-height: 70px; }
+  .jarvis-visual-header-center { display: none; }
+  .jarvis-visual-layout { display: flex; flex-direction: column; overflow: visible; }
+  .jarvis-demo-stage { order: 0; min-height: 660px; }
+  .jarvis-demo-rail--left { order: 1; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; }
+  .jarvis-demo-rail--left .jarvis-demo-section-title, .jarvis-demo-rail-note { grid-column: 1 / -1; }
+  .jarvis-demo-rail--right { order: 2; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; }
+  .jarvis-demo-rail--right .jarvis-demo-section-title, .jarvis-demo-status-panel { grid-column: 1 / -1; }
+  .jarvis-demo-stage-bottom { margin-bottom: 18px; }
+  .jarvis-hero-core { width: min(66vw, 460px, 44vh) !important; height: min(66vw, 460px, 44vh) !important; }
+  .jarvis-visual-footer { padding: 10px 18px; flex-wrap: wrap; min-height: 42px; }
+}
+@media (max-width: 600px) {
+  .jarvis-visual-header { min-height: 68px; padding: 0 13px; gap: 8px; }
+  .jarvis-visual-brand { gap: 9px; }
+  .jarvis-visual-brand-mark { width: 32px; height: 32px; }
+  .jarvis-visual-brand h1 { font-size: 16px; }
+  .jarvis-visual-brand p { font-size: 6px; letter-spacing: .06em; }
+  .jarvis-visual-operator { display: none; }
+  .jarvis-visual-layout { gap: 12px; padding: 10px; }
+  .jarvis-demo-stage { min-height: 570px; }
+  .jarvis-demo-stage-top { top: 17px; left: 17px; right: 17px; }
+  .jarvis-demo-eyebrow { font-size: 6px; letter-spacing: .1em; }
+  .jarvis-demo-stage-top h2 { font-size: 17px; }
+  .jarvis-demo-live-tag { padding: 6px; font-size: 6px; }
+  .jarvis-hero-core { width: min(78vw, 330px, 39vh) !important; height: min(78vw, 330px, 39vh) !important; }
+  .jarvis-demo-axis--x { right: 7%; top: 35%; }
+  .jarvis-demo-axis--y { left: 7%; top: 29%; }
+  .jarvis-demo-axis--z { right: 11%; bottom: 25%; }
+  .jarvis-demo-core-label { width: 86%; gap: 8px; }
+  .jarvis-demo-core-label strong { font-size: 7px; }
+  .jarvis-demo-core-label small { font-size: 5px; }
+  .jarvis-demo-stage-bottom { width: calc(100% - 24px); gap: 7px; margin-bottom: 78px; }
+  .jarvis-demo-stage-metric { grid-template-columns: 12px minmax(0,1fr); column-gap: 5px; }
+  .jarvis-demo-stage-metric svg { width: 12px; }
+  .jarvis-demo-stage-metric span { font-size: 5px; }
+  .jarvis-demo-stage-metric b { font-size: 6px; }
+  .jarvis-demo-boost-button { right: 50%; bottom: 18px; transform: translateX(50%); justify-content: center; width: max-content; max-width: calc(100% - 24px); padding: 11px 10px; font-size: 6px; white-space: nowrap; }
+  .jarvis-demo-rail--left, .jarvis-demo-rail--right { display: flex; }
+  .jarvis-demo-rail--left .jarvis-demo-panel:first-of-type { order: 0; }
+  .jarvis-demo-rail-note { order: 3; }
+  .jarvis-demo-rail--right .jarvis-demo-section-title { margin-top: 6px; }
+  .jarvis-visual-footer { gap: 8px; padding: 10px 13px; font-size: 6px; }
+  .jarvis-visual-footer > span:nth-child(2) { display: none; }
+}
+@media (max-height: 740px) and (min-width: 981px) {
+  .jarvis-visual-header { min-height: 64px; }
+  .jarvis-visual-layout { padding-top: 12px; padding-bottom: 8px; }
+  .jarvis-demo-rail { gap: 9px; }
+  .jarvis-demo-panel { padding: 10px; }
+  .jarvis-demo-panel-topline { margin-bottom: 10px; }
+  .jarvis-demo-stage-top { top: 16px; }
+  .jarvis-demo-stage-bottom { margin-bottom: 9px; padding-top: 8px; }
+  .jarvis-hero-core { width: min(42vw, 380px, 48vh) !important; height: min(42vw, 380px, 48vh) !important; }
+  .jarvis-demo-boost-button { bottom: 57px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jarvis-demo-led { animation: none !important; }
+}
