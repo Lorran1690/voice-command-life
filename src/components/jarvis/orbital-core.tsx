@@ -38,6 +38,24 @@ function program(gl: WebGLRenderingContext) {
     "varying vec3 vNormal;",
     "varying vec3 vColor;",
     "varying vec3 vPosition;",
+    "void main() {",
+    "  gl_Position = uMvp * vec4(aPosition, 1.0);",
+    "  gl_PointSize = uPointSize * (0.85 + 0.3 * sin(uTime * 1.7 + aPosition.x * 31.0 + aPosition.y * 19.0));",
+    "  vNormal = normalize(mat3(uModel) * aNormal);",
+    "  vColor = aColor;",
+    "  vPosition = aPosition;",
+    "}"
+  ].join("\n");
+
+  const fragmentSource = [
+    "precision mediump float;",
+    "uniform float uOpacity;",
+    "uniform float uPointMode;",
+    "uniform float uTime;",
+    "uniform float uMaterial;",
+    "varying vec3 vNormal;",
+    "varying vec3 vColor;",
+    "varying vec3 vPosition;",
     "float hash31(vec3 p) {",
     "  p = fract(p * 0.1031);",
     "  p += dot(p, p.yzx + 33.33);",
@@ -57,24 +75,6 @@ function program(gl: WebGLRenderingContext) {
     "  float n111 = hash31(i + vec3(1.0,1.0,1.0));",
     "  return mix(mix(mix(n000,n100,f.x),mix(n010,n110,f.x),f.y),mix(mix(n001,n101,f.x),mix(n011,n111,f.x),f.y),f.z);",
     "}",
-    "void main() {",
-    "  gl_Position = uMvp * vec4(aPosition, 1.0);",
-    "  gl_PointSize = uPointSize * (0.85 + 0.3 * sin(uTime * 1.7 + aPosition.x * 31.0 + aPosition.y * 19.0));",
-    "  vNormal = normalize(mat3(uModel) * aNormal);",
-    "  vColor = aColor;",
-    "  vPosition = aPosition;",
-    "}"
-  ].join("\n");
-
-  const fragmentSource = [
-    "precision mediump float;",
-    "uniform float uOpacity;",
-    "uniform float uPointMode;",
-    "uniform float uTime;",
-    "uniform float uMaterial;",
-    "varying vec3 vNormal;",
-    "varying vec3 vColor;",
-    "varying vec3 vPosition;",
     "void main() {",
     "  if (uPointMode > 0.5) {",
     "    float d = length(gl_PointCoord - vec2(0.5));",
