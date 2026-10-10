@@ -1493,14 +1493,14 @@ export function OrbitalCore({ active = false, muted = false, speaking = false, p
       data-active={active}
       aria-hidden="true"
     >
-      <OrbitalCore3D active={active} speaking={speaking} />
+      {!particleAvatar && <OrbitalCore3D active={active} speaking={speaking} />}
       {particleAvatar && <ParticleAvatarOverlay active={active} speaking={speaking} />}
-      <div className="orbital-core-hud" aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
+      {!particleAvatar && <div className="orbital-core-hud" aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
         <span className="orbital-core-hud-crosshair" style={{ position: "absolute", inset: "18px", borderLeft: "1px solid rgba(177, 128, 255, .14)", borderRight: "1px solid rgba(177, 128, 255, .14)" }} />
         <span className="orbital-core-hud-node orbital-core-hud-node--one" style={{ position: "absolute", top: "22%", left: "20%", width: 5, height: 5, borderRadius: "50%", background: "#b17cff", boxShadow: "0 0 12px #9b4dff" }} />
         <span className="orbital-core-hud-node orbital-core-hud-node--two" style={{ position: "absolute", top: "70%", right: "15%", width: 4, height: 4, borderRadius: "50%", background: "#78dfff", boxShadow: "0 0 10px #78dfff" }} />
         <span className="orbital-core-hud-node orbital-core-hud-node--three" style={{ position: "absolute", bottom: "18%", left: "29%", width: 4, height: 4, borderRadius: "50%", background: "#d7a8ff", boxShadow: "0 0 10px #b17cff" }} />
-      </div>
+      </div>}
     </div>
   );
 }
