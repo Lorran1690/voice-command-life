@@ -835,7 +835,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     };
 
     // Face: a tapered oval with fuller cheeks, a narrower chin and a clean jaw.
-    for (let i = 0; i < 2650; i++) {
+    for (let i = 0; i < 4400; i++) {
       const y = 0.175 + random() * 0.375;
       const t = (y - 0.365) / 0.19;
       const oval = Math.sqrt(Math.max(0.008, 1 - t * t));
@@ -848,7 +848,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // A delicate particle contour follows temples, cheekbones and the feminine jaw.
-    for (let i = 0; i < 440; i++) {
+    for (let i = 0; i < 560; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const t = random();
       const y = 0.205 + t * 0.34;
@@ -860,7 +860,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // Scalp volume: the crown is slightly raised and parted, not a round particle ball.
-    for (let i = 0; i < 1500; i++) {
+    for (let i = 0; i < 1750; i++) {
       const angle = (random() * 2 - 1) * 1.82;
       const radius = 0.38 + Math.sqrt(random()) * 0.62;
       const x = 0.5 + Math.sin(angle) * 0.171 * radius;
@@ -869,7 +869,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // A parted front hairline gives the face a more feminine silhouette.
-    for (let i = 0; i < 310; i++) {
+    for (let i = 0; i < 400; i++) {
       const u = random() * 2 - 1;
       const x = 0.5 + u * 0.145;
       const y = 0.187 + Math.pow(Math.abs(u), 1.55) * 0.078 + (random() - 0.5) * 0.008;
@@ -877,7 +877,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // Long hair falls on both sides of the face in independent, lightly waving strands.
-    for (let i = 0; i < 2050; i++) {
+    for (let i = 0; i < 2600; i++) {
       const side = random() < 0.5 ? -1 : 1;
       const t = random();
       const strand = random() * tau;
@@ -889,7 +889,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // Inner face-framing locks curve in around the cheeks and then flow over the shoulders.
-    for (let i = 0; i < 870; i++) {
+    for (let i = 0; i < 1000; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const t = random();
       const x = 0.5 + side * (0.118 + 0.045 * t + 0.018 * Math.sin(t * 4.0 + (i % 19)));
@@ -898,7 +898,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // Neck, collarbones and upper torso, cut at the ribcage rather than a floating sphere.
-    for (let i = 0; i < 2100; i++) {
+    for (let i = 0; i < 2500; i++) {
       const y = 0.585 + random() * 0.285;
       let halfWidth: number;
       if (y < 0.675) {
@@ -908,14 +908,14 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       } else if (y < 0.81) {
         halfWidth = 0.305 - ((y - 0.745) / 0.065) * 0.018;
       } else {
-        halfWidth = 0.287 - ((y - 0.81) / 0.06) * 0.02;
+        halfWidth = 0.287 - ((y - 0.81) / 0.06) * 0.10;
       }
       const x = 0.5 + (random() * 2 - 1) * halfWidth;
       add(x, y, 2, random() < 0.17 ? 4 : random() < 0.30 ? 3 : 0, 0.48 + random() * 0.85);
     }
 
     // Particle strands trace the shoulders and clavicles, without drawing orbit lines.
-    for (let i = 0; i < 620; i++) {
+    for (let i = 0; i < 720; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const t = random();
       const shoulderX = 0.5 + side * (0.075 + 0.235 * t);
@@ -929,14 +929,14 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // Eyes use almond-shaped particle contours and separate bright iris/pupil clusters.
-    for (let i = 0; i < 260; i++) {
+    for (let i = 0; i < 300; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const a = random() * tau;
       const x = 0.5 + side * 0.064 + Math.cos(a) * 0.030;
       const y = 0.342 + Math.sin(a) * 0.0125 * (0.72 + 0.28 * Math.abs(Math.cos(a)));
       add(x, y, 3, random() < 0.35 ? 5 : 3, 0.75 + random() * 0.9);
     }
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 170; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const a = random() * tau;
       const r = Math.sqrt(random()) * 0.0105;
@@ -944,7 +944,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     }
 
     // Brows add expression and structure above the eyes.
-    for (let i = 0; i < 190; i++) {
+    for (let i = 0; i < 220; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const t = random() * 2 - 1;
       add(0.5 + side * (0.064 + t * 0.037), 0.315 - (1 - t * t) * 0.011, 5, 1, 0.58 + random() * 0.82);
@@ -1047,7 +1047,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
 
         const mix = blend;
         // Measure the portrait in stage-height units to preserve facial proportions on wide screens.
-        const avatarX = width * 0.5 + (tx - 0.5) * height * 1.24;
+        const avatarX = width * 0.5 + (tx - 0.5) * height * 1.42;
         const x = idleX * (1 - mix) + avatarX * mix;
         const y = idleY * (1 - mix) + ty * height * mix;
         pointX[i] = x;
