@@ -869,6 +869,8 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       return;
     }
 
+    const particlePositions = particleCloud ? new Float32Array(particleCloud.idle.length) : null;
+
     const meshAt = (index: number): Mesh => {
       const mesh = meshes[index];
       if (!mesh) throw new Error("Geometria 3D ausente: " + index);
@@ -1021,9 +1023,9 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       draw(meshAt(21), projectionMatrix, multiply(base, rotateY(-angle * 0.16)), activeRef.current ? 0.9 : 0.66, true, sceneTime);
 
       // The same points flow through the scene in standby and assemble into a living face on call.
-      if (particleCloud) {
+      if (particleCloud && particlePositions) {
         const cloud = particleCloud;
-        const positions = new Float32Array(cloud.idle.length);
+        const positions = particlePositions;
         const blinkPhase = elapsed % 4.8;
         const blink = Math.max(0, 1 - Math.abs(blinkPhase - 4.55) / 0.13);
         smoothedVoiceLevel += (speakingLevelRef.current - smoothedVoiceLevel) * 0.38;
