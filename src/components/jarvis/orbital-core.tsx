@@ -197,6 +197,78 @@ function torus(
   return buildMesh(gl, positions, normals, colors, indices, gl.TRIANGLES, material);
 }
 
+function geodesicCage(
+  gl: WebGLRenderingContext,
+  radius: number,
+  color: [number, number, number],
+  subdivisions = 2
+) {
+  type Vec3 = [number, number, number];
+  type Face = [number, number, number];
+  const golden = (1 + Math.sqrt(5)) / 2;
+  const vertices: Vec3[] = [
+    [-1, golden, 0], [1, golden, 0], [-1, -golden, 0], [1, -golden, 0],
+    [0, -1, golden], [0, 1, golden], [0, -1, -golden], [0, 1, -golden],
+    [golden, 0, -1], [golden, 0, 1], [-golden, 0, -1], [-golden, 0, 1]
+  ];
+  const normalize = (point: Vec3): Vec3 => {
+    const length = Math.hypot(point[0], point[1], point[2]) || 1;
+    return [point[0] / length, point[1] / length, point[2] / length];
+  };
+  for (let i = 0; i < vertices.length; i++) vertices[i] = normalize(vertices[i]);
+  let faces: Face[] = [
+    [0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
+    [1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+    [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
+    [4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]
+  ];
+  for (let iteration = 0; iteration < subdivisions; iteration++) {
+    const midpointCache = new Map<string, number>();
+    const midpoint = (a: number, b: number) => {
+      const key = String(a < b ? a : b) + ":" + String(a < b ? b : a);
+      const found = midpointCache.get(key);
+      if (found !== undefined) return found;
+      const pa = vertices[a];
+      const pb = vertices[b];
+      const point = normalize([
+        (pa[0] + pb[0]) / 2,
+        (pa[1] + pb[1]) / 2,
+        (pa[2] + pb[2]) / 2
+      ]);
+      const index = vertices.push(point) - 1;
+      midpointCache.set(key, index);
+      return index;
+    };
+    const next: Face[] = [];
+    for (const [a, b, c] of faces) {
+      const ab = midpoint(a, b);
+      const bc = midpoint(b, c);
+      const ca = midpoint(c, a);
+      next.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
+    }
+    faces = next;
+  }
+
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  const drawnEdges = new Set<string>();
+  for (const [a, b, c] of faces) {
+    for (const [from, to] of [[a, b], [b, c], [c, a]] as Face[]) {
+      const key = String(from < to ? from : to) + ":" + String(from < to ? to : from);
+      if (drawnEdges.has(key)) continue;
+      drawnEdges.add(key);
+      const start = vertices[from];
+      const end = vertices[to];
+      positions.push(start[0] * radius, start[1] * radius, start[2] * radius);
+      positions.push(end[0] * radius, end[1] * radius, end[2] * radius);
+      normals.push(...start, ...end);
+      colors.push(...color, ...color);
+    }
+  }
+  return buildMesh(gl, positions, normals, colors, null, gl.LINES, 2);
+}
+
 function wireSphere(gl: WebGLRenderingContext, radius: number, color: [number, number, number], rows = 26, columns = 96) {
   const positions: number[] = [];
   const normals: number[] = [];
@@ -412,7 +484,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       sceneProgram = program(gl);
       meshes = [
         // Main filigree cage and four independent orbital planes.
-        wireSphere(gl, 0.63, [0.39, 0.21, 0.82], 28, 112),
+        geodesicCage(gl, 0.63, [0.39, 0.21, 0.82], 2),
         torus(gl, 0.69, 0.006, [0.52, 0.23, 1.0]),
         torus(gl, 0.60, 0.0045, [0.18, 0.83, 1.0]),
         torus(gl, 0.76, 0.004, [0.78, 0.42, 1.0]),
@@ -425,7 +497,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
         // Nested translucent shells and a luminous inner seed.
         sphere(gl, 0.47, [0.18, 0.05, 0.47], 56, 88, 1),
         sphere(gl, 0.405, [0.24, 0.08, 0.68], 52, 80, 1),
-        wireSphere(gl, 0.365, [0.34, 0.16, 0.72], 22, 84),
+        geodesicCage(gl, 0.365, [0.34, 0.16, 0.72], 1),
         sphere(gl, 0.30, [0.10, 0.20, 0.60], 48, 72, 1),
         sphere(gl, 0.205, [0.14, 0.44, 0.78], 40, 60, 1),
         sphere(gl, 0.125, [0.46, 0.72, 1.0], 36, 54, 1),
