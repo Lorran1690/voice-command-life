@@ -1013,7 +1013,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       if (Math.abs(targetBlend - blend) < 0.0008) blend = targetBlend;
       voiceLevel += (voiceLevelRef.current - voiceLevel) * 0.36;
       const synthetic = Math.max(0, Math.sin(time * 11.8 + Math.sin(time * 2.1) * 0.7));
-      const mouthOpen = speakingRef.current ? (measuredRef.current ? voiceLevel : synthetic * 0.8) : 0;
+      const mouthOpen = speakingRef.current ? (measuredRef.current ? voiceLevel : synthetic * 0.72) * 0.035 : 0;
       const lookX = (pointerX - 0.5) * 0.012;
       const lookY = (pointerY - 0.48) * 0.010;
       const blinkPhase = (time + 1.35) % 5.2;
