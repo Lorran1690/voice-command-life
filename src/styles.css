@@ -2086,3 +2086,46 @@ body { letter-spacing: normal; }
   pointer-events: none;
   z-index: 3;
 }
+
+
+/* Particle-only portrait mode: remove the decorative orbit system and purple fog. */
+.jarvis-demo-stage--particle-only {
+  background: transparent !important;
+}
+.jarvis-demo-stage--particle-only .jarvis-demo-nebula,
+.jarvis-demo-stage--particle-only .jarvis-demo-depth-ring,
+.jarvis-demo-stage--particle-only .jarvis-demo-axis,
+.jarvis-demo-stage--particle-only .jarvis-demo-reticle {
+  display: none !important;
+}
+.jarvis-demo-stage--particle-only .jarvis-demo-orbital-field::before,
+.jarvis-demo-stage--particle-only .jarvis-demo-orbital-field::after {
+  content: none !important;
+  display: none !important;
+}
+.jarvis-demo-stage--particle-only .jarvis-hero-core {
+  filter: none !important;
+  box-shadow: none !important;
+}
+.jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-core-3d,
+.jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-core-hud,
+.jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-3d-caption,
+.jarvis-demo-stage--particle-only .jarvis-hero-core .orbital-3d-target {
+  display: none !important;
+}
+.jarvis-demo-stage--particle-only .jarvis-demo-core-label {
+  text-shadow: none;
+}
+.jarvis-demo-stage--particle-only .jarvis-demo-core-line {
+  background: linear-gradient(90deg, transparent, rgba(130, 210, 255, .24));
+}
+.jarvis-demo-stage--particle-only .jarvis-demo-core-label small {
+  color: rgba(170, 200, 230, .62);
+}
+.jarvis-demo-stage--particle-only .jarvis-voice-status {
+  color: rgba(177, 203, 239, .86);
+}
+.jarvis-demo-stage--particle-only .jarvis-hero-core .jarvis-particle-avatar-canvas {
+  filter: none;
+}
+
