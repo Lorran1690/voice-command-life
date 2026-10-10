@@ -39,11 +39,14 @@ function program(gl: WebGLRenderingContext) {
     "varying vec3 vColor;",
     "varying vec3 vPosition;",
     "void main() {",
-    "  gl_Position = uMvp * vec4(aPosition, 1.0);",
+    "  float organicSurface = 1.0 - step(1.5, uMaterial);",
+    "  float livingWave = sin(uTime * 0.34 + aPosition.x * 5.2 + aPosition.z * 4.4) * cos(aPosition.y * 4.7 - uTime * 0.21);",
+    "  vec3 displaced = aPosition + normalize(aNormal) * livingWave * 0.009 * organicSurface;",
+    "  gl_Position = uMvp * vec4(displaced, 1.0);",
     "  gl_PointSize = uPointSize * (0.85 + 0.3 * sin(uTime * 1.7 + aPosition.x * 31.0 + aPosition.y * 19.0));",
     "  vNormal = normalize(mat3(uModel) * aNormal);",
     "  vColor = aColor;",
-    "  vPosition = aPosition;",
+    "  vPosition = displaced;",
     "}"
   ].join("\n");
 
