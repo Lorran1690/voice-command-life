@@ -27,7 +27,7 @@ type Recognition = {
 
 type RecognitionConstructor = new () => Recognition;
 
-export function VoicePanel() {
+export function VoicePanel({ className = "", coreClassName = "" }: { className?: string; coreClassName?: string } = {}) {
   const [active, setActive] = useState(false);
   const [listening, setListening] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -204,14 +204,14 @@ export function VoicePanel() {
   }
 
   return (
-    <section className="voice-stage hud-enter flex shrink-0 flex-col items-center gap-3 px-4 pt-5 pb-3" aria-label="Voz local">
+    <section className={cn("voice-stage hud-enter flex shrink-0 flex-col items-center gap-3 px-4 pt-5 pb-3", className)} aria-label="Voz local">
       <div className="voice-command-readout">
         <span className={cn("voice-signal", active && "voice-signal--active")} />
         <span>CANAL DE VOZ // LOCAL</span>
         <span className="text-primary">OLLAMA</span>
       </div>
 
-      <OrbitalCore active={active || speaking || thinking} muted={!listening} speaking={speaking} />
+      <OrbitalCore active={active || speaking || thinking} muted={!listening} speaking={speaking} className={coreClassName} />
 
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" onClick={toggle} className="rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary">
