@@ -98,7 +98,7 @@ function VisualDemoPage() {
           </div>
         </aside>
 
-        <section className="jarvis-demo-stage" aria-label="Núcleo tridimensional JARVIS">
+        <section className="jarvis-demo-stage jarvis-demo-stage--particle-only" aria-label="Avatar holográfico de partículas JARVIS">
           <div className="jarvis-demo-stage-corners" aria-hidden="true"><i /><i /><i /><i /></div>
           <div className="jarvis-demo-stage-top">
             <div><span className="jarvis-demo-eyebrow">NEURAL INTERFACE / VISUALIZATION 001</span><h2>J.A.R.V.I.S. <em>CORE</em></h2></div>
