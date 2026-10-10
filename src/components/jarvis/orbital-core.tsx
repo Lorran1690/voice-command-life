@@ -9,6 +9,7 @@ type Mesh = {
   indexCount: number;
   vertexCount: number;
   mode: number;
+  material: number;
 };
 
 function shader(gl: WebGLRenderingContext, type: number, source: string) {
@@ -32,14 +33,17 @@ function program(gl: WebGLRenderingContext) {
     "uniform mat4 uMvp;",
     "uniform mat4 uModel;",
     "uniform float uPointSize;",
+    "uniform float uTime;",
+    "uniform float uMaterial;",
     "varying vec3 vNormal;",
     "varying vec3 vColor;",
+    "varying vec3 vPosition;",
     "void main() {",
-    "  vec4 worldPosition = uModel * vec4(aPosition, 1.0);",
     "  gl_Position = uMvp * vec4(aPosition, 1.0);",
-    "  gl_PointSize = uPointSize;",
+    "  gl_PointSize = uPointSize * (0.85 + 0.3 * sin(uTime * 1.7 + aPosition.x * 31.0 + aPosition.y * 19.0));",
     "  vNormal = normalize(mat3(uModel) * aNormal);",
     "  vColor = aColor;",
+    "  vPosition = aPosition;",
     "}"
   ].join("\n");
 
@@ -47,26 +51,36 @@ function program(gl: WebGLRenderingContext) {
     "precision mediump float;",
     "uniform float uOpacity;",
     "uniform float uPointMode;",
+    "uniform float uTime;",
+    "uniform float uMaterial;",
     "varying vec3 vNormal;",
     "varying vec3 vColor;",
+    "varying vec3 vPosition;",
     "void main() {",
     "  if (uPointMode > 0.5) {",
     "    float d = length(gl_PointCoord - vec2(0.5));",
     "    if (d > 0.5) discard;",
     "    float glow = 1.0 - smoothstep(0.08, 0.5, d);",
-    "    gl_FragColor = vec4(vColor * (0.9 + glow * 1.8), glow * uOpacity);",
+    "    float pulse = 0.72 + 0.28 * sin(uTime * 1.8 + vPosition.x * 25.0 + vPosition.y * 34.0);",
+    "    gl_FragColor = vec4(vColor * (0.8 + glow * 2.2) * pulse, glow * uOpacity * pulse);"
     "    return;",
     "  }",
     "  vec3 n = normalize(vNormal);",
     "  vec3 lightDirection = normalize(vec3(-0.42, 0.58, 1.0));",
     "  float diffuse = max(dot(n, lightDirection), 0.0);",
     "  float facing = max(dot(n, vec3(0.0, 0.0, 1.0)), 0.0);",
-    "  float rim = pow(1.0 - facing, 2.15);",
-    "  float specular = pow(max(dot(reflect(-lightDirection, n), vec3(0.0, 0.0, 1.0)), 0.0), 18.0);",
-    "  vec3 color = vColor * (0.18 + diffuse * 0.86);",
-    "  color += vec3(0.28, 0.08, 0.95) * rim * 1.35;",
-    "  color += vec3(0.62, 0.82, 1.0) * specular * 0.65;",
-    "  gl_FragColor = vec4(color, uOpacity * (0.50 + rim * 0.72));",
+    "  float rim = pow(1.0 - facing, 2.8);",
+    "  float specular = pow(max(dot(reflect(-lightDirection, n), vec3(0.0, 0.0, 1.0)), 0.0), 26.0);",
+    "  float etched = abs(sin(vPosition.x * 37.0 + sin(vPosition.y * 13.0 + uTime * 0.035)) * sin(vPosition.z * 43.0 + vPosition.y * 17.0));",
+    "  float filigree = smoothstep(0.82, 0.985, etched);",
+    "  float interference = 0.5 + 0.5 * sin(length(vPosition) * 92.0 - uTime * 0.2 + sin(vPosition.y * 19.0) * 0.5);",
+    "  vec3 color = vColor * (0.12 + diffuse * 0.86);",
+    "  color += vec3(0.22, 0.05, 0.80) * rim * 1.65;",
+    "  color += vec3(0.30, 0.78, 1.0) * pow(rim, 2.1) * 0.48;",
+    "  color += vec3(0.62, 0.82, 1.0) * specular * 0.92;",
+    "  color += vec3(0.50, 0.28, 1.0) * filigree * (0.1 + interference * 0.32) * min(uMaterial, 1.0);",
+    "  if (uMaterial > 1.5) color *= 0.65 + 0.35 * interference;",
+    "  gl_FragColor = vec4(color, uOpacity * (0.25 + rim * 0.86));"
     "}"
   ].join("\n");
 
@@ -101,7 +115,8 @@ function buildMesh(
   normals: number[],
   colors: number[],
   indices: number[] | null,
-  mode = gl.TRIANGLES
+  mode = gl.TRIANGLES,
+  material = 0
 ): Mesh {
   return {
     positions: buffer(gl, gl.ARRAY_BUFFER, new Float32Array(positions)),
@@ -110,11 +125,12 @@ function buildMesh(
     indices: indices ? buffer(gl, gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices)) : null,
     indexCount: indices?.length ?? 0,
     vertexCount: positions.length / 3,
-    mode
+    mode,
+    material
   };
 }
 
-function sphere(gl: WebGLRenderingContext, radius: number, color: [number, number, number], rows = 32, columns = 48) {
+function sphere(gl: WebGLRenderingContext, radius: number, color: [number, number, number], rows = 48, columns = 72, material = 1) {
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
@@ -140,7 +156,7 @@ function sphere(gl: WebGLRenderingContext, radius: number, color: [number, numbe
       indices.push(a, b, a + 1, b, b + 1, a + 1);
     }
   }
-  return buildMesh(gl, positions, normals, colors, indices);
+  return buildMesh(gl, positions, normals, colors, indices, gl.TRIANGLES, material);
 }
 
 function torus(
@@ -148,15 +164,18 @@ function torus(
   majorRadius: number,
   tubeRadius: number,
   color: [number, number, number],
-  segments = 144,
-  sides = 10
+  segments = 220,
+  sides = 8,
+  startAngle = 0,
+  endAngle = Math.PI * 2,
+  material = 0
 ) {
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
   const indices: number[] = [];
   for (let i = 0; i <= segments; i++) {
-    const u = (i / segments) * Math.PI * 2;
+    const u = startAngle + (i / segments) * (endAngle - startAngle);
     for (let j = 0; j <= sides; j++) {
       const v = (j / sides) * Math.PI * 2;
       const radial = majorRadius + tubeRadius * Math.cos(v);
@@ -175,10 +194,85 @@ function torus(
       indices.push(a, b, a + 1, b, b + 1, a + 1);
     }
   }
-  return buildMesh(gl, positions, normals, colors, indices);
+  return buildMesh(gl, positions, normals, colors, indices, gl.TRIANGLES, material);
 }
 
-function particleField(gl: WebGLRenderingContext, count = 84) {
+function wireSphere(gl: WebGLRenderingContext, radius: number, color: [number, number, number], rows = 26, columns = 96) {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  const point = (theta: number, phi: number) => {
+    const x = Math.sin(theta) * Math.cos(phi);
+    const y = Math.cos(theta);
+    const z = Math.sin(theta) * Math.sin(phi);
+    return [x * radius, y * radius, z * radius, x, y, z];
+  };
+  const addSegment = (a: number[], b: number[]) => {
+    positions.push(...a.slice(0, 3), ...b.slice(0, 3));
+    normals.push(...a.slice(3, 6), ...b.slice(3, 6));
+    colors.push(...color, ...color);
+  };
+  for (let row = 2; row < rows - 1; row += 2) {
+    const theta = (row / rows) * Math.PI;
+    for (let col = 0; col < columns; col++) {
+      const a = point(theta, (col / columns) * Math.PI * 2);
+      const b = point(theta, ((col + 1) / columns) * Math.PI * 2);
+      addSegment(a, b);
+    }
+  }
+  for (let col = 0; col < columns; col += 8) {
+    const phi = (col / columns) * Math.PI * 2;
+    for (let row = 0; row < rows; row++) {
+      const a = point((row / rows) * Math.PI, phi);
+      const b = point(((row + 1) / rows) * Math.PI, phi);
+      addSegment(a, b);
+    }
+  }
+  return buildMesh(gl, positions, normals, colors, null, gl.LINES, 2);
+}
+
+function helix(gl: WebGLRenderingContext, turns: number, radius: number, height: number, color: [number, number, number], segments = 520) {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  for (let i = 0; i < segments; i++) {
+    for (let step = 0; step < 2; step++) {
+      const t = (i + step) / segments;
+      const angle = t * turns * Math.PI * 2;
+      const r = radius + Math.sin(angle * 0.5) * 0.018;
+      positions.push(Math.cos(angle) * r, (t - 0.5) * height, Math.sin(angle) * r);
+      normals.push(Math.cos(angle), 0, Math.sin(angle));
+      const shimmer = 0.75 + 0.25 * Math.sin(t * Math.PI * 82);
+      colors.push(color[0] * shimmer, color[1] * shimmer, color[2] * shimmer);
+    }
+  }
+  return buildMesh(gl, positions, normals, colors, null, gl.LINES, 2);
+}
+
+function crystal(gl: WebGLRenderingContext, radius: number, color: [number, number, number]) {
+  const points = [
+    [0, 1.6, 0], [1, 0, 0], [0, 0, 1],
+    [0, 1.6, 0], [0, 0, 1], [-1, 0, 0],
+    [0, 1.6, 0], [-1, 0, 0], [0, 0, -1],
+    [0, 1.6, 0], [0, 0, -1], [1, 0, 0],
+    [0, -1.3, 0], [0, 0, 1], [1, 0, 0],
+    [0, -1.3, 0], [-1, 0, 0], [0, 0, 1],
+    [0, -1.3, 0], [0, 0, -1], [-1, 0, 0],
+    [0, -1.3, 0], [1, 0, 0], [0, 0, -1],
+  ];
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  for (const vertex of points) {
+    const length = Math.hypot(vertex[0], vertex[1], vertex[2]) || 1;
+    positions.push(vertex[0] * radius, vertex[1] * radius, vertex[2] * radius);
+    normals.push(vertex[0] / length, vertex[1] / length, vertex[2] / length);
+    colors.push(...color);
+  }
+  return buildMesh(gl, positions, normals, colors, null, gl.TRIANGLES, 1);
+}
+
+function particleField(gl: WebGLRenderingContext, count = 360) {
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
@@ -186,13 +280,29 @@ function particleField(gl: WebGLRenderingContext, count = 84) {
     const y = 1 - (i / Math.max(1, count - 1)) * 2;
     const radius = Math.sqrt(Math.max(0, 1 - y * y));
     const angle = i * 2.399963229728653;
-    const spread = 0.76 + ((i * 17) % 21) / 100;
+    const spread = 0.64 + ((i * 17) % 45) / 100;
     positions.push(Math.cos(angle) * radius * spread, y * spread, Math.sin(angle) * radius * spread);
     normals.push(0, 0, 1);
     const violet = i % 4 !== 0;
     colors.push(violet ? 0.62 : 0.24, violet ? 0.28 : 0.82, violet ? 1.0 : 1.0);
   }
-  return buildMesh(gl, positions, normals, colors, null, gl.POINTS);
+  return buildMesh(gl, positions, normals, colors, null, gl.POINTS, 2);
+}
+
+function translate(x: number, y: number, z: number) {
+  const out = identity();
+  out[12] = x;
+  out[13] = y;
+  out[14] = z;
+  return out;
+}
+
+function scale(value: number) {
+  const out = identity();
+  out[0] = value;
+  out[5] = value;
+  out[10] = value;
+  return out;
 }
 
 function identity() {
@@ -301,14 +411,31 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
     try {
       sceneProgram = program(gl);
       meshes = [
-        torus(gl, 0.69, 0.012, [0.52, 0.23, 1.0]),
-        torus(gl, 0.60, 0.009, [0.18, 0.83, 1.0]),
-        torus(gl, 0.76, 0.006, [0.78, 0.42, 1.0]),
-        sphere(gl, 0.43, [0.30, 0.11, 0.68]),
-        sphere(gl, 0.33, [0.45, 0.18, 0.90]),
-        sphere(gl, 0.225, [0.21, 0.58, 1.0]),
-        sphere(gl, 0.12, [0.68, 0.88, 1.0], 24, 36),
-        particleField(gl)
+        // Main filigree cage and four independent orbital planes.
+        wireSphere(gl, 0.63, [0.39, 0.21, 0.82], 28, 112),
+        torus(gl, 0.69, 0.006, [0.52, 0.23, 1.0]),
+        torus(gl, 0.60, 0.0045, [0.18, 0.83, 1.0]),
+        torus(gl, 0.76, 0.004, [0.78, 0.42, 1.0]),
+        torus(gl, 0.81, 0.0027, [0.39, 0.69, 1.0], 240, 6, 0.25, Math.PI * 1.76, 2),
+        torus(gl, 0.84, 0.0022, [0.63, 0.36, 1.0], 220, 6, Math.PI * 1.12, Math.PI * 2.72, 2),
+        torus(gl, 0.52, 0.0035, [0.22, 0.65, 1.0], 180, 6, Math.PI * 0.12, Math.PI * 1.65, 2),
+        torus(gl, 0.45, 0.003, [0.66, 0.39, 1.0], 180, 6, Math.PI * 1.1, Math.PI * 2.68, 2),
+        torus(gl, 0.93, 0.002, [0.30, 0.46, 0.9], 260, 5, Math.PI * 0.28, Math.PI * 1.45, 2),
+        torus(gl, 0.38, 0.0035, [0.3, 0.78, 1.0], 180, 6, Math.PI * 0.65, Math.PI * 1.9, 2),
+        // Nested translucent shells and a luminous inner seed.
+        sphere(gl, 0.47, [0.18, 0.05, 0.47], 56, 88, 1),
+        sphere(gl, 0.405, [0.24, 0.08, 0.68], 52, 80, 1),
+        wireSphere(gl, 0.365, [0.34, 0.16, 0.72], 22, 84),
+        sphere(gl, 0.30, [0.10, 0.20, 0.60], 48, 72, 1),
+        sphere(gl, 0.205, [0.14, 0.44, 0.78], 40, 60, 1),
+        sphere(gl, 0.125, [0.46, 0.72, 1.0], 36, 54, 1),
+        sphere(gl, 0.052, [0.8, 0.93, 1.0], 28, 42, 1),
+        // A fine helical filament floating through the inner structure.
+        helix(gl, 5.2, 0.255, 0.56, [0.38, 0.48, 1.0]),
+        crystal(gl, 0.054, [0.4, 0.18, 1.0]),
+        crystal(gl, 0.026, [0.28, 0.8, 1.0]),
+        sphere(gl, 0.018, [0.75, 0.55, 1.0], 12, 18, 1),
+        particleField(gl, 480)
       ];
     } catch {
       host.dataset.webgl = "error";
@@ -323,7 +450,9 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       model: gl.getUniformLocation(sceneProgram, "uModel"),
       opacity: gl.getUniformLocation(sceneProgram, "uOpacity"),
       pointSize: gl.getUniformLocation(sceneProgram, "uPointSize"),
-      pointMode: gl.getUniformLocation(sceneProgram, "uPointMode")
+      pointMode: gl.getUniformLocation(sceneProgram, "uPointMode"),
+      time: gl.getUniformLocation(sceneProgram, "uTime"),
+      material: gl.getUniformLocation(sceneProgram, "uMaterial")
     };
 
     function resize() {
@@ -352,7 +481,7 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       if (mesh.indices) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices);
     }
 
-    function draw(mesh: Mesh, projectionMatrix: Float32Array, model: Float32Array, opacity: number, pointMode: boolean) {
+    function draw(mesh: Mesh, projectionMatrix: Float32Array, model: Float32Array, opacity: number, pointMode: boolean, elapsed: number) {
       const mvp = multiply(projectionMatrix, model);
       bindMesh(mesh);
       gl.uniformMatrix4fv(locations.mvp, false, mvp);
@@ -360,13 +489,17 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       gl.uniform1f(locations.opacity, opacity);
       gl.uniform1f(locations.pointSize, Math.max(2, Math.min(5, canvas.width / 92)));
       gl.uniform1f(locations.pointMode, pointMode ? 1 : 0);
+      gl.uniform1f(locations.time, elapsed);
+      gl.uniform1f(locations.material, mesh.material);
       if (mesh.indices) gl.drawElements(mesh.mode, mesh.indexCount, gl.UNSIGNED_SHORT, 0);
       else gl.drawArrays(mesh.mode, 0, mesh.vertexCount);
     }
 
-    function render() {
+    const startedAt = performance.now();
+    function render(now = startedAt) {
       if (disposed) return;
       resize();
+      const elapsed = (now - startedAt) * 0.001;
       const width = canvas.width;
       const height = canvas.height;
       gl.clearColor(0, 0, 0, 0);
@@ -381,26 +514,54 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       smoothPointerX += (pointerX - smoothPointerX) * 0.035;
       smoothPointerY += (pointerY - smoothPointerY) * 0.035;
       angle += reducedMotion ? 0 : (active ? 0.012 : 0.0045);
-      const base = multiply(
-        translateZ(-3.0),
-        multiply(rotateX(0.18 + smoothPointerY * 0.25 + Math.sin(angle * 0.72) * 0.07),
-          rotateY(angle + smoothPointerX * 0.36))
-      );
+      const breathing = Math.sin(elapsed * 0.42) * 0.035;
+      const tilt = rotateX(0.2 + smoothPointerY * 0.28 + Math.sin(angle * 0.36) * 0.045);
+      const yaw = rotateY(angle * 0.62 + smoothPointerX * 0.3);
+      const base = multiply(translateZ(-3.15), multiply(tilt, yaw));
+      const withScale = (model: Float32Array, amount: number) => multiply(model, scale(amount));
 
-      // Three individually tilted toroidal meshes create genuine depth and parallax.
-      const ringOne = multiply(base, rotateX(0.12 + Math.sin(angle * 0.45) * 0.08));
-      const ringTwo = multiply(base, multiply(rotateX(1.08), rotateZ(0.62 + angle * 0.2)));
-      const ringThree = multiply(base, multiply(rotateY(1.24), rotateZ(-0.35 - angle * 0.16)));
-      draw(meshes[0], projectionMatrix, ringOne, 0.92, false);
-      draw(meshes[1], projectionMatrix, ringTwo, 0.88, false);
-      draw(meshes[2], projectionMatrix, ringThree, 0.72, false);
+      // Background filigree cage and orbital skeleton.
+      draw(meshes[0], projectionMatrix, multiply(base, rotateY(-angle * 0.13)), 0.44, false, elapsed);
+      draw(meshes[1], projectionMatrix, multiply(base, rotateX(0.14 + Math.sin(angle * 0.22) * 0.05)), 0.82, false, elapsed);
+      draw(meshes[2], projectionMatrix, multiply(base, multiply(rotateX(1.02), rotateZ(0.58 + angle * 0.16))), 0.76, false, elapsed);
+      draw(meshes[3], projectionMatrix, multiply(base, multiply(rotateY(1.25), rotateZ(-0.38 - angle * 0.12))), 0.69, false, elapsed);
+      draw(meshes[4], projectionMatrix, multiply(base, multiply(rotateX(0.82), rotateZ(angle * 0.27))), 0.72, false, elapsed);
+      draw(meshes[5], projectionMatrix, multiply(base, multiply(rotateY(0.74), rotateX(1.37 - angle * 0.19))), 0.66, false, elapsed);
+      draw(meshes[6], projectionMatrix, multiply(base, multiply(rotateX(1.22), rotateZ(-angle * 0.24))), 0.60, false, elapsed);
+      draw(meshes[7], projectionMatrix, multiply(base, multiply(rotateY(0.43), rotateZ(angle * 0.18))), 0.72, false, elapsed);
+      draw(meshes[8], projectionMatrix, multiply(base, multiply(rotateX(1.42), rotateY(-angle * 0.11))), 0.65, false, elapsed);
+      draw(meshes[9], projectionMatrix, multiply(base, multiply(rotateX(0.22), rotateZ(angle * 0.17))), 0.74, false, elapsed);
 
+      // Nested membranes: faint outer skin to a bright internal seed.
       gl.depthMask(false);
-      draw(meshes[3], projectionMatrix, base, 0.48, false);
-      draw(meshes[4], projectionMatrix, multiply(base, rotateY(-angle * 0.32)), 0.58, false);
-      draw(meshes[5], projectionMatrix, multiply(base, rotateX(angle * 0.45)), 0.82, false);
-      draw(meshes[6], projectionMatrix, multiply(base, rotateY(angle * 0.75)), 0.92, false);
-      draw(meshes[7], projectionMatrix, base, active ? 0.92 : 0.64, true);
+      draw(meshes[10], projectionMatrix, withScale(base, 1 + breathing), 0.17, false, elapsed);
+      draw(meshes[11], projectionMatrix, multiply(base, rotateY(-angle * 0.28)), 0.25, false, elapsed);
+      draw(meshes[12], projectionMatrix, multiply(base, rotateZ(angle * 0.08)), 0.37, false, elapsed);
+      draw(meshes[13], projectionMatrix, multiply(base, rotateX(angle * 0.26)), 0.32, false, elapsed);
+      draw(meshes[14], projectionMatrix, multiply(base, rotateY(angle * 0.34)), 0.46, false, elapsed);
+      draw(meshes[15], projectionMatrix, withScale(multiply(base, rotateZ(-angle * 0.24)), 1 + breathing * 1.7), 0.72, false, elapsed);
+      draw(meshes[16], projectionMatrix, withScale(multiply(base, rotateY(angle * 0.42)), 1 + breathing * 2.5), 0.95, false, elapsed);
+
+      // A delicate filament threads through the core's interior.
+      draw(meshes[17], projectionMatrix, multiply(base, multiply(rotateX(Math.sin(angle * 0.17) * 0.17), rotateY(angle * 0.28))), 0.8, false, elapsed);
+
+      // Faceted alien crystal shards and pearls orbit at individual depths.
+      const orbitRadius = 0.86;
+      for (let i = 0; i < 9; i++) {
+        const orbit = elapsed * (0.16 + (i % 3) * 0.045) + (i / 9) * Math.PI * 2;
+        const x = Math.cos(orbit) * orbitRadius;
+        const y = Math.sin(orbit * 1.1 + i) * 0.52;
+        const z = Math.sin(orbit) * orbitRadius * 0.78;
+        const nodeBase = multiply(base, translate(x, y, z));
+        const shard = multiply(nodeBase, multiply(rotateY(orbit * 1.3), rotateZ(orbit * 0.7)));
+        const crystalIndex = i % 2 === 0 ? 18 : 19;
+        draw(meshes[crystalIndex], projectionMatrix, withScale(shard, 0.64 + (i % 4) * 0.13), 0.9, false, elapsed);
+        const pearl = multiply(nodeBase, translate(0.03, 0.02, 0.01));
+        draw(meshes[20], projectionMatrix, withScale(pearl, i % 3 === 0 ? 1.5 : 0.9), 0.9, false, elapsed);
+      }
+
+      // The dust halo extends beyond the geometry and catches light in depth.
+      draw(meshes[21], projectionMatrix, multiply(base, rotateY(-angle * 0.16)), active ? 0.9 : 0.66, true, elapsed);
       gl.depthMask(true);
 
       frame = window.requestAnimationFrame(render);
