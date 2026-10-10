@@ -770,8 +770,6 @@ type HoloParticle = {
   idleY: number;
   phase: number;
   speed: number;
-  orbitX: number;
-  orbitY: number;
   size: number;
   color: number;
   role: number;
@@ -812,24 +810,22 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     let blend = 0;
     let voiceLevel = 0;
     let pointerX = 0.5;
-    let pointerY = 0.5;
+    let pointerY = 0.48;
     let disposed = false;
     const tau = Math.PI * 2;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let seed = 190721;
+    let seed = 482731;
     const random = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
       return seed / 4294967296;
     };
     const particles: HoloParticle[] = [];
-    const add = (x: number, y: number, role: number, color: number, size = 0.7 + random() * 0.9) => {
+    const add = (x: number, y: number, role: number, color: number, size = 0.55 + random() * 0.8) => {
       particles.push({
         idleX: random(),
         idleY: random(),
         phase: random() * tau,
         speed: 0.12 + random() * 0.48,
-        orbitX: 0.035 + random() * 0.43,
-        orbitY: 0.025 + random() * 0.34,
         size,
         color,
         role,
@@ -838,81 +834,161 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       });
     };
 
-    // The face is sampled as a volume of points rather than a flat image.
-    for (let i = 0; i < 1350; i++) {
-      const y = 0.155 + random() * 0.455;
-      const t = (y - 0.382) / 0.227;
-      const oval = Math.sqrt(Math.max(0.02, 1 - t * t));
-      const jaw = y > 0.405 ? 1 - Math.min(0.27, (y - 0.405) * 1.25) : 1;
-      const half = 0.157 * oval * jaw;
-      add(0.5 + (random() * 2 - 1) * half, y, 0, random() < 0.35 ? 2 : 0, 0.62 + random() * 0.83);
+    // Face: a tapered oval with fuller cheeks, a narrower chin and a clean jaw.
+    for (let i = 0; i < 2650; i++) {
+      const y = 0.175 + random() * 0.375;
+      const t = (y - 0.365) / 0.19;
+      const oval = Math.sqrt(Math.max(0.008, 1 - t * t));
+      const lowerFace = y > 0.355 ? 1 - Math.min(0.34, ((y - 0.355) / 0.195) * 0.34) : 1;
+      const cheekVolume = 1 + 0.065 * Math.exp(-Math.pow((y - 0.385) / 0.07, 2));
+      const half = 0.132 * oval * lowerFace * cheekVolume;
+      const x = 0.5 + (random() * 2 - 1) * half;
+      const color = random() < 0.12 ? 4 : random() < 0.23 ? 2 : 0;
+      add(x, y, 0, color, 0.48 + random() * 0.72);
     }
 
-    // A cap and long, separated strands make the hair readable in particle form.
-    for (let i = 0; i < 720; i++) {
-      if (random() < 0.46) {
-        const a = random() * Math.PI;
-        const r = 0.84 + random() * 0.2;
-        add(0.5 + Math.cos(a) * 0.19 * r, 0.225 - Math.sin(a) * 0.125 * r, 1, random() < 0.5 ? 1 : 4, 0.8 + random() * 1.0);
+    // A delicate particle contour follows temples, cheekbones and the feminine jaw.
+    for (let i = 0; i < 440; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const t = random();
+      const y = 0.205 + t * 0.34;
+      const v = (y - 0.365) / 0.19;
+      const oval = Math.sqrt(Math.max(0.01, 1 - v * v));
+      const lowerFace = y > 0.355 ? 1 - Math.min(0.34, ((y - 0.355) / 0.195) * 0.34) : 1;
+      const half = 0.132 * oval * lowerFace * (1 + 0.065 * Math.exp(-Math.pow((y - 0.385) / 0.07, 2)));
+      add(0.5 + side * (half + (random() - 0.5) * 0.004), y, 9, random() < 0.5 ? 2 : 4, 0.7 + random() * 0.7);
+    }
+
+    // Scalp volume: the crown is slightly raised and parted, not a round particle ball.
+    for (let i = 0; i < 1500; i++) {
+      const angle = (random() * 2 - 1) * 1.82;
+      const radius = 0.38 + Math.sqrt(random()) * 0.62;
+      const x = 0.5 + Math.sin(angle) * 0.171 * radius;
+      const y = 0.365 - Math.cos(angle) * 0.245 * radius;
+      add(x, y, 1, random() < 0.12 ? 5 : random() < 0.36 ? 1 : 2, 0.55 + random() * 0.85);
+    }
+
+    // A parted front hairline gives the face a more feminine silhouette.
+    for (let i = 0; i < 310; i++) {
+      const u = random() * 2 - 1;
+      const x = 0.5 + u * 0.145;
+      const y = 0.187 + Math.pow(Math.abs(u), 1.55) * 0.078 + (random() - 0.5) * 0.008;
+      add(x, y, 1, random() < 0.18 ? 5 : 1, 0.6 + random() * 0.9);
+    }
+
+    // Long hair falls on both sides of the face in independent, lightly waving strands.
+    for (let i = 0; i < 2050; i++) {
+      const side = random() < 0.5 ? -1 : 1;
+      const t = random();
+      const strand = random() * tau;
+      const base = 0.139 + 0.036 * Math.sin(t * 2.6 + strand * 0.28) + 0.025 * t;
+      const wave = 0.012 * Math.sin(t * 7.4 + strand) + 0.007 * Math.sin(t * 13.0 + strand * 0.7);
+      const x = 0.5 + side * (base + wave + (random() - 0.5) * 0.018);
+      const y = 0.205 + t * 0.60 + (random() - 0.5) * 0.025;
+      add(x, y, 1, random() < 0.16 ? 5 : random() < 0.66 ? 1 : 2, 0.48 + random() * 0.9);
+    }
+
+    // Inner face-framing locks curve in around the cheeks and then flow over the shoulders.
+    for (let i = 0; i < 870; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const t = random();
+      const x = 0.5 + side * (0.118 + 0.045 * t + 0.018 * Math.sin(t * 4.0 + (i % 19)));
+      const y = 0.25 + t * 0.58;
+      add(x, y, 1, random() < 0.18 ? 5 : 1, 0.52 + random() * 0.92);
+    }
+
+    // Neck, collarbones and upper torso, cut at the ribcage rather than a floating sphere.
+    for (let i = 0; i < 2100; i++) {
+      const y = 0.585 + random() * 0.285;
+      let halfWidth: number;
+      if (y < 0.675) {
+        halfWidth = 0.065 + ((y - 0.585) / 0.09) * 0.055;
+      } else if (y < 0.745) {
+        halfWidth = 0.12 + ((y - 0.675) / 0.07) * 0.185;
+      } else if (y < 0.81) {
+        halfWidth = 0.305 - ((y - 0.745) / 0.065) * 0.018;
       } else {
-        const side = random() < 0.5 ? -1 : 1;
-        const t = random();
-        add(0.5 + side * (0.148 + Math.sin(t * 2.75) * 0.035 + random() * 0.012), 0.205 + t * 0.58, 1, random() < 0.7 ? 1 : 4, 0.65 + random() * 0.95);
+        halfWidth = 0.287 - ((y - 0.81) / 0.06) * 0.02;
+      }
+      const x = 0.5 + (random() * 2 - 1) * halfWidth;
+      add(x, y, 2, random() < 0.17 ? 4 : random() < 0.30 ? 3 : 0, 0.48 + random() * 0.85);
+    }
+
+    // Particle strands trace the shoulders and clavicles, without drawing orbit lines.
+    for (let i = 0; i < 620; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const t = random();
+      const shoulderX = 0.5 + side * (0.075 + 0.235 * t);
+      const shoulderY = 0.655 + 0.105 * t - 0.012 * Math.sin(t * Math.PI);
+      add(shoulderX, shoulderY, 10, random() < 0.42 ? 3 : 4, 0.65 + random() * 0.8);
+
+      if (i < 310) {
+        const c = random();
+        add(0.5 + side * (0.035 + c * 0.17), 0.715 + 0.035 * c * c, 10, 4, 0.6 + random() * 0.8);
       }
     }
 
-    // Shoulders and upper torso.
-    for (let i = 0; i < 700; i++) {
-      const y = 0.655 + random() * 0.285;
-      const oval = Math.sqrt(Math.max(0.015, 1 - Math.pow((y - 0.84) / 0.205, 2)));
-      const half = 0.34 * oval;
-      add(0.5 + (random() * 2 - 1) * half, y, 2, random() < 0.68 ? 0 : 3, 0.58 + random() * 0.9);
+    // Eyes use almond-shaped particle contours and separate bright iris/pupil clusters.
+    for (let i = 0; i < 260; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const a = random() * tau;
+      const x = 0.5 + side * 0.064 + Math.cos(a) * 0.030;
+      const y = 0.342 + Math.sin(a) * 0.0125 * (0.72 + 0.28 * Math.abs(Math.cos(a)));
+      add(x, y, 3, random() < 0.35 ? 5 : 3, 0.75 + random() * 0.9);
     }
-
-    // Expressive eyes: fine cyan contours and luminous pupils.
     for (let i = 0; i < 150; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const a = random() * tau;
-      add(0.5 + side * 0.068 + Math.cos(a) * 0.035, 0.392 + Math.sin(a) * 0.013, 3, 3, 0.8 + random() * 0.85);
-    }
-    for (let i = 0; i < 80; i++) {
-      const side = i % 2 === 0 ? -1 : 1;
-      const a = random() * tau;
-      const r = Math.sqrt(random()) * 0.011;
-      add(0.5 + side * 0.068 + Math.cos(a) * r, 0.392 + Math.sin(a) * r, 4, 5, 0.95 + random());
+      const r = Math.sqrt(random()) * 0.0105;
+      add(0.5 + side * 0.064 + Math.cos(a) * r, 0.342 + Math.sin(a) * r, 4, 5, 0.95 + random() * 0.9);
     }
 
-    // Brows, nose bridge and two independent lip lines.
-    for (let i = 0; i < 100; i++) {
+    // Brows add expression and structure above the eyes.
+    for (let i = 0; i < 190; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const t = random() * 2 - 1;
-      add(0.5 + side * 0.068 + t * 0.036, 0.359 - (1 - t * t) * 0.012, 5, 1, 0.72 + random() * 0.65);
+      add(0.5 + side * (0.064 + t * 0.037), 0.315 - (1 - t * t) * 0.011, 5, 1, 0.58 + random() * 0.82);
     }
-    for (let i = 0; i < 70; i++) {
+
+    // A soft bridge, nose tip and nostril points define the middle of the face.
+    for (let i = 0; i < 210; i++) {
       const t = random();
-      add(0.5 + (random() - 0.5) * 0.016, 0.413 + t * 0.105, 6, 3, 0.65 + random() * 0.65);
+      const y = 0.356 + t * 0.113;
+      const half = 0.006 + 0.009 * t;
+      add(0.5 + (random() * 2 - 1) * half, y, 6, random() < 0.32 ? 4 : 2, 0.52 + random() * 0.8);
     }
-    for (let i = 0; i < 90; i++) {
-      const t = random() * 2 - 1;
-      add(0.5 + t * 0.052, 0.563 - (1 - t * t) * 0.008, 7, 4, 0.8 + random() * 0.75);
-    }
-    for (let i = 0; i < 90; i++) {
-      const t = random() * 2 - 1;
-      add(0.5 + t * 0.048, 0.567 + (1 - t * t) * 0.012, 8, 3, 0.8 + random() * 0.75);
+    for (let i = 0; i < 78; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const t = random();
+      add(0.5 + side * (0.009 + random() * 0.012), 0.465 + t * 0.009, 6, 4, 0.68 + random() * 0.8);
     }
 
-    // A handful of fine energy filaments frame the head and shoulders.
-    for (let i = 0; i < 250; i++) {
-      const a = random() * tau;
-      const radius = 0.205 + random() * 0.105;
-      add(0.5 + Math.cos(a) * radius, 0.45 + Math.sin(a) * radius * 0.88, 9, random() < 0.5 ? 1 : 3, 0.45 + random() * 0.7);
+    // Cupid's bow and lower lip separate when the avatar speaks.
+    for (let i = 0; i < 190; i++) {
+      const t = random() * 2 - 1;
+      const x = 0.5 + t * 0.050;
+      const y = 0.516 - (1 - t * t) * 0.009 + Math.abs(t) * 0.002;
+      add(x, y, 7, random() < 0.6 ? 5 : 4, 0.68 + random() * 0.8);
+    }
+    for (let i = 0; i < 190; i++) {
+      const t = random() * 2 - 1;
+      const x = 0.5 + t * 0.046;
+      const y = 0.521 + (1 - t * t) * 0.013;
+      add(x, y, 8, random() < 0.4 ? 5 : 3, 0.68 + random() * 0.8);
+    }
+
+    // A few light points define the temples and chin; no circular ring geometry is used.
+    for (let i = 0; i < 150; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const t = random();
+      add(0.5 + side * (0.09 + 0.015 * Math.sin(t * Math.PI)), 0.215 + t * 0.30, 9, 2, 0.46 + random() * 0.7);
     }
 
     function resize() {
       const bounds = host.getBoundingClientRect();
       width = Math.max(1, bounds.width);
       height = Math.max(1, bounds.height);
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
       const nextWidth = Math.round(width * dpr);
       const nextHeight = Math.round(height * dpr);
       if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
@@ -922,7 +998,8 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    const palette = ["#9d78ff", "#a76eff", "#79b8ff", "#70e8ff", "#d1b8ff", "#f1ddff"];
+    // Cold silver, ice-blue and cyan; violet is an accent on individual points only.
+    const palette = ["#9bbcff", "#aa83ff", "#84caff", "#82edff", "#d7e8ff", "#ffffff"];
     const pointX = new Float32Array(particles.length);
     const pointY = new Float32Array(particles.length);
     const pointR = new Float32Array(particles.length);
@@ -936,87 +1013,65 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       if (Math.abs(targetBlend - blend) < 0.0008) blend = targetBlend;
       voiceLevel += (voiceLevelRef.current - voiceLevel) * 0.36;
       const synthetic = Math.max(0, Math.sin(time * 11.8 + Math.sin(time * 2.1) * 0.7));
-      const mouthOpen = speakingRef.current
-        ? (measuredRef.current ? voiceLevel : synthetic * 0.8)
-        : 0;
-      const lookX = (pointerX - 0.5) * 0.014;
-      const lookY = (pointerY - 0.48) * 0.012;
+      const mouthOpen = speakingRef.current ? (measuredRef.current ? voiceLevel : synthetic * 0.8) : 0;
+      const lookX = (pointerX - 0.5) * 0.012;
+      const lookY = (pointerY - 0.48) * 0.010;
       const blinkPhase = (time + 1.35) % 5.2;
       const blink = Math.max(0, 1 - Math.abs(blinkPhase - 4.95) / 0.105);
 
+      // A clean transparent field: no purple fog, no orbital rings and no connecting web.
       ctx.clearRect(0, 0, width, height);
-      if (blend > 0.001) {
-        const glow = ctx.createRadialGradient(width * 0.5, height * 0.51, 0, width * 0.5, height * 0.51, Math.min(width, height) * 0.48);
-        glow.addColorStop(0, "rgba(94, 48, 182, " + (0.15 * blend) + ")");
-        glow.addColorStop(0.45, "rgba(70, 104, 255, " + (0.055 * blend) + ")");
-        glow.addColorStop(1, "rgba(35, 14, 68, 0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, width, height);
-      }
-
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i]!;
         const phase = p.phase + time * p.speed;
-        let idleX = width * (0.5 + Math.cos(phase) * p.orbitX + Math.sin(phase * 0.53 + p.phase) * 0.045 + (p.idleX - 0.5) * 0.18);
-        let idleY = height * (0.5 + Math.sin(phase * (0.8 + p.speed * 0.2)) * p.orbitY + Math.cos(phase * 0.61 + p.phase) * 0.045 + (p.idleY - 0.5) * 0.15);
-        const px = pointerX * width;
-        const py = pointerY * height;
-        const dx = idleX - px;
-        const dy = idleY - py;
+        let idleX = ((p.idleX + time * p.speed * 0.12 + Math.sin(time * 0.18 + p.phase) * 0.045 + 1) % 1) * width;
+        let idleY = ((p.idleY + time * p.speed * (i % 2 === 0 ? 0.045 : -0.045) + Math.sin(time * 0.21 + p.phase * 1.3) * 0.07 + 1) % 1) * height;
+        const dx = idleX - pointerX * width;
+        const dy = idleY - pointerY * height;
         const distanceSquared = dx * dx + dy * dy;
-        const influence = Math.exp(-distanceSquared / 12500);
+        const influence = Math.exp(-distanceSquared / Math.max(2800, Math.pow(Math.min(width, height) * 0.17, 2)));
         const distance = Math.sqrt(distanceSquared + 1);
-        idleX += dx / distance * influence * 24 - dy / distance * influence * 13;
-        idleY += dy / distance * influence * 24 + dx / distance * influence * 13;
+        idleX += (dx / distance) * influence * 34 - (dy / distance) * influence * 12;
+        idleY += (dy / distance) * influence * 34 + (dx / distance) * influence * 12;
 
         let tx = p.targetX;
         let ty = p.targetY;
-        if (p.role <= 1 || p.role === 3 || p.role === 4 || p.role === 5 || p.role === 6 || p.role === 7 || p.role === 8) {
+        if (p.role === 0 || p.role === 3 || p.role === 4 || p.role === 5 || p.role === 6 || p.role === 7 || p.role === 8 || p.role === 9) {
           tx += lookX;
-          ty += lookY * 0.55 + Math.sin(time * 0.72) * 0.0025;
+          ty += lookY * 0.55 + Math.sin(time * 0.72 + p.phase) * 0.0015;
         }
-        if (p.role === 2) ty += Math.sin(time * 1.6 + p.phase) * 0.004;
-        if (p.role === 3 || p.role === 4) ty = 0.392 + (ty - 0.392) * (1 - blink);
-        if (p.role === 7) ty -= mouthOpen * 0.018;
-        if (p.role === 8) ty += mouthOpen * 0.026;
+        if (p.role === 2) ty += Math.sin(time * 1.35 + p.phase) * 0.0022;
+        if (p.role === 3 || p.role === 4) ty = 0.342 + (ty - 0.342) * (1 - blink);
+        if (p.role === 7) ty -= mouthOpen * 0.36;
+        if (p.role === 8) ty += mouthOpen * 0.55;
 
         const mix = blend;
-        const x = idleX * (1 - mix) + tx * width * mix;
+        // Measure the portrait in stage-height units to preserve facial proportions on wide screens.
+        const avatarX = width * 0.5 + (tx - 0.5) * height * 1.24;
+        const x = idleX * (1 - mix) + avatarX * mix;
         const y = idleY * (1 - mix) + ty * height * mix;
         pointX[i] = x;
         pointY[i] = y;
-        pointR[i] = p.size * (0.62 + 0.38 * Math.sin(time * 2.0 + p.phase) * 0.5 + (mix * 0.25));
+        const pulse = 0.82 + 0.18 * Math.sin(time * 1.8 + p.phase);
+        pointR[i] = p.size * pulse * (0.76 + mix * 0.28);
       }
 
       ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = blend > 0.5 ? 0.94 : 0.76;
       for (let color = 0; color < palette.length; color++) {
         ctx.beginPath();
         for (let i = 0; i < particles.length; i++) {
-          const p = particles[i]!;
-          if (p.color !== color) continue;
+          if (particles[i]!.color !== color) continue;
           const r = pointR[i]!;
           ctx.moveTo(pointX[i]! + r, pointY[i]!);
           ctx.arc(pointX[i]!, pointY[i]!, r, 0, tau);
         }
         ctx.fillStyle = palette[color]!;
-        ctx.globalAlpha = blend > 0.5 ? 0.86 : 0.63;
         ctx.fill();
       }
 
-      // A sparse net of luminous strands makes the particle mass feel connected.
-      ctx.beginPath();
-      ctx.lineWidth = 0.55;
-      ctx.strokeStyle = "#a18aff";
-      ctx.globalAlpha = 0.10 + blend * 0.10;
-      for (let i = 0; i < particles.length - 12; i += 31) {
-        ctx.moveTo(pointX[i]!, pointY[i]!);
-        ctx.lineTo(pointX[i + 7]!, pointY[i + 7]!);
-        ctx.lineTo(pointX[i + 12]!, pointY[i + 12]!);
-      }
-      ctx.stroke();
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = "source-over";
-
       frame = window.requestAnimationFrame(render);
     }
 
@@ -1029,7 +1084,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       pointerX = 0.5;
       pointerY = 0.48;
     };
-    window.addEventListener("pointermove", onPointerMove);
+    host.addEventListener("pointermove", onPointerMove);
     host.addEventListener("pointerleave", onPointerLeave);
     const observer = new ResizeObserver(resize);
     observer.observe(host);
@@ -1040,7 +1095,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       disposed = true;
       window.cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener("pointermove", onPointerMove);
+      host.removeEventListener("pointermove", onPointerMove);
       host.removeEventListener("pointerleave", onPointerLeave);
     };
   }, []);
