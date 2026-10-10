@@ -215,8 +215,8 @@ export function VoicePanel() {
 
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" onClick={toggle} className="rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary">
-          {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          {listening ? "Ouvindo..." : "Falar com JARVIS"}
+          {active ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          {active ? (listening ? "Ouvindo... · Encerrar chamada" : "Encerrar chamada") : "Iniciar chamada"}
         </Button>
         <Button
           variant="ghost"
