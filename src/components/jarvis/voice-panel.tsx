@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,7 +18,7 @@ type Recognition = {
   stop: () => void;
   onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
   onend: (() => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event?: { error?: string }) => void) | null;
   lang: string;
   continuous: boolean;
   interimResults: boolean;
@@ -29,8 +29,14 @@ type RecognitionConstructor = new () => Recognition;
 export function VoicePanel() {
   const [active, setActive] = useState(false);
   const [listening, setListening] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [lastText, setLastText] = useState("");
   const [voices, setVoices] = useState<LocalVoice[]>([]);
+  const sessionRef = useRef(false);
+  const recognitionRef = useRef<Recognition | null>(null);
+  const processingRef = useRef(false);
+  const starterRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -52,6 +58,7 @@ export function VoicePanel() {
     async (text: string) => {
       const preferences = getVoicePreferences();
       const selected = getPreferredVoice(voices);
+      setSpeaking(true);
 
       try {
         await speakWithFallback(text, {
@@ -61,12 +68,16 @@ export function VoicePanel() {
         });
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Falha no modo de voz.");
+      } finally {
+        setSpeaking(false);
       }
     },
     [voices],
   );
 
   const runLocalVoice = useCallback(() => {
+    if (!sessionRef.current || recognitionRef.current || processingRef.current) return;
+
     const SpeechRecognition =
       (
         window as unknown as {
@@ -81,7 +92,9 @@ export function VoicePanel() {
       ).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      toast.error("O navegador não oferece reconhecimento de voz.");
+      sessionRef.current = false;
+      setActive(false);
+      toast.error("O navegador não oferece reconhecimento de voz. Use um navegador compatível para iniciar a chamada.");
       return;
     }
 
@@ -89,45 +102,99 @@ export function VoicePanel() {
     recognition.lang = "pt-BR";
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.onresult = async (event) => {
+    recognitionRef.current = recognition;
+
+    recognition.onresult = (event) => {
       const transcript = event.results[0]?.[0]?.transcript?.trim() ?? "";
       if (!transcript) return;
 
+      processingRef.current = true;
       setLastText(transcript);
       setListening(false);
 
-      try {
-        const response = await fetch("http://127.0.0.1:3210/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: [{ role: "user", content: transcript }] }),
-        });
-        const data = (await response.json()) as { text?: string; error?: string };
+      void (async () => {
+        setThinking(true);
+        try {
+          const response = await fetch("http://127.0.0.1:3210/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: [{ role: "user", content: transcript }] }),
+          });
+          const data = (await response.json()) as { text?: string; error?: string };
 
-        if (!response.ok) throw new Error(data.error ?? "Falha no núcleo local.");
+          if (!response.ok) throw new Error(data.error ?? "Falha no núcleo local.");
 
-        const answer = data.text?.trim();
-        if (!answer) throw new Error("O JARVIS retornou uma resposta vazia.");
+          const answer = data.text?.trim();
+          if (!answer) throw new Error("O JARVIS retornou uma resposta vazia.");
+          if (!sessionRef.current) return;
 
-        await speak(answer);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Falha no modo de voz local.");
+          setThinking(false);
+          await speak(answer);
+        } catch (error) {
+          if (sessionRef.current) {
+            toast.error(error instanceof Error ? error.message : "Falha no modo de voz local.");
+          }
+        } finally {
+          setThinking(false);
+          processingRef.current = false;
+          if (sessionRef.current) {
+            window.setTimeout(() => starterRef.current(), 420);
+          }
+        }
+      })();
+    };
+
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) recognitionRef.current = null;
+      setListening(false);
+      // Silence or a no-speech result returns to listening; a completed turn restarts after the reply.
+      if (sessionRef.current && !processingRef.current) {
+        window.setTimeout(() => starterRef.current(), 420);
       }
     };
 
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       setListening(false);
-      toast.error("Não foi possível capturar a fala.");
+      if (event?.error === "no-speech" || event?.error === "aborted") return;
+      sessionRef.current = false;
+      processingRef.current = false;
+      recognitionRef.current = null;
+      setActive(false);
+      setThinking(false);
+      toast.error("Não foi possível capturar a fala. Confira a permissão do microfone.");
     };
 
     setListening(true);
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (error) {
+      recognitionRef.current = null;
+      setListening(false);
+      sessionRef.current = false;
+      setActive(false);
+      toast.error(error instanceof Error ? error.message : "Não foi possível iniciar o microfone.");
+    }
   }, [speak]);
 
+  starterRef.current = runLocalVoice;
+
   function toggle() {
-    if (listening) return;
-    setActive((value) => !value);
+    if (active) {
+      sessionRef.current = false;
+      processingRef.current = false;
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      window.speechSynthesis?.cancel();
+      setActive(false);
+      setListening(false);
+      setThinking(false);
+      setSpeaking(false);
+      return;
+    }
+
+    sessionRef.current = true;
+    processingRef.current = false;
+    setActive(true);
     runLocalVoice();
   }
 
@@ -139,7 +206,7 @@ export function VoicePanel() {
         <span className="text-primary">OLLAMA</span>
       </div>
 
-      <OrbitalCore active={active || listening} muted={!listening} />
+      <OrbitalCore active={active || speaking || thinking} muted={!listening} speaking={speaking} />
 
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" onClick={toggle} className="rounded-full border-primary/30 bg-primary/5 px-7 font-display text-xs text-primary">
@@ -166,7 +233,7 @@ export function VoicePanel() {
 
       <div className="flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
         <span className="voice-state-pulse" />
-        <span>{listening ? "Microfone ativo" : "Voz local pronta"}</span>
+        <span>{speaking ? "JARVIS falando" : thinking ? "Processando resposta" : listening ? "Microfone ativo" : active ? "Chamada ativa" : "Voz local pronta"}</span>
       </div>
     </section>
   );
