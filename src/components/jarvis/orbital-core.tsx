@@ -765,6 +765,296 @@ function makeMorphParticleCloud(gl: WebGLRenderingContext, count = 3600): MorphP
   return { mesh, idle, avatar, phases, roles, sides };
 }
 
+type HoloParticle = {
+  idleX: number;
+  idleY: number;
+  phase: number;
+  speed: number;
+  orbitX: number;
+  orbitY: number;
+  size: number;
+  color: number;
+  role: number;
+  targetX: number;
+  targetY: number;
+};
+
+function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const activeRef = useRef(active);
+  const speakingRef = useRef(speaking);
+  const voiceLevelRef = useRef(0);
+  const measuredRef = useRef(false);
+
+  useEffect(() => { activeRef.current = active; }, [active]);
+  useEffect(() => { speakingRef.current = speaking; }, [speaking]);
+
+  useEffect(() => {
+    const onVoiceLevel = (event: Event) => {
+      const detail = (event as CustomEvent<{ level?: number; measured?: boolean }>).detail;
+      voiceLevelRef.current = Math.max(0, Math.min(1, detail?.level ?? 0));
+      measuredRef.current = detail?.measured === true;
+    };
+    window.addEventListener("jarvis:voice-level", onVoiceLevel);
+    return () => window.removeEventListener("jarvis:voice-level", onVoiceLevel);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const host = canvas?.parentElement;
+    const ctx = canvas?.getContext("2d", { alpha: true });
+    if (!canvas || !host || !ctx) return;
+
+    let width = 1;
+    let height = 1;
+    let dpr = 1;
+    let frame = 0;
+    let blend = 0;
+    let voiceLevel = 0;
+    let pointerX = 0.5;
+    let pointerY = 0.5;
+    let disposed = false;
+    const tau = Math.PI * 2;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let seed = 190721;
+    const random = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    const particles: HoloParticle[] = [];
+    const add = (x: number, y: number, role: number, color: number, size = 0.7 + random() * 0.9) => {
+      particles.push({
+        idleX: random(),
+        idleY: random(),
+        phase: random() * tau,
+        speed: 0.12 + random() * 0.48,
+        orbitX: 0.035 + random() * 0.43,
+        orbitY: 0.025 + random() * 0.34,
+        size,
+        color,
+        role,
+        targetX: x,
+        targetY: y,
+      });
+    };
+
+    // The face is sampled as a volume of points rather than a flat image.
+    for (let i = 0; i < 1350; i++) {
+      const y = 0.155 + random() * 0.455;
+      const t = (y - 0.382) / 0.227;
+      const oval = Math.sqrt(Math.max(0.02, 1 - t * t));
+      const jaw = y > 0.405 ? 1 - Math.min(0.27, (y - 0.405) * 1.25) : 1;
+      const half = 0.157 * oval * jaw;
+      add(0.5 + (random() * 2 - 1) * half, y, 0, random() < 0.35 ? 2 : 0, 0.62 + random() * 0.83);
+    }
+
+    // A cap and long, separated strands make the hair readable in particle form.
+    for (let i = 0; i < 720; i++) {
+      if (random() < 0.46) {
+        const a = random() * Math.PI;
+        const r = 0.84 + random() * 0.2;
+        add(0.5 + Math.cos(a) * 0.19 * r, 0.225 - Math.sin(a) * 0.125 * r, 1, random() < 0.5 ? 1 : 4, 0.8 + random() * 1.0);
+      } else {
+        const side = random() < 0.5 ? -1 : 1;
+        const t = random();
+        add(0.5 + side * (0.148 + Math.sin(t * 2.75) * 0.035 + random() * 0.012), 0.205 + t * 0.58, 1, random() < 0.7 ? 1 : 4, 0.65 + random() * 0.95);
+      }
+    }
+
+    // Shoulders and upper torso.
+    for (let i = 0; i < 700; i++) {
+      const y = 0.655 + random() * 0.285;
+      const oval = Math.sqrt(Math.max(0.015, 1 - Math.pow((y - 0.84) / 0.205, 2)));
+      const half = 0.34 * oval;
+      add(0.5 + (random() * 2 - 1) * half, y, 2, random() < 0.68 ? 0 : 3, 0.58 + random() * 0.9);
+    }
+
+    // Expressive eyes: fine cyan contours and luminous pupils.
+    for (let i = 0; i < 150; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const a = random() * tau;
+      add(0.5 + side * 0.068 + Math.cos(a) * 0.035, 0.392 + Math.sin(a) * 0.013, 3, 3, 0.8 + random() * 0.85);
+    }
+    for (let i = 0; i < 80; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const a = random() * tau;
+      const r = Math.sqrt(random()) * 0.011;
+      add(0.5 + side * 0.068 + Math.cos(a) * r, 0.392 + Math.sin(a) * r, 4, 5, 0.95 + random());
+    }
+
+    // Brows, nose bridge and two independent lip lines.
+    for (let i = 0; i < 100; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const t = random() * 2 - 1;
+      add(0.5 + side * 0.068 + t * 0.036, 0.359 - (1 - t * t) * 0.012, 5, 1, 0.72 + random() * 0.65);
+    }
+    for (let i = 0; i < 70; i++) {
+      const t = random();
+      add(0.5 + (random() - 0.5) * 0.016, 0.413 + t * 0.105, 6, 3, 0.65 + random() * 0.65);
+    }
+    for (let i = 0; i < 90; i++) {
+      const t = random() * 2 - 1;
+      add(0.5 + t * 0.052, 0.563 - (1 - t * t) * 0.008, 7, 4, 0.8 + random() * 0.75);
+    }
+    for (let i = 0; i < 90; i++) {
+      const t = random() * 2 - 1;
+      add(0.5 + t * 0.048, 0.567 + (1 - t * t) * 0.012, 8, 3, 0.8 + random() * 0.75);
+    }
+
+    // A handful of fine energy filaments frame the head and shoulders.
+    for (let i = 0; i < 250; i++) {
+      const a = random() * tau;
+      const radius = 0.205 + random() * 0.105;
+      add(0.5 + Math.cos(a) * radius, 0.45 + Math.sin(a) * radius * 0.88, 9, random() < 0.5 ? 1 : 3, 0.45 + random() * 0.7);
+    }
+
+    function resize() {
+      const bounds = host.getBoundingClientRect();
+      width = Math.max(1, bounds.width);
+      height = Math.max(1, bounds.height);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const nextWidth = Math.round(width * dpr);
+      const nextHeight = Math.round(height * dpr);
+      if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+        canvas.width = nextWidth;
+        canvas.height = nextHeight;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const palette = ["#9d78ff", "#a76eff", "#79b8ff", "#70e8ff", "#d1b8ff", "#f1ddff"];
+    const pointX = new Float32Array(particles.length);
+    const pointY = new Float32Array(particles.length);
+    const pointR = new Float32Array(particles.length);
+
+    function render(now: number) {
+      if (disposed) return;
+      resize();
+      const time = reducedMotion ? 0 : now * 0.001;
+      const targetBlend = activeRef.current ? 1 : 0;
+      blend += (targetBlend - blend) * (reducedMotion ? 1 : 0.026);
+      if (Math.abs(targetBlend - blend) < 0.0008) blend = targetBlend;
+      voiceLevel += (voiceLevelRef.current - voiceLevel) * 0.36;
+      const synthetic = Math.max(0, Math.sin(time * 11.8 + Math.sin(time * 2.1) * 0.7));
+      const mouthOpen = speakingRef.current
+        ? (measuredRef.current ? voiceLevel : synthetic * 0.8)
+        : 0;
+      const lookX = (pointerX - 0.5) * 0.014;
+      const lookY = (pointerY - 0.48) * 0.012;
+      const blinkPhase = (time + 1.35) % 5.2;
+      const blink = Math.max(0, 1 - Math.abs(blinkPhase - 4.95) / 0.105);
+
+      ctx.clearRect(0, 0, width, height);
+      if (blend > 0.001) {
+        const glow = ctx.createRadialGradient(width * 0.5, height * 0.51, 0, width * 0.5, height * 0.51, Math.min(width, height) * 0.48);
+        glow.addColorStop(0, "rgba(94, 48, 182, " + (0.15 * blend) + ")");
+        glow.addColorStop(0.45, "rgba(70, 104, 255, " + (0.055 * blend) + ")");
+        glow.addColorStop(1, "rgba(35, 14, 68, 0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]!;
+        const phase = p.phase + time * p.speed;
+        let idleX = width * (0.5 + Math.cos(phase) * p.orbitX + Math.sin(phase * 0.53 + p.phase) * 0.045 + (p.idleX - 0.5) * 0.18);
+        let idleY = height * (0.5 + Math.sin(phase * (0.8 + p.speed * 0.2)) * p.orbitY + Math.cos(phase * 0.61 + p.phase) * 0.045 + (p.idleY - 0.5) * 0.15);
+        const px = pointerX * width;
+        const py = pointerY * height;
+        const dx = idleX - px;
+        const dy = idleY - py;
+        const distanceSquared = dx * dx + dy * dy;
+        const influence = Math.exp(-distanceSquared / 12500);
+        const distance = Math.sqrt(distanceSquared + 1);
+        idleX += dx / distance * influence * 24 - dy / distance * influence * 13;
+        idleY += dy / distance * influence * 24 + dx / distance * influence * 13;
+
+        let tx = p.targetX;
+        let ty = p.targetY;
+        if (p.role <= 1 || p.role === 3 || p.role === 4 || p.role === 5 || p.role === 6 || p.role === 7 || p.role === 8) {
+          tx += lookX;
+          ty += lookY * 0.55 + Math.sin(time * 0.72) * 0.0025;
+        }
+        if (p.role === 2) ty += Math.sin(time * 1.6 + p.phase) * 0.004;
+        if (p.role === 3 || p.role === 4) ty = 0.392 + (ty - 0.392) * (1 - blink);
+        if (p.role === 7) ty -= mouthOpen * 0.018;
+        if (p.role === 8) ty += mouthOpen * 0.026;
+
+        const mix = blend;
+        const x = idleX * (1 - mix) + tx * width * mix;
+        const y = idleY * (1 - mix) + ty * height * mix;
+        pointX[i] = x;
+        pointY[i] = y;
+        pointR[i] = p.size * (0.62 + 0.38 * Math.sin(time * 2.0 + p.phase) * 0.5 + (mix * 0.25));
+      }
+
+      ctx.globalCompositeOperation = "lighter";
+      for (let color = 0; color < palette.length; color++) {
+        ctx.beginPath();
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i]!;
+          if (p.color !== color) continue;
+          const r = pointR[i]!;
+          ctx.moveTo(pointX[i]! + r, pointY[i]!);
+          ctx.arc(pointX[i]!, pointY[i]!, r, 0, tau);
+        }
+        ctx.fillStyle = palette[color]!;
+        ctx.globalAlpha = blend > 0.5 ? 0.86 : 0.63;
+        ctx.fill();
+      }
+
+      // A sparse net of luminous strands makes the particle mass feel connected.
+      ctx.beginPath();
+      ctx.lineWidth = 0.55;
+      ctx.strokeStyle = "#a18aff";
+      ctx.globalAlpha = 0.10 + blend * 0.10;
+      for (let i = 0; i < particles.length - 12; i += 31) {
+        ctx.moveTo(pointX[i]!, pointY[i]!);
+        ctx.lineTo(pointX[i + 7]!, pointY[i + 7]!);
+        ctx.lineTo(pointX[i + 12]!, pointY[i + 12]!);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+
+      frame = window.requestAnimationFrame(render);
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      const bounds = canvas.getBoundingClientRect();
+      pointerX = Math.max(0, Math.min(1, (event.clientX - bounds.left) / Math.max(1, bounds.width)));
+      pointerY = Math.max(0, Math.min(1, (event.clientY - bounds.top) / Math.max(1, bounds.height)));
+    };
+    const onPointerLeave = () => {
+      pointerX = 0.5;
+      pointerY = 0.48;
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    host.addEventListener("pointerleave", onPointerLeave);
+    const observer = new ResizeObserver(resize);
+    observer.observe(host);
+    resize();
+    frame = window.requestAnimationFrame(render);
+
+    return () => {
+      disposed = true;
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("pointermove", onPointerMove);
+      host.removeEventListener("pointerleave", onPointerLeave);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="jarvis-particle-avatar-canvas"
+      aria-hidden="true"
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 3 }}
+    />
+  );
+}
+
 function disposeMesh(gl: WebGLRenderingContext, mesh: Mesh) {
   gl.deleteBuffer(mesh.positions);
   gl.deleteBuffer(mesh.normals);
@@ -1141,14 +1431,15 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
   );
 }
 
-export function OrbitalCore({ active = false, muted = false, speaking = false, className = "" }: { active?: boolean; muted?: boolean; speaking?: boolean; className?: string }) {
+export function OrbitalCore({ active = false, muted = false, speaking = false, particleAvatar = false, className = "" }: { active?: boolean; muted?: boolean; speaking?: boolean; particleAvatar?: boolean; className?: string }) {
   return (
     <div
-      className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted")}
+      className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted", particleAvatar && "orbital-core--particle-avatar")}
       data-active={active}
       aria-hidden="true"
     >
       <OrbitalCore3D active={active} speaking={speaking} />
+      {particleAvatar && <ParticleAvatarOverlay active={active} speaking={speaking} />}
       <div className="orbital-core-hud" aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
         <span className="orbital-core-hud-crosshair" style={{ position: "absolute", inset: "18px", borderLeft: "1px solid rgba(177, 128, 255, .14)", borderRight: "1px solid rgba(177, 128, 255, .14)" }} />
         <span className="orbital-core-hud-node orbital-core-hud-node--one" style={{ position: "absolute", top: "22%", left: "20%", width: 5, height: 5, borderRadius: "50%", background: "#b17cff", boxShadow: "0 0 12px #9b4dff" }} />
