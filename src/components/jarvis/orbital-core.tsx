@@ -454,10 +454,10 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
   );
 }
 
-export function OrbitalCore({ active = false, muted = false }: { active?: boolean; muted?: boolean }) {
+export function OrbitalCore({ active = false, muted = false, className = "" }: { active?: boolean; muted?: boolean; className?: string }) {
   return (
     <div
-      className={cn("orbital-core", "orbital-core--webgl", active && "orbital-core--active", muted && "orbital-core--muted")}
+      className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted")}
       data-active={active}
       aria-hidden="true"
     >
