@@ -205,6 +205,7 @@ function geodesicCage(
 ) {
   type Vec3 = [number, number, number];
   type Face = [number, number, number];
+  type Edge = [number, number];
   const golden = (1 + Math.sqrt(5)) / 2;
   const vertices: Vec3[] = [
     [-1, golden, 0], [1, golden, 0], [-1, -golden, 0], [1, -golden, 0],
@@ -254,7 +255,7 @@ function geodesicCage(
   const colors: number[] = [];
   const drawnEdges = new Set<string>();
   for (const [a, b, c] of faces) {
-    for (const [from, to] of [[a, b], [b, c], [c, a]] as Face[]) {
+    for (const [from, to] of [[a, b], [b, c], [c, a]] as Edge[]) {
       const key = String(from < to ? from : to) + ":" + String(from < to ? to : from);
       if (drawnEdges.has(key)) continue;
       drawnEdges.add(key);
