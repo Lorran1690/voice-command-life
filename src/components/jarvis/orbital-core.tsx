@@ -440,6 +440,86 @@ function alienMembrane(
   return buildMesh(gl, positions, normals, colors, indices, gl.TRIANGLES, 1);
 }
 
+function mobiusMembrane(
+  gl: WebGLRenderingContext,
+  majorRadius: number,
+  halfWidth: number,
+  phase: number,
+  colorA: [number, number, number],
+  colorB: [number, number, number],
+  segments = 360,
+  across = 16
+) {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  const indices: number[] = [];
+  for (let i = 0; i <= segments; i++) {
+    const u = (i / segments) * Math.PI * 2;
+    const twist = u * 0.5 + phase;
+    for (let j = 0; j <= across; j++) {
+      const v = (j / across) * 2 - 1;
+      const offset = v * halfWidth;
+      const radius = majorRadius + offset * Math.cos(twist);
+      const x = radius * Math.cos(u);
+      const y = offset * Math.sin(twist);
+      const z = radius * Math.sin(u);
+      const nx = Math.cos(u) * Math.cos(twist);
+      const ny = Math.sin(twist);
+      const nz = Math.sin(u) * Math.cos(twist);
+      positions.push(x, y, z);
+      normals.push(nx, ny, nz);
+      const blend = Math.min(1, Math.max(0, (i / segments) * 0.72 + Math.abs(v) * 0.28));
+      const edgeGlint = 0.82 + 0.18 * Math.cos(v * Math.PI * 3.0 + u * 6.0);
+      colors.push(
+        (colorA[0] * (1 - blend) + colorB[0] * blend) * edgeGlint,
+        (colorA[1] * (1 - blend) + colorB[1] * blend) * edgeGlint,
+        (colorA[2] * (1 - blend) + colorB[2] * blend) * edgeGlint
+      );
+    }
+  }
+  for (let i = 0; i < segments; i++) {
+    for (let j = 0; j < across; j++) {
+      const a = i * (across + 1) + j;
+      const b = a + across + 1;
+      indices.push(a, a + 1, b, a + 1, b + 1, b);
+    }
+  }
+  return buildMesh(gl, positions, normals, colors, indices, gl.TRIANGLES, 1);
+}
+
+function alienKnot(
+  gl: WebGLRenderingContext,
+  majorRadius: number,
+  minorRadius: number,
+  p: number,
+  q: number,
+  phase: number,
+  color: [number, number, number],
+  segments = 1200
+) {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  for (let i = 0; i < segments; i++) {
+    for (let step = 0; step < 2; step++) {
+      const t = ((i + step) / segments) * Math.PI * 2;
+      const theta = q * t + phase;
+      const phi = p * t + phase * 0.73;
+      const radius = majorRadius + minorRadius * Math.cos(theta);
+      const x = radius * Math.cos(phi);
+      const y = minorRadius * Math.sin(theta) + Math.sin(t * 2.0 + phase) * 0.018;
+      const z = radius * Math.sin(phi);
+      const length = Math.hypot(x, y, z) || 1;
+      const shimmer = 0.65 + 0.35 * Math.sin(t * 17.0 + phase);
+      positions.push(x, y, z);
+      normals.push(x / length, y / length, z / length);
+      colors.push(color[0] * shimmer, color[1] * shimmer, color[2] * shimmer);
+    }
+  }
+  return buildMesh(gl, positions, normals, colors, null, gl.LINES, 2);
+}
+
 function particleField(gl: WebGLRenderingContext, count = 360) {
   const positions: number[] = [];
   const normals: number[] = [];
@@ -608,7 +688,12 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
         alienMembrane(gl, 1.22, 0.10, 0.86, 0.095, 0.22, [0.16, 0.60, 1.0], [0.62, 0.20, 1.0], 270, 12),
         alienMembrane(gl, 1.05, 0.12, 0.78, 0.072, 2.12, [0.48, 0.18, 1.0], [0.14, 0.75, 1.0], 250, 10),
         alienMembrane(gl, 1.42, 0.18, 0.72, 0.058, 4.22, [0.28, 0.36, 1.0], [0.72, 0.30, 1.0], 280, 10),
-        alienMembrane(gl, 0.92, 0.08, 0.66, 0.045, 5.30, [0.12, 0.70, 1.0], [0.55, 0.31, 1.0], 240, 8)
+        alienMembrane(gl, 0.92, 0.08, 0.66, 0.045, 5.30, [0.12, 0.70, 1.0], [0.55, 0.31, 1.0], 240, 8),
+        // Non-Euclidean-looking, interlaced topologies wrapped around the inner seed.
+        mobiusMembrane(gl, 0.43, 0.108, 0.22, [0.16, 0.56, 1.0], [0.76, 0.27, 1.0], 340, 16),
+        mobiusMembrane(gl, 0.49, 0.058, 2.15, [0.32, 0.34, 1.0], [0.16, 0.78, 1.0], 360, 12),
+        alienKnot(gl, 0.47, 0.135, 2, 3, 0.35, [0.44, 0.22, 1.0], 1400),
+        alienKnot(gl, 0.39, 0.11, 3, 2, 2.05, [0.14, 0.68, 1.0], 1300)
       ];
     } catch {
       host.dataset.webgl = "error";
@@ -729,6 +814,12 @@ export function OrbitalCore3D({ active = false }: { active?: boolean }) {
       draw(meshAt(23), projectionMatrix, multiply(base, multiply(rotateY(0.52 + Math.sin(elapsed * 0.19) * 0.08), rotateZ(-angle * 0.07))), 0.34, false, elapsed);
       draw(meshAt(24), projectionMatrix, multiply(base, multiply(rotateX(1.42 + Math.sin(elapsed * 0.16) * 0.07), rotateY(angle * 0.06))), 0.29, false, elapsed);
       draw(meshAt(25), projectionMatrix, multiply(base, multiply(rotateY(1.02 + Math.sin(elapsed * 0.22) * 0.06), rotateZ(angle * 0.05))), 0.31, false, elapsed);
+
+      // Impossible-looking intertwined topology, suspended inside the outer vanes.
+      draw(meshAt(26), projectionMatrix, multiply(base, multiply(rotateX(0.74 + Math.sin(elapsed * 0.17) * 0.08), rotateZ(angle * 0.12))), 0.52, false, elapsed);
+      draw(meshAt(27), projectionMatrix, multiply(base, multiply(rotateY(0.91 + Math.sin(elapsed * 0.21) * 0.07), rotateZ(-angle * 0.09))), 0.39, false, elapsed);
+      draw(meshAt(28), projectionMatrix, multiply(base, multiply(rotateX(1.10), rotateZ(angle * 0.13))), 0.7, false, elapsed);
+      draw(meshAt(29), projectionMatrix, multiply(base, multiply(rotateY(0.67), rotateX(-angle * 0.11))), 0.62, false, elapsed);
 
       // Faceted alien crystal shards and pearls orbit at individual depths.
       const orbitRadius = 0.86;
