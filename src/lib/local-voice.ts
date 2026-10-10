@@ -8,6 +8,7 @@ const SETTINGS_KEY = "jarvis-local-settings";
 const LOCAL_CORE = "http://127.0.0.1:3210";
 
 let activePlaybackStop: (() => void) | null = null;
+let playbackGeneration = 0;
 
 function emitVoiceLevel(level: number, measured: boolean) {
   if (typeof window === "undefined") return;
@@ -17,6 +18,7 @@ function emitVoiceLevel(level: number, measured: boolean) {
 }
 
 export function stopVoicePlayback() {
+  playbackGeneration++;
   activePlaybackStop?.();
   activePlaybackStop = null;
   if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -78,6 +80,7 @@ export async function speakLocalText(
   const cleanText = text.trim();
   if (!cleanText) return;
   activePlaybackStop?.();
+  const generation = playbackGeneration;
 
   const response = await fetch(LOCAL_CORE + "/api/speak", {
     method: "POST",
@@ -95,7 +98,9 @@ export async function speakLocalText(
     throw new Error(data?.error ?? "Falha no sintetizador de voz local.");
   }
 
+  if (generation !== playbackGeneration) return;
   const blob = await response.blob();
+  if (generation !== playbackGeneration) return;
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
 
@@ -111,7 +116,7 @@ export async function speakLocalText(
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
       if (activePlaybackStop === stop) activePlaybackStop = null;
-      emitVoiceLevel(0, true);
+      emitVoiceLevel(0, Boolean(analyser));
       if (audioContext && audioContext.state !== "closed") void audioContext.close().catch(() => undefined);
       URL.revokeObjectURL(url);
     };
@@ -170,6 +175,7 @@ export async function speakLocalText(
 
     void (async () => {
       try {
+        emitVoiceLevel(0, Boolean(analyser));
         if (audioContext?.state === "suspended") await audioContext.resume();
         await audio.play();
         if (analyser) readAudioLevel();
