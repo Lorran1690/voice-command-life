@@ -97,7 +97,7 @@ function program(gl: WebGLRenderingContext) {
     "  float filigree = max(smoothstep(0.82, 0.985, etched), smoothstep(0.86, 0.99, striation));",
     "  float interference = 0.5 + 0.5 * sin(length(vPosition) * 92.0 - uTime * 0.2 + sin(vPosition.y * 19.0) * 0.5);",
     "  float cellEdges = smoothstep(0.63, 0.94, abs(surfaceNoise - fineNoise * 0.42));",
-    "  float signalFlow = 0.5 + 0.5 * sin(vPosition.y * 43.0 + vPosition.x * 11.0 - uTime * 0.42 + surfaceNoise * 7.0);"
+    "  float signalFlow = 0.5 + 0.5 * sin(vPosition.y * 43.0 + vPosition.x * 11.0 - uTime * 0.42 + surfaceNoise * 7.0);",
     "  vec3 color = vColor * (0.12 + diffuse * 0.86);",
     "  color += vec3(0.22, 0.05, 0.80) * rim * 1.65;",
     "  color += vec3(0.30, 0.78, 1.0) * pow(rim, 2.1) * 0.48;",
