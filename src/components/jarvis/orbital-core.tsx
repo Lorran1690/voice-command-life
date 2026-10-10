@@ -964,7 +964,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       if (Math.abs(avatarTarget - avatarBlend) < 0.0008) avatarBlend = avatarTarget;
       const avatarTilt = rotateX(0.07 + smoothPointerY * 0.13 + Math.sin(sceneTime * 0.48) * 0.018);
       const avatarYaw = rotateY(angle * 0.055 + smoothPointerX * 0.15);
-      const avatarBase = multiply(translate(cameraX * 0.3, cameraY * 0.3, cameraDepth), multiply(avatarTilt, multiply(avatarYaw, scale(1 + avatarBlend * 0.16))));
+      const avatarBase = multiply(translate(cameraX * 0.3, cameraY * 0.3, cameraDepth), multiply(avatarTilt, multiply(avatarYaw, scale(1 + avatarBlend * 0.65))));
       const withScale = (model: Float32Array, amount: number) => multiply(model, scale(amount));
 
       // Background filigree cage and orbital skeleton.
