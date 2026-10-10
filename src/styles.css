@@ -2023,6 +2023,12 @@ body { letter-spacing: normal; }
   z-index: 3;
   filter: drop-shadow(0 0 32px rgba(117, 52, 207, .24));
 }
+
+/* In particle portrait mode, remove the wrapper's purple drop-shadow as well. */
+.jarvis-demo-voice-panel .jarvis-hero-core.orbital-core--particle-avatar {
+  filter: none !important;
+  box-shadow: none !important;
+}
 .jarvis-demo-voice-panel .jarvis-voice-actions {
   position: absolute;
   z-index: 8;
