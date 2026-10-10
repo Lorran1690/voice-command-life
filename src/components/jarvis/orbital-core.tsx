@@ -813,7 +813,6 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     let pointerY = 0.48;
     let disposed = false;
     const tau = Math.PI * 2;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let seed = 835217;
     const random = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -832,6 +831,24 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
         targetX: x,
         targetY: y,
       });
+    };
+
+    const addCurve = (
+      start: [number, number],
+      control: [number, number],
+      end: [number, number],
+      count: number,
+      role: number,
+      color: number,
+      size = 0.58,
+    ) => {
+      for (let i = 0; i <= count; i++) {
+        const t = i / count;
+        const inverse = 1 - t;
+        const x = inverse * inverse * start[0] + 2 * inverse * t * control[0] + t * t * end[0];
+        const y = inverse * inverse * start[1] + 2 * inverse * t * control[1] + t * t * end[1];
+        add(x, y, role, color, size + random() * 0.24);
+      }
     };
 
     // Sculptural shell: an asymmetrical, turned head with a smooth masked face.
@@ -880,6 +897,37 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
         add(x, y, row > 27 ? 7 : 3, color, glint > 0.82 ? 1.02 + random() * 0.55 : 0.48 + random() * 0.45);
       }
     }
+
+    // Eyes, brows, nose and lips are separate particle contours so the face reads as a woman,
+    // not as a smooth anonymous mask. Fine silver lines stay legible without filling the face.
+    for (const side of [-1, 1]) {
+      const eyeX = 0.529 + side * 0.043;
+      addCurve([eyeX - 0.021, 0.267], [eyeX, 0.249], [eyeX + 0.021, 0.267], 34, 3, 4, 0.54);
+      addCurve([eyeX - 0.019, 0.278], [eyeX, 0.264], [eyeX + 0.019, 0.278], 32, 3, 5, 0.53);
+      addCurve([eyeX - 0.018, 0.279], [eyeX, 0.289], [eyeX + 0.018, 0.279], 26, 3, 2, 0.42);
+
+      for (let i = 0; i < 34; i++) {
+        const angle = (i / 34) * tau;
+        add(eyeX + Math.cos(angle) * 0.0068, 0.277 + Math.sin(angle) * 0.0062, 3, i % 3 === 0 ? 5 : 4, 0.56);
+      }
+      for (let i = 0; i < 13; i++) {
+        const angle = (i / 13) * tau;
+        add(eyeX + Math.cos(angle) * 0.0028, 0.277 + Math.sin(angle) * 0.0028, 3, 5, 0.65);
+      }
+    }
+
+    // Bridge and tip: slight asymmetry catches a cool highlight like polished titanium.
+    addCurve([0.524, 0.282], [0.520, 0.317], [0.528, 0.351], 44, 3, 4, 0.48);
+    addCurve([0.535, 0.288], [0.540, 0.323], [0.533, 0.350], 38, 3, 2, 0.39);
+    addCurve([0.515, 0.356], [0.528, 0.365], [0.543, 0.356], 30, 3, 5, 0.52);
+    addCurve([0.516, 0.361], [0.520, 0.365], [0.524, 0.363], 12, 3, 2, 0.40);
+    addCurve([0.533, 0.363], [0.537, 0.365], [0.541, 0.360], 12, 3, 2, 0.40);
+
+    // Soft, precise lips with a defined cupid's bow and lower-lip highlight.
+    addCurve([0.501, 0.389], [0.514, 0.378], [0.529, 0.389], 28, 7, 4, 0.48);
+    addCurve([0.529, 0.389], [0.544, 0.378], [0.558, 0.389], 28, 7, 4, 0.48);
+    addCurve([0.501, 0.389], [0.529, 0.410], [0.558, 0.389], 42, 7, 2, 0.45);
+    addCurve([0.509, 0.392], [0.529, 0.398], [0.549, 0.392], 28, 7, 5, 0.48);
 
     // Crown of the head, built from curved reflective contours rather than a round halo.
     for (let strand = 0; strand < 42; strand++) {
@@ -993,6 +1041,13 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
 
     // Real chrome palette, not violet glow: cold steel, polished silver and icy highlights.
     const palette = ["#a8b6c2", "#d8e0e7", "#7793a6", "#c4d8e5", "#eef5f9", "#ffffff"];
+    const particlesByColor = palette.map((_, color) => {
+      const indices: number[] = [];
+      for (let i = 0; i < particles.length; i++) {
+        if (particles[i]!.color === color) indices.push(i);
+      }
+      return indices;
+    });
     const pointX = new Float32Array(particles.length);
     const pointY = new Float32Array(particles.length);
     const pointR = new Float32Array(particles.length);
@@ -1000,8 +1055,9 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     function render(now: number) {
       if (disposed) return;
       resize();
-      const time = now * 0.001 * (reducedMotion ? 0.45 : 1);
-      const targetBlend = activeRef.current ? 1 : 0;
+      const time = now * 0.001;
+      // Keep the portrait recognizable in standby; active voice tightens it into a crisp hologram.
+      const targetBlend = activeRef.current ? 1 : 0.82;
       blend += (targetBlend - blend) * 0.026;
       if (Math.abs(targetBlend - blend) < 0.0008) blend = targetBlend;
       voiceLevel += (voiceLevelRef.current - voiceLevel) * 0.36;
@@ -1054,8 +1110,7 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       ctx.globalCompositeOperation = "screen";
       for (let color = 0; color < palette.length; color++) {
         ctx.beginPath();
-        for (let i = 0; i < particles.length; i++) {
-          if (particles[i]!.color !== color) continue;
+        for (const i of particlesByColor[color]!) {
           const r = pointR[i]!;
           ctx.moveTo(pointX[i]! + r, pointY[i]!);
           ctx.arc(pointX[i]!, pointY[i]!, r, 0, tau);
@@ -1079,8 +1134,16 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       pointerX = 0.5;
       pointerY = 0.48;
     };
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== "visible" || disposed) return;
+      window.cancelAnimationFrame(frame);
+      resize();
+      frame = window.requestAnimationFrame(render);
+    };
     host.addEventListener("pointermove", onPointerMove);
     host.addEventListener("pointerleave", onPointerLeave);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("resize", resize);
     const observer = new ResizeObserver(resize);
     observer.observe(host);
     resize();
@@ -1090,6 +1153,8 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
       disposed = true;
       window.cancelAnimationFrame(frame);
       observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("resize", resize);
       host.removeEventListener("pointermove", onPointerMove);
       host.removeEventListener("pointerleave", onPointerLeave);
     };
@@ -1481,7 +1546,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
   );
 }
 
-export function OrbitalCore({ active = false, muted = false, speaking = false, particleAvatar = false, className = "" }: { active?: boolean; muted?: boolean; speaking?: boolean; particleAvatar?: boolean; className?: string }) {
+export function OrbitalCore({ active = false, muted = false, speaking = false, particleAvatar = true, className = "" }: { active?: boolean; muted?: boolean; speaking?: boolean; particleAvatar?: boolean; className?: string }) {
   return (
     <div
       className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted", particleAvatar && "orbital-core--particle-avatar")}

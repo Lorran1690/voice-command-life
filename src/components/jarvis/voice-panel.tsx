@@ -27,7 +27,7 @@ type Recognition = {
 
 type RecognitionConstructor = new () => Recognition;
 
-export function VoicePanel({ className = "", coreClassName = "", particleAvatar = false }: { className?: string; coreClassName?: string; particleAvatar?: boolean } = {}) {
+export function VoicePanel({ className = "", coreClassName = "", particleAvatar = true }: { className?: string; coreClassName?: string; particleAvatar?: boolean } = {}) {
   const [active, setActive] = useState(false);
   const [listening, setListening] = useState(false);
   const [thinking, setThinking] = useState(false);
