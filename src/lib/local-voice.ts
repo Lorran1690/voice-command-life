@@ -7,6 +7,24 @@ export type LocalVoice = {
 const SETTINGS_KEY = "jarvis-local-settings";
 const LOCAL_CORE = "http://127.0.0.1:3210";
 
+let activePlaybackStop: (() => void) | null = null;
+
+function emitVoiceLevel(level: number, measured: boolean) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("jarvis:voice-level", {
+    detail: { level: Math.max(0, Math.min(1, level)), measured },
+  }));
+}
+
+export function stopVoicePlayback() {
+  activePlaybackStop?.();
+  activePlaybackStop = null;
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+  emitVoiceLevel(0, false);
+}
+
 type VoiceSettings = {
   voice_name?: string;
   voice_speed?: number;
@@ -59,6 +77,7 @@ export async function speakLocalText(
 ): Promise<void> {
   const cleanText = text.trim();
   if (!cleanText) return;
+  activePlaybackStop?.();
 
   const response = await fetch(LOCAL_CORE + "/api/speak", {
     method: "POST",
@@ -80,12 +99,85 @@ export async function speakLocalText(
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
 
-  try {
-    await audio.play();
-  } finally {
-    audio.addEventListener("ended", () => URL.revokeObjectURL(url), { once: true });
-    audio.addEventListener("error", () => URL.revokeObjectURL(url), { once: true });
-  }
+  await new Promise<void>((resolve, reject) => {
+    let settled = false;
+    let audioContext: AudioContext | null = null;
+    let analyser: AnalyserNode | null = null;
+    let animationFrame = 0;
+    let samples: Uint8Array | null = null;
+
+    const cleanup = () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("error", onError);
+      if (activePlaybackStop === stop) activePlaybackStop = null;
+      emitVoiceLevel(0, true);
+      if (audioContext && audioContext.state !== "closed") void audioContext.close().catch(() => undefined);
+      URL.revokeObjectURL(url);
+    };
+
+    const finish = (error?: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (error) reject(error);
+      else resolve();
+    };
+
+    const stop = () => {
+      audio.pause();
+      finish();
+    };
+
+    const onEnded = () => finish();
+    const onError = () => finish(new Error("Falha durante a reprodução da voz local."));
+
+    try {
+      if ("AudioContext" in window) {
+        audioContext = new AudioContext();
+        const source = audioContext.createMediaElementSource(audio);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.72;
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        samples = new Uint8Array(analyser.fftSize);
+      }
+    } catch {
+      // A voz continua funcionando se o navegador não oferecer análise de áudio.
+      if (audioContext && audioContext.state !== "closed") void audioContext.close().catch(() => undefined);
+      audioContext = null;
+      analyser = null;
+      samples = null;
+    }
+
+    const readAudioLevel = () => {
+      if (settled || !analyser || !samples) return;
+      analyser.getByteTimeDomainData(samples);
+      let energy = 0;
+      for (let i = 0; i < samples.length; i++) {
+        const sample = (samples[i]! - 128) / 128;
+        energy += sample * sample;
+      }
+      const rms = Math.sqrt(energy / samples.length);
+      emitVoiceLevel(Math.min(1, Math.max(0, rms - 0.012) * 7.5), true);
+      animationFrame = window.requestAnimationFrame(readAudioLevel);
+    };
+
+    activePlaybackStop = stop;
+    audio.addEventListener("ended", onEnded, { once: true });
+    audio.addEventListener("error", onError, { once: true });
+
+    void (async () => {
+      try {
+        if (audioContext?.state === "suspended") await audioContext.resume();
+        await audio.play();
+        if (analyser) readAudioLevel();
+      } catch (error) {
+        finish(error);
+      }
+    })();
+  });
 }
 
 export async function speakWithFallback(
@@ -113,8 +205,37 @@ export async function speakWithFallback(
     utterance.volume = options.volume ?? 1;
     utterance.pitch = 0.92;
 
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        utterance.onboundary = null;
+        utterance.onend = null;
+        utterance.onerror = null;
+        if (activePlaybackStop === stop) activePlaybackStop = null;
+        emitVoiceLevel(0, false);
+        if (error) reject(error);
+        else resolve();
+      };
+      const stop = () => finish();
+
+      utterance.onboundary = (event) => {
+        const char = text[event.charIndex] ?? "";
+        const level = /[.!?,;:]/.test(char) ? 0.06 : /\s/.test(char) ? 0.18 : 0.35 + ((event.charIndex % 5) * 0.09);
+        emitVoiceLevel(level, false);
+      };
+      utterance.onend = () => finish();
+      utterance.onerror = (event) => {
+        if (event.error === "canceled" || event.error === "interrupted") finish();
+        else finish(new Error("Falha na voz do navegador: " + event.error));
+      };
+
+      activePlaybackStop = stop;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    });
+
     return "browser";
   }
 }
