@@ -1007,9 +1007,10 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
     function render(now: number) {
       if (disposed) return;
       resize();
-      const time = reducedMotion ? 0 : now * 0.001;
+      // Reduced-motion preferences soften movement, but never freeze the living particle field.
+      const time = now * 0.001 * (reducedMotion ? 0.45 : 1);
       const targetBlend = activeRef.current ? 1 : 0;
-      blend += (targetBlend - blend) * (reducedMotion ? 1 : 0.026);
+      blend += (targetBlend - blend) * 0.026;
       if (Math.abs(targetBlend - blend) < 0.0008) blend = targetBlend;
       voiceLevel += (voiceLevelRef.current - voiceLevel) * 0.36;
       const synthetic = Math.max(0, Math.sin(time * 11.8 + Math.sin(time * 2.1) * 0.7));
@@ -1280,7 +1281,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
     function render(now = startedAt) {
       if (disposed) return;
       resize();
-      const elapsed = reducedMotion ? 0 : (now - startedAt) * 0.001;
+      const elapsed = (now - startedAt) * 0.001 * (reducedMotion ? 0.45 : 1);
       const sceneTime = elapsed * (activeRef.current ? 1.0 : 0.46);
       const width = canvas.width;
       const height = canvas.height;
@@ -1295,7 +1296,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       const projectionMatrix = perspective(width / Math.max(1, height));
       smoothPointerX += (pointerX - smoothPointerX) * 0.035;
       smoothPointerY += (pointerY - smoothPointerY) * 0.035;
-      angle += reducedMotion ? 0 : (activeRef.current ? 0.012 : 0.0045);
+      angle += (activeRef.current ? 0.012 : 0.0045) * (reducedMotion ? 0.45 : 1);
       const breathing = Math.sin(sceneTime * 0.42) * 0.035;
       const tilt = rotateX(0.2 + smoothPointerY * 0.28 + Math.sin(angle * 0.36) * 0.045);
       const yaw = rotateY(angle * 0.62 + smoothPointerX * 0.3);
