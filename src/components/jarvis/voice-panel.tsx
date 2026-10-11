@@ -131,7 +131,7 @@ export function VoicePanel({ className = "", coreClassName = "", particleAvatar 
           if (!response.ok) throw new Error(data.error ?? "Falha no núcleo local.");
 
           const answer = data.text?.trim();
-          if (!answer) throw new Error("O JARVIS retornou uma resposta vazia.");
+          if (!answer) throw new Error("A E.L.Y.S.I.A retornou uma resposta vazia.");
           if (!sessionRef.current) return;
 
           setThinking(false);
@@ -222,7 +222,7 @@ export function VoicePanel({ className = "", coreClassName = "", particleAvatar 
         <Button
           variant="ghost"
           onClick={() => {
-            const text = lastText ? "Entendi: " + lastText : "J.A.R.V.I.S. local online e pronto.";
+            const text = lastText ? "Entendi: " + lastText : "E.L.Y.S.I.A local online e pronta.";
             void speak(text);
           }}
           className="rounded-full"
@@ -239,7 +239,7 @@ export function VoicePanel({ className = "", coreClassName = "", particleAvatar 
 
       <div className="jarvis-voice-status flex items-center gap-2 font-display text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
         <span className="voice-state-pulse" />
-        <span>{speaking ? "JARVIS falando" : thinking ? "Processando resposta" : listening ? "Microfone ativo" : active ? "Chamada ativa" : "Voz local pronta"}</span>
+        <span>{speaking ? "E.L.Y.S.I.A falando" : thinking ? "Processando resposta" : listening ? "Microfone ativo" : active ? "Chamada ativa" : "Voz local pronta"}</span>
       </div>
     </section>
   );
