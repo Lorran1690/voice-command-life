@@ -163,13 +163,13 @@ export function ChatWindow({
       } catch (error) {
         setStatus("error");
         setLocalCoreOnline(false);
-        const errorMessage = error instanceof Error ? error.message : "Falha ao falar com o JARVIS local.";
+        const errorMessage = error instanceof Error ? error.message : "Falha ao falar com a E.L.Y.S.I.A local.";
         setMessages((current) => [
           ...current,
           {
             id: messageId(),
             role: "assistant",
-            text: "Não consegui processar seu comando. " + errorMessage + "\n\nVerifique se a janela do JARVIS Core continua aberta.",
+            text: "Não consegui processar seu comando. " + errorMessage + "\n\nVerifique se a janela do núcleo da E.L.Y.S.I.A continua aberta.",
           },
         ]);
         toast.error("Falha no núcleo local.");
@@ -240,7 +240,7 @@ export function ChatWindow({
               />
               <div className="hud-quick-grid">
                 {[
-                  ["Teste o sistema", "J.A.R.V.I.S., faça um teste de comunicação."],
+                  ["Teste o sistema", "E.L.Y.S.I.A, faça um teste de comunicação."],
                   ["Quem é você?", "Quem é você e onde está executando?"],
                   ["Como pode ajudar?", "Me diga o que você consegue fazer nesta versão local."],
                   ["Falar comigo", "Responda de forma natural e informal."],
@@ -307,7 +307,7 @@ export function ChatWindow({
           {streaming && (
             <div className="hud-processing">
               <span className="hud-processing-orb" />
-              <Shimmer className="text-xs">J.A.R.V.I.S. processando localmente…</Shimmer>
+              <Shimmer className="text-xs">E.L.Y.S.I.A processando localmente…</Shimmer>
             </div>
           )}
         </ConversationContent>
@@ -337,7 +337,7 @@ export function ChatWindow({
         >
           <PromptInputTextarea
             ref={textareaRef}
-            placeholder="Comando para J.A.R.V.I.S…"
+            placeholder="Comando para E.L.Y.S.I.A…"
             className="min-h-20 border-0 text-base md:min-h-24"
             disabled={streaming}
           />
