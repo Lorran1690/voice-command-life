@@ -86,8 +86,8 @@ export function TasksPanel() {
           </>
         )}
 
-        {tab === "notes" && <p className="px-2 py-4 text-center text-xs text-muted-foreground">Notas locais entram na próxima camada do JARVIS.</p>}
-        {tab === "memories" && <p className="px-2 py-4 text-center text-xs text-muted-foreground">Memória local entra na próxima camada do JARVIS.</p>}
+        {tab === "notes" && <p className="px-2 py-4 text-center text-xs text-muted-foreground">Notas locais entrarão na próxima etapa da E.L.Y.S.I.A.</p>}
+        {tab === "memories" && <p className="px-2 py-4 text-center text-xs text-muted-foreground">A memória local entrará na próxima etapa da E.L.Y.S.I.A.</p>}
       </div>
     </aside>
   );
