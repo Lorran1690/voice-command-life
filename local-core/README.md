@@ -1,6 +1,6 @@
-# J.A.R.V.I.S. Local Core
+# E.L.Y.S.I.A Local Core
 
-Este diretório roda o cérebro local do JARVIS usando Ollama.
+Este diretório executa o núcleo local da E.L.Y.S.I.A usando Ollama.
 
 ## Iniciar
 Na raiz do projeto:
