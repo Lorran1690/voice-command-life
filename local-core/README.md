@@ -7,7 +7,7 @@ Na raiz do projeto:
 
   node local-core/server.mjs
 
-ou execute local-core\\start-jarvis.bat
+ou execute local-core\\start-elysia.bat
 
 API: http://127.0.0.1:3210
 Modelo padrão: qwen3:4b
