@@ -4,8 +4,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Início — J.A.R.V.I.S." },
-      { name: "description", content: "J.A.R.V.I.S. local." },
+      { title: "Início — E.L.Y.S.I.A" },
+      { name: "description", content: "E.L.Y.S.I.A — Enhanced Logic & Yielding Systems for Intelligent Assistance. Assistente pessoal com IA local." },
     ],
   }),
   component: HomeRedirect,
