@@ -1,6 +1,6 @@
-# My Jarvis AI
+# E.L.Y.S.I.A
 
-quero fazer minha propria inteligencia artificial J.A.R.V.IS, porem não sei o que devo fazer. Quero tanto a experiência de conversar por voz com ele quanto a integração com tarefas práticas do meu dia a dia.
+**E.L.Y.S.I.A — Enhanced Logic & Yielding Systems for Intelligent Assistance.** Assistente pessoal com IA local, conversa por voz e texto e recursos práticos para o dia a dia.
 
 This project was built with [Lovable](https://lovable.dev).
 
