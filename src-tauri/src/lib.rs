@@ -2,5 +2,5 @@
 pub fn run() {
     tauri::Builder::default()
         .run(tauri::generate_context!())
-        .expect("error while running J.A.R.V.I.S. desktop application");
+        .expect("error while running E.L.Y.S.I.A desktop application");
 }
