@@ -109,7 +109,7 @@ export async function speakLocalText(
     let audioContext: AudioContext | null = null;
     let analyser: AnalyserNode | null = null;
     let animationFrame = 0;
-    let samples: Uint8Array | null = null;
+    let samples: Uint8Array<ArrayBuffer> | null = null;
 
     const cleanup = () => {
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
@@ -161,7 +161,9 @@ export async function speakLocalText(
       analyser.getByteTimeDomainData(samples);
       let energy = 0;
       for (let i = 0; i < samples.length; i++) {
-        const sample = (samples[i]! - 128) / 128;
+        const value = samples[i];
+        if (value === undefined) continue;
+        const sample = (value - 128) / 128;
         energy += sample * sample;
       }
       const rms = Math.sqrt(energy / samples.length);
@@ -259,6 +261,6 @@ export function getPreferredVoice(voices: LocalVoice[]): LocalVoice | null {
     voices.find((voice) => voice.gender === "female" && /^pt[-_]/i.test(voice.culture)) ??
     voices.find((voice) => voice.gender === "female") ??
     voices.find((voice) => /^pt[-_]/i.test(voice.culture)) ??
-    voices[0]
+    voices[0] ?? null
   );
 }

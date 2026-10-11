@@ -59,7 +59,7 @@ export function AssistantSettings() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.motion = settings.motion_intensity;
+    document.documentElement.dataset['motion'] = settings.motion_intensity;
     document.documentElement.style.setProperty("--hud", "#A855F7");
     document.documentElement.style.setProperty("--primary", "#A855F7");
     document.documentElement.style.setProperty("--ring", "#A855F7");

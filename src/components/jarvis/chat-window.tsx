@@ -244,7 +244,7 @@ export function ChatWindow({
                   ["Quem é você?", "Quem é você e onde está executando?"],
                   ["Como pode ajudar?", "Me diga o que você consegue fazer nesta versão local."],
                   ["Falar comigo", "Responda de forma natural e informal."],
-                ].map(([label, prompt]) => (
+                ].map(([label, prompt = ""]) => (
                   <button
                     key={label}
                     type="button"

@@ -1,5 +1,9 @@
 # Roadmap — J.A.R.V.I.S. (Lorram)
 
+## Correção de compilação da demo
+- [ ] Corrigir erros TypeScript sem reformular o visual ou as integrações
+- [ ] Conferir compilação automática e renderização de /chat/local no desktop e celular
+
 ## Fase 1 — concluída
 - [x] Login (e-mail/senha + Google), acesso restrito ao dono
 - [x] Conversas por texto com histórico salvo (várias conversas, uma URL por conversa)

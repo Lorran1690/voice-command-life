@@ -54,9 +54,13 @@ export function createJarvisTools(supabase: UserScopedSupabase, userId: string) 
       }).strict(),
       execute: async (changes) => {
         const current = await loadAssistantSettings(supabase, userId);
+        // Optional inputs are omitted, not written as undefined over saved values.
+        const definedChanges = Object.fromEntries(
+          Object.entries(changes).filter(([, value]) => value !== undefined),
+        ) as { [K in keyof typeof changes]?: Exclude<(typeof changes)[K], undefined> };
         const { data, error } = await supabase
           .from("assistant_settings")
-          .upsert({ ...current, ...changes, user_id: userId, updated_at: new Date().toISOString() }, { onConflict: "user_id" })
+          .upsert({ ...current, ...definedChanges, user_id: userId, updated_at: new Date().toISOString() }, { onConflict: "user_id" })
           .select("*")
           .single();
         if (error) return { ok: false as const, error: error.message };
