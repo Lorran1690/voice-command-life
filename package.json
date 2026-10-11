@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "elysia:local": "node local-core/server.mjs",
     "jarvis:local": "node local-core/server.mjs",
     "tauri": "tauri",
     "desktop:dev": "tauri dev",
