@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * J.A.R.V.I.S. design system — dark HUD interface.
+ * E.L.Y.S.I.A design system — dark HUD interface.
  * Deep space-blue surfaces, luminous cyan accents, amber highlights.
  */
 
@@ -261,7 +261,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   /* Respect reduced-motion preferences for page navigation and small UI transitions,
-     but do not freeze the JARVIS hologram's requestAnimationFrame particle renderer. */
+     but do not freeze the E.L.Y.S.I.A hologram's requestAnimationFrame particle renderer. */
   html:focus-within { scroll-behavior: auto; }
   .hud-message-actions, .hud-icon-action, .settings-choice,
   .settings-field input, .settings-field select, .settings-field textarea {
@@ -270,7 +270,7 @@
 }
 
 
-/* JARVIS COMMAND-CENTER MOTION LAYER */
+/* E.L.Y.S.I.A COMMAND-CENTER MOTION LAYER */
 .jarvis-grid-bg::after {
   content: "";
   position: absolute;
@@ -704,7 +704,7 @@
 }
 
 
-/* LOCAL JARVIS OPERATOR LOGIN */
+/* LOCAL E.L.Y.S.I.A OPERATOR LOGIN */
 .jarvis-login-screen {
   position: relative;
   display: grid;
@@ -1025,7 +1025,7 @@
 }
 
 
-/* === J.A.R.V.I.S. VIOLET COMMAND CENTER / VISUAL DEMO === */
+/* === E.L.Y.S.I.A VIOLET COMMAND CENTER / VISUAL DEMO === */
 :root {
   --background: #05030a;
   --card: #0b0814;
