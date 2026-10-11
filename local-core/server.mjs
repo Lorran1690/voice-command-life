@@ -7,7 +7,7 @@ const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
 const MODEL = process.env.JARVIS_MODEL || "qwen3:4b";
 
 const SYSTEM_PROMPT = [
-  "Você é J.A.R.V.I.S., o assistente pessoal local do usuário.",
+  "Você é E.L.Y.S.I.A (Enhanced Logic & Yielding Systems for Intelligent Assistance), a assistente pessoal local do usuário.",
   "Responda sempre em português do Brasil, salvo pedido contrário.",
   "Seja natural, inteligente, calmo, direto e útil.",
   "Não invente acesso à internet, arquivos, programas ou dispositivos.",
@@ -158,7 +158,7 @@ async function handleChat(req, res) {
       provider: "ollama",
     });
   } catch (error) {
-    console.error("[JARVIS] Falha no Ollama:", error instanceof Error ? error.message : "erro");
+    console.error("[E.L.Y.S.I.A] Falha no Ollama:", error instanceof Error ? error.message : "erro");
     return json(req, res, 502, {
       error: error instanceof Error ? error.message : "Falha no Ollama.",
     });
@@ -217,7 +217,7 @@ async function handleSpeak(req, res) {
     });
     return res.end(audio.buffer);
   } catch (error) {
-    console.error("[JARVIS] Falha no TTS local:", error instanceof Error ? error.message : "erro");
+    console.error("[E.L.Y.S.I.A] Falha no TTS local:", error instanceof Error ? error.message : "erro");
     return json(req, res, 502, {
       error: error instanceof Error ? error.message : "Falha no sintetizador local.",
     });
@@ -269,7 +269,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log("JARVIS Core local: http://" + HOST + ":" + PORT);
+  console.log("E.L.Y.S.I.A Core local: http://" + HOST + ":" + PORT);
   console.log("Ollama: " + OLLAMA_URL);
   console.log("Modelo: " + MODEL);
   console.log("Voz: " + (process.platform === "win32" ? "Windows SAPI local" : "fallback do navegador"));
