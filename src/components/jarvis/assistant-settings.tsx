@@ -98,7 +98,7 @@ export function AssistantSettings() {
           <label className="settings-field">
             <span>Perfil</span>
             <select value={settings.personality} onChange={(e) => update("personality", e.target.value)}>
-              <option value="jarvis">J.A.R.V.I.S. clássico</option>
+              <option value="jarvis">E.L.Y.S.I.A clássica</option>
               <option value="friendly">Amigável</option>
               <option value="professional">Profissional</option>
               <option value="coach">Coach</option>
@@ -175,7 +175,7 @@ export function AssistantSettings() {
             </select>
           </label>
           <p className="text-[10px] leading-relaxed text-muted-foreground">
-            O JARVIS prioriza vozes instaladas localmente. Uma voz feminina em PT-BR é escolhida automaticamente quando disponível.
+            A E.L.Y.S.I.A prioriza vozes instaladas localmente. Uma voz feminina em PT-BR é escolhida automaticamente quando disponível.
           </p>
           <label className="settings-field">
             <span>Velocidade: {settings.voice_speed.toFixed(2)}×</span>
