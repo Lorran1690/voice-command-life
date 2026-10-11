@@ -149,7 +149,7 @@ function buildMesh(
   normals: number[],
   colors: number[],
   indices: number[] | null,
-  mode = gl.TRIANGLES,
+  mode: number = gl.TRIANGLES,
   material = 0
 ): Mesh {
   return {
@@ -570,10 +570,10 @@ function multiply(a: Float32Array, b: Float32Array) {
   for (let column = 0; column < 4; column++) {
     for (let row = 0; row < 4; row++) {
       out[column * 4 + row] =
-        a[row] * b[column * 4] +
-        a[4 + row] * b[column * 4 + 1] +
-        a[8 + row] * b[column * 4 + 2] +
-        a[12 + row] * b[column * 4 + 3];
+        (a[row] ?? NaN) * (b[column * 4] ?? NaN) +
+        (a[4 + row] ?? NaN) * (b[column * 4 + 1] ?? NaN) +
+        (a[8 + row] ?? NaN) * (b[column * 4 + 2] ?? NaN) +
+        (a[12 + row] ?? NaN) * (b[column * 4 + 3] ?? NaN);
     }
   }
   return out;
@@ -798,10 +798,14 @@ function ParticleAvatarOverlay({ active, speaking }: { active: boolean; speaking
   }, []);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const host = canvas?.parentElement;
-    const ctx = canvas?.getContext("2d", { alpha: true });
-    if (!canvas || !host || !ctx) return;
+    const canvasCandidate = canvasRef.current;
+    const hostCandidate = canvasCandidate?.parentElement;
+    const contextCandidate = canvasCandidate?.getContext("2d", { alpha: true });
+    if (!canvasCandidate || !hostCandidate || !contextCandidate) return;
+    // Capture non-null resources for the animation callbacks.
+    const canvas = canvasCandidate;
+    const host = hostCandidate;
+    const ctx = contextCandidate;
 
     let width = 1;
     let height = 1;
@@ -1157,15 +1161,18 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
   }, []);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const host = hostRef.current;
-    if (!canvas || !host) return;
+    const canvasCandidate = canvasRef.current;
+    const hostCandidate = hostRef.current;
+    if (!canvasCandidate || !hostCandidate) return;
+    const canvas = canvasCandidate;
+    const host = hostCandidate;
 
-    const gl = canvas.getContext("webgl", { alpha: true, antialias: true, powerPreference: "high-performance" });
-    if (!gl) {
-      host.dataset.webgl = "unavailable";
+    const contextCandidate = canvas.getContext("webgl", { alpha: true, antialias: true, powerPreference: "high-performance" });
+    if (!contextCandidate) {
+      host.dataset['webgl'] = "unavailable";
       return;
     }
+    const gl = contextCandidate;
 
     let sceneProgram: WebGLProgram;
     let meshes: Mesh[] = [];
@@ -1223,7 +1230,7 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
       particleCloud = makeMorphParticleCloud(gl, 3600);
       meshes.push(particleCloud.mesh);
     } catch {
-      host.dataset.webgl = "error";
+      host.dataset['webgl'] = "error";
       return;
     }
 

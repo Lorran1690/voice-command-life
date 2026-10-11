@@ -66,8 +66,9 @@ export function VoicePanel({ className = "", coreClassName = "", particleAvatar 
       setSpeaking(true);
 
       try {
+        const voiceName = selected?.name || preferences.voiceName;
         await speakWithFallback(text, {
-          voiceName: selected?.name || preferences.voiceName || undefined,
+          ...(voiceName ? { voiceName } : {}),
           speed: preferences.speed,
           volume: 1,
         });
