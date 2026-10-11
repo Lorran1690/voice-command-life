@@ -5,4 +5,4 @@ $action = New-ScheduledTaskAction -Execute $node -Argument "`"$repo\local-core\s
 $trigger = New-ScheduledTaskTrigger -AtLogOn
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
 Register-ScheduledTask -TaskName "JARVIS Local Core" -Action $action -Trigger $trigger -Principal $principal -Force
-Write-Host "JARVIS Core configurado para iniciar com o Windows."
+Write-Host "E.L.Y.S.I.A Core configurado para iniciar com o Windows."
