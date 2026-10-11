@@ -1,4 +1,4 @@
-// Configuração do JARVIS Core local. Nada aqui depende de serviços remotos.
+// Configuração do núcleo local da E.L.Y.S.I.A. Nada aqui depende de serviços remotos.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -14,7 +14,7 @@ export const PORT = (() => {
 })();
 
 if (process.env.JARVIS_HOST && process.env.JARVIS_HOST !== HOST) {
-  console.warn("[JARVIS] JARVIS_HOST ignorado: o Core só escuta em 127.0.0.1.");
+  console.warn("[E.L.Y.S.I.A] JARVIS_HOST ignorado: o Core só escuta em 127.0.0.1.");
 }
 
 function isLoopbackUrl(value) {
@@ -30,7 +30,7 @@ function isLoopbackUrl(value) {
 export const OLLAMA_URL = (() => {
   const value = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
   if (!isLoopbackUrl(value)) {
-    console.warn("[JARVIS] OLLAMA_URL remota recusada; usando http://127.0.0.1:11434.");
+    console.warn("[E.L.Y.S.I.A] OLLAMA_URL remota recusada; usando http://127.0.0.1:11434.");
     return "http://127.0.0.1:11434";
   }
   return value.replace(/\/$/, "");
