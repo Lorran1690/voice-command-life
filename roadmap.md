@@ -1,4 +1,4 @@
-# Roadmap — J.A.R.V.I.S. (Lorram)
+# Roadmap — E.L.Y.S.I.A (Lorram)
 
 ## Correção de compilação da demo
 - [x] Corrigir erros TypeScript sem reformular o visual ou as integrações
@@ -7,9 +7,9 @@
 ## Fase 1 — concluída
 - [x] Login (e-mail/senha + Google), acesso restrito ao dono
 - [x] Conversas por texto com histórico salvo (várias conversas, uma URL por conversa)
-- [x] Voz ao vivo (botão "Falar com J.A.R.V.I.S.", transcrição na tela, voz masculina)
+- [x] Voz ao vivo (botão "Falar com E.L.Y.S.I.A", transcrição na tela, voz masculina)
 - [x] Tarefas/lembretes, notas e memória de fatos (criados por voz ou texto)
-- [x] Visual HUD escuro estilo JARVIS, emblema próprio + favicon
+- [x] Visual HUD escuro futurista, emblema próprio + favicon
 
 ## Fase 2 — pendente (pedir confirmação do usuário)
 - [ ] Agenda (integração com Google Calendar)
