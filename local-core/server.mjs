@@ -1,5 +1,6 @@
 import http from "node:http";
 import { listWindowsVoices, synthesizeWindows } from "./voice.mjs";
+import { isNeuralVoiceAvailable, neuralVoiceRecord, NEURAL_VOICE_NAME, synthesizeNeural } from "./neural-voice.mjs";
 
 const HOST = process.env.JARVIS_HOST || "127.0.0.1";
 const PORT = Number(process.env.JARVIS_PORT || 3210);
@@ -166,20 +167,19 @@ async function handleChat(req, res) {
 }
 
 async function handleVoices(req, res) {
-  try {
-    const voices = await listWindowsVoices();
-    return json(req, res, 200, {
-      provider: "windows-sapi",
-      local: process.platform === "win32",
-      voices,
-    });
-  } catch {
-    return json(req, res, 200, {
-      provider: "windows-sapi",
-      local: false,
-      voices: [],
-    });
-  }
+  const [windowsVoices, neuralAvailable] = await Promise.all([
+    listWindowsVoices().catch(() => []),
+    isNeuralVoiceAvailable(),
+  ]);
+
+  return json(req, res, 200, {
+    provider: neuralAvailable ? "kokoro+windows-sapi" : "windows-sapi",
+    local: process.platform === "win32" || neuralAvailable,
+    voices: [
+      ...(neuralAvailable ? [neuralVoiceRecord()] : []),
+      ...windowsVoices.map((voice) => ({ ...voice, provider: "windows-sapi" })),
+    ],
+  });
 }
 
 async function handleSpeak(req, res) {
@@ -202,12 +202,9 @@ async function handleSpeak(req, res) {
   if (text.length > 4000) return json(req, res, 413, { error: "Texto de voz muito longo." });
 
   try {
-    const audio = await synthesizeWindows({
-      text,
-      voice,
-      speed: rate,
-      volume,
-    });
+    const audio = voice === NEURAL_VOICE_NAME
+      ? await synthesizeNeural({ text, speed: rate })
+      : await synthesizeWindows({ text, voice, speed: rate, volume });
 
     res.writeHead(200, {
       "Content-Type": "audio/wav",

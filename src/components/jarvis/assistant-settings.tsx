@@ -3,7 +3,7 @@ import { Bot, BrainCircuit, Palette, Save, SlidersHorizontal, Sparkles, Volume2 
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { getPreferredVoice, listLocalVoices, type LocalVoice } from "@/lib/local-voice";
+import { getPreferredVoice, listLocalVoices, speakLocalText, type LocalVoice } from "@/lib/local-voice";
 
 type Settings = {
   personality: string;
@@ -48,6 +48,7 @@ function loadSettings(): Settings {
 export function AssistantSettings() {
   const [settings, setSettings] = useState<Settings>(defaults);
   const [voices, setVoices] = useState<LocalVoice[]>([]);
+  const [voicePreviewing, setVoicePreviewing] = useState(false);
 
   useEffect(() => {
     const loaded = loadSettings();
@@ -166,17 +167,35 @@ export function AssistantSettings() {
           <label className="settings-field">
             <span>Voz instalada</span>
             <select value={settings.voice_name} onChange={(e) => update("voice_name", e.target.value)}>
-              {!voices.length && <option value="">Detectar vozes do Windows</option>}
+              {!voices.length && <option value="">Inicie a voz local para detectar opções</option>}
               {voices.map((voice) => (
                 <option key={voice.name} value={voice.name}>
-                  {voice.name} · {voice.culture || "idioma local"}{voice.gender === "female" ? " · feminina" : ""}
+                  {voice.label ?? voice.name} · {voice.culture || "idioma local"}{voice.gender === "female" ? " · feminina" : ""}
                 </option>
               ))}
             </select>
           </label>
           <p className="text-[10px] leading-relaxed text-muted-foreground">
-            A E.L.Y.S.I.A prioriza vozes instaladas localmente. Uma voz feminina em PT-BR é escolhida automaticamente quando disponível.
+            Se o KokoroTTS local estiver ativo, a voz neural Dora (PT-BR) aparece na lista. As vozes do Windows continuam disponíveis.
           </p>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!voices.length || voicePreviewing}
+            onClick={() => {
+              setVoicePreviewing(true);
+              void speakLocalText("Olá! Eu sou a E.L.Y.S.I.A. É um prazer conversar com você em português brasileiro.", {
+                voiceName: settings.voice_name || getPreferredVoice(voices)?.name,
+                speed: settings.voice_speed,
+              })
+                .catch((error) => toast.error(error instanceof Error ? error.message : "Não foi possível testar a voz."))
+                .finally(() => setVoicePreviewing(false));
+            }}
+            className="w-full"
+          >
+            <Volume2 className="h-4 w-4" />
+            {voicePreviewing ? "Reproduzindo amostra..." : "Ouvir amostra da voz"}
+          </Button>
           <label className="settings-field">
             <span>Velocidade: {settings.voice_speed.toFixed(2)}×</span>
             <input type="range" min="0.75" max="1.25" step="0.05" value={settings.voice_speed} onChange={(e) => update("voice_speed", Number(e.target.value))} />
