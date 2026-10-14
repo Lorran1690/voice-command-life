@@ -55,9 +55,10 @@ export async function synthesizeNeural({ text, speed = 1 }) {
   if (!cleanText) throw new Error("Texto vazio.");
   if (cleanText.length > 4000) throw new Error("Texto de voz muito longo.");
 
+  const baseUrl = localKokoroUrl();
   let response;
   try {
-    response = await fetch(localKokoroUrl() + "/v1/audio/speech", {
+    response = await fetch(baseUrl + "/v1/audio/speech", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
