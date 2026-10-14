@@ -21,5 +21,7 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: bun install --frozen-lockfile
+      - name: Test local neural-voice transport
+        run: node --test local-core/neural-voice.test.mjs
       - name: Build application
         run: bun run build
