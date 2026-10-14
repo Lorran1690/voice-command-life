@@ -2,6 +2,8 @@ export type LocalVoice = {
   name: string;
   culture: string;
   gender: string;
+  provider?: string;
+  label?: string;
 };
 
 const SETTINGS_KEY = "jarvis-local-settings";
@@ -195,7 +197,9 @@ export async function speakWithFallback(
   try {
     await speakLocalText(text, options);
     return "local-core";
-  } catch {
+  } catch (error) {
+    // Uma voz neural explicitamente escolhida não deve falhar silenciosamente para a voz robótica.
+    if (options.voiceName?.startsWith("E.L.Y.S.I.A Neural")) throw error;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       throw new Error("Nenhum sintetizador de voz disponível.");
     }
@@ -258,6 +262,7 @@ export function getPreferredVoice(voices: LocalVoice[]): LocalVoice | null {
   }
 
   return (
+    voices.find((voice) => voice.provider === "kokoro" && voice.gender === "female" && /^pt[-_]/i.test(voice.culture)) ??
     voices.find((voice) => voice.gender === "female" && /^pt[-_]/i.test(voice.culture)) ??
     voices.find((voice) => voice.gender === "female") ??
     voices.find((voice) => /^pt[-_]/i.test(voice.culture)) ??
