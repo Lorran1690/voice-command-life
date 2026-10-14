@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { ElysiaHologram } from "@/components/jarvis/elysia-hologram";
 
 type Mesh = {
   positions: WebGLBuffer;
@@ -1509,12 +1510,12 @@ export function OrbitalCore3D({ active = false, speaking = false }: { active?: b
 export function OrbitalCore({ active = false, muted = false, speaking = false, particleAvatar = true, className = "" }: { active?: boolean; muted?: boolean; speaking?: boolean; particleAvatar?: boolean; className?: string }) {
   return (
     <div
-      className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted", particleAvatar && "orbital-core--particle-avatar")}
+      className={cn("orbital-core", "orbital-core--webgl", className, active && "orbital-core--active", muted && "orbital-core--muted", particleAvatar && "orbital-core--particle-avatar orbital-core--elysia-hologram")}
       data-active={active}
       aria-hidden="true"
     >
       {!particleAvatar && <OrbitalCore3D active={active} speaking={speaking} />}
-      {particleAvatar && <ParticleAvatarOverlay active={active} speaking={speaking} />}
+      {particleAvatar && <ElysiaHologram active={active} speaking={speaking} />}
       {!particleAvatar && <div className="orbital-core-hud" aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
         <span className="orbital-core-hud-crosshair" style={{ position: "absolute", inset: "18px", borderLeft: "1px solid rgba(177, 128, 255, .14)", borderRight: "1px solid rgba(177, 128, 255, .14)" }} />
         <span className="orbital-core-hud-node orbital-core-hud-node--one" style={{ position: "absolute", top: "22%", left: "20%", width: 5, height: 5, borderRadius: "50%", background: "#b17cff", boxShadow: "0 0 12px #9b4dff" }} />
