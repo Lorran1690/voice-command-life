@@ -163,7 +163,7 @@ c2.restore();}
 function finish(){if(completed)return;completed=true;document.body.classList.add('done');$('progress').style.width='100%';$('bootLabel').textContent='SISTEMA ONLINE';if(embedded){window.parent.postMessage({type:'ELYSIA_BOOT_FINISHED'},'*');}}
 function draw(now){const t=debugTime===null?(now-started)/1000:debugTime;
 if(!completed && t>=duration)finish();
-const reveal=smooth(6.5,9.0,t);document.querySelector('.ui').style.opacity=String(reveal);document.querySelector('.ui').style.transform=`scale(${(1.035-.035*reveal).toFixed(4)})`;document.querySelector('.grid').style.opacity=String(reveal*.72);canvas.style.opacity=String(1-.88*reveal);
+const reveal=smooth(6.5,9.0,t);document.querySelector('.ui').style.opacity=String(reveal);document.querySelector('.ui').style.transform=`scale(${(1.035-.035*reveal).toFixed(4)})`;document.querySelector('.grid').style.opacity=String(reveal*.72);canvas.style.opacity=String(1-.88*reveal);const bootFade=1-smooth(6.3,7.9,t);$('bootLabel').style.opacity=String(bootFade);document.querySelector('.progress-track').style.opacity=String(bootFade);
 if(gl&&shaderProgram){gl.useProgram(shaderProgram);gl.uniform2f(uniforms.resolution,canvas.width,canvas.height);gl.uniform1f(uniforms.time,t);gl.drawArrays(gl.TRIANGLES,0,6);}else{drawFallback(t);}
 orbDraw(t);
 if(!completed){$('progress').style.width=(Math.min(1,t/duration)*100).toFixed(1)+'%';const label=t<1.5?'INICIALIZANDO NÚCLEO...':t<3.4?'ENERGIA DETECTADA':t<5.7?'SINTONIZANDO PARTÍCULAS':t<7.4?'FORMANDO CONSCIÊNCIA VISUAL':'DESPERTANDO E.L.Y.S.I.A.';$('bootLabel').textContent=label;}
