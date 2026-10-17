@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<title>E.L.Y.S.I.A. • Awakening Sequence</title>
+<style>
+:root {color-scheme:dark; --gold:#f7bb5b; --silver:#ebd9b9; font-family: 'Segoe UI',Inter,Arial,sans-serif}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#030204;color:#ffecd1}
+#scene,#orb{position:absolute;inset:0;width:100%;height:100%;display:block}
+#scene{z-index:1;transition:none;}
+#orb{z-index:3;pointer-events:none}
+.backdrop{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 52% 45%,#1a0b08,#070508 42%,#030305 78%);}
+.grid{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:none;background-image:linear-gradient(#e8ab4b0b 1px,transparent 1px),linear-gradient(90deg,#e8ab4b0b 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at center,#0009,transparent 78%)}
+.vignette{position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at center,transparent 13%,#05030615 47%,#020204cf 98%),linear-gradient(0deg,#0303059c,transparent 28%,transparent 79%,#03030573);}
+.noise{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.09;background-image:url('data:image/svg+xml,%3Csvg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency=".84" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)" opacity=".7"/%3E%3C/svg%3E');mix-blend-mode:screen}
+.ui{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transform:scale(1.035);transition:none}
+.ui:before,.ui:after{content:'';position:absolute;top:80px;bottom:90px;width:1px;background:linear-gradient(transparent,#b78d453a,transparent)}.ui:before{left:7.5%}.ui:after{right:7.5%}
+.ui .top{position:absolute;top:7%;left:9.4%;right:9.4%;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.27em;color:#d9a86198}
+.brand{display:flex;align-items:center;gap:13px;font-weight:650;letter-spacing:.5em;color:#ffe0a4!important}.brandmark{width:25px;height:25px;display:grid;place-items:center;border:1px solid #f5bc66af;border-radius:50%;box-shadow:0 0 21px #ffae3240;color:#ffd18a;font-size:13px;letter-spacing:0}
+.side{position:absolute;top:42%;width:190px;max-width:19vw;font-size:10px;color:#cda76ba0;letter-spacing:.15em;line-height:2.7}.side b{font-weight:500;color:#ffda9c}.side.left{left:10.2%}.side.right{right:10.2%;text-align:right}.side hr{border:0;border-top:1px solid #cea45f29;margin:13px 0}
+.tick{display:inline-block;height:5px;width:5px;border-radius:50%;background:#e5b76e;box-shadow:0 0 7px #f5a83b;margin-right:9px}
+.bottom{position:absolute;bottom:9%;left:10%;right:10%;display:flex;justify-content:space-between;align-items:end;font-size:9px;letter-spacing:.25em;color:#b9a0889e}
+.bottom strong{font-weight:400;color:#f6cc89b6}.status-indicator{margin-left:10px;color:#97d5bc}
+.center-caption{position:absolute;top:calc(50% + min(28vh,210px));left:0;right:0;text-align:center;letter-spacing:.55em;color:#f5d29d;font-weight:450;font-size:clamp(12px,1.5vw,19px);text-shadow:0 0 20px #f9b95080;opacity:.92}
+.center-subtitle{display:block;font-size:9px;letter-spacing:.4em;color:#bfb19b9b;margin-top:14px;text-shadow:none}
+.boot-label{position:absolute;z-index:5;bottom:9.3%;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.4em;color:#ffd293a0;white-space:nowrap;transition:opacity .6s ease}
+.progress-track{position:absolute;z-index:5;bottom:6.7%;left:50%;transform:translateX(-50%);height:1px;width:min(280px,54vw);background:#ffb95f29;transition:opacity .6s ease}
+.progress-bar{height:100%;width:0;background:#ffc16b;box-shadow:0 0 9px #f7a64d,0 0 24px #fc9a2d;}
+.controls{position:absolute;z-index:10;top:27px;right:31px;display:flex;gap:10px}
+.control{appearance:none;border:1px solid #f4c07235;border-radius:22px;background:#160e0bbf;color:#f4d09c;padding:9px 16px;font-size:10px;letter-spacing:.12em;cursor:pointer;backdrop-filter:blur(9px);transition:background .2s,border-color .2s}.control:hover,.control:focus-visible{background:#332014;border-color:#f4c07288;outline:none}
+#replay{display:none}body.done #replay{display:block}body.done #skip{display:none}
+body.done .grid,body.done .ui{opacity:1;transform:none}body.done #scene{opacity:.11}body.done .boot-label,body.done .progress-track{opacity:0;pointer-events:none}
+@media(max-width:760px){.side{display:none}.ui .top{left:9%;right:9%}.ui .top>span{display:none}.bottom{bottom:12%;font-size:8px}.center-caption{top:calc(50% + 26vh)}.brand{font-size:11px}.controls{right:16px;top:17px}}
+@media(prefers-reduced-motion:reduce){.ui,.grid,#scene{transition:none}}
+</style>
+</head>
+<body>
+<div class="backdrop"></div><canvas id="scene" aria-hidden="true"></canvas><div class="grid"></div>
+<div class="ui" aria-hidden="true"><div class="top"><div class="brand"><div class="brandmark">✧</div>E.L.Y.S.I.A.</div><span>ENHANCED LOGIC & INTELLIGENT ASSISTANCE</span><span>CORE : 01&nbsp;&nbsp; / &nbsp;&nbsp;ONLINE</span></div>
+<div class="side left"><b>NEURAL CORE / V.02</b><hr>01 / PRESENÇA DETECTADA<br>02 / SISTEMAS SINCRONIZADOS<br>03 / MEMÓRIA DISPONÍVEL<br><span style="color:#80dbb4"><span class="tick"></span>CONEXÃO LOCAL</span></div>
+<div class="side right"><b>SINAIS ATIVOS</b><hr>PROCESSAMENTO&nbsp; //&nbsp; 100%<br>PARTÍCULAS&nbsp; //&nbsp; ESTÁVEL<br>INTERFACE&nbsp; //&nbsp; PRONTA<br><span style="color:#f7c780">PROTOCOLO AURORA</span></div>
+<div class="center-caption">E . L . Y . S . I . A .<span class="center-subtitle">PRESENÇA INICIALIZADA</span></div>
+<div class="bottom"><span>DESPERTAR DO NÚCLEO <strong>◦ 01</strong></span><span>SISTEMA LOCAL <strong class="status-indicator">● OPERACIONAL</strong></span></div></div>
+<canvas id="orb" aria-hidden="true"></canvas><div class="vignette"></div><div class="noise"></div>
+<div class="boot-label" id="bootLabel">INICIALIZANDO NÚCLEO...</div><div class="progress-track"><div class="progress-bar" id="progress"></div></div>
+<div class="controls"><button class="control" id="skip" type="button" aria-label="Pular abertura">PULAR INTRO ↗</button><button class="control" id="replay" type="button" aria-label="Reproduzir abertura novamente">↺ REPRODUZIR</button></div>
+<script>
+(() => {
+'use strict';
+const duration=9.3, embedded=new URLSearchParams(location.search).has('embedded');
+const canvas=document.getElementById('scene'), orbCanvas=document.getElementById('orb'), c2=orbCanvas.getContext('2d',{alpha:true});
+const $=id=>document.getElementById(id);let started=performance.now(), completed=false, raf=0, w=1,h=1,cssWidth=1,cssHeight=1,gl=null,shaderProgram=null,uniforms=null;let debugTime=null;let fallback2d=null;
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const smooth=(a,b,v)=>{const x=Math.min(1,Math.max(0,(v-a)/(b-a)));return x*x*(3-2*x)};
+const rand=(n)=>{const s=Math.sin(n*127.13+78.233)*43758.5453;return s-Math.floor(s)};
+const vertex=`attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}`;
+const frag=`precision highp float;
+uniform vec2 resolution;uniform float time;
+#define PI 3.14159265359
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float n=0.0,a=.5;for(int i=0;i<4;i++){n+=a*noise(p);p=p*2.07+vec2(4.3,-1.8);a*=.49;}return n;}
+float sm(float a,float b,float v){return smoothstep(a,b,v);}
+void main(){
+vec2 uv=(gl_FragCoord.xy-.5*resolution)/min(resolution.x,resolution.y);float r=length(uv),ang=atan(uv.y,uv.x),t=time;
+float ignition=1.0-sm(.3,2.0,t);float tunnel=sm(1.7,3.8,t)*(1.0-sm(5.15,6.8,t));float dissolve=1.0-sm(5.9,7.8,t);
+float wave=fbm(vec2(ang*4.2+sin(t*.42)*.25,r*4.8-t*.48));float micro=fbm(vec2(ang*25.0+sin(t)*.4,r*15.0-t));
+float radialNoise=fbm(uv*5.5+vec2(t*.11,-t*.14));float ripple=sin(ang*13.0+sin(ang*4.0+t*.23)*4.8+sin(r*35.0-t*2.8)*2.5);
+float glow=exp(-r*r*(24.0-10.0*ignition))*(3.0+2.0*sin(t*3.0)*ignition);
+float aureole=exp(-pow((r-(.14+.047*sin(ang*9.0+t*1.3)+.072*wave)),2.0)*400.0)*(1.1+micro*1.5);
+float corona=pow(max(0.0,1.0-r/(.43+.18*wave+.07*ripple)),3.5)*(1.0+micro*2.4);
+float star=pow(abs(sin(ang*12.0+sin(ang*5.0+t*.33)*1.4)),40.0)*exp(-r*3.2)*(2.0+sin(t*.55));
+star+=pow(abs(cos(ang*37.0+sin(ang*2.0+t*.17)*2.0)),75.0)*exp(-r*2.6);
+float rays=pow(max(0.0,sin(ang*83.0+sin(ang*9.0+t*.26)*7.0+micro*2.0)),10.0)*exp(-r*1.8);
+float perspective=1.0/(r+.055);float swirl=fbm(vec2(ang*8.0+perspective*.09+t*.35,perspective*.27-t*.5));
+float rings=pow(max(0.0,sin(perspective*4.4+t*3.2+sin(ang*12.0)*.6+swirl*5.0)),10.0)*exp(-r*.7);
+float veins=pow(max(0.0,sin(ang*116.0+swirl*12.0+perspective*.8-t*1.5)),18.0)*exp(-r*.7);
+float ink=sm(.28,.75,fbm(uv*12.0+vec2(sin(t*.2),t*.2)));
+float halo=(aureole*1.7+corona*.7+star*.66+rays*.36+veins*.38)*dissolve;
+float vortex=(rings*.95+veins*.6+swirl*corona*.8)*tunnel;
+float burn=(glow*.62+halo+vortex)*(.46+.57*wave);
+vec3 deep=vec3(.008,.003,.007);vec3 amber=vec3(1.0,.31,.015),gold=vec3(1.0,.68,.13),cream=vec3(1.0,.93,.65),purple=vec3(.25,.035,.43);
+vec3 col=deep + amber*burn*.95 +gold*pow(max(burn,0.0),1.2)*.34;
+col+=cream*pow(max(burn,0.0),2.4)*.09;
+col+=purple*exp(-pow(r-.18,2.0)*80.0)*ignition*.95;
+col+=vec3(.25,.5,1.0)*exp(-pow(r-.035,2.0)*1300.0)*(.23+ignition);
+col+=amber*ink*.025*dissolve*exp(-r*.5);
+col*=1.0-sm(.1,.95,r)*.6;
+col=1.0-exp(-col*1.38);
+float sep=sm(4.5,6.6,t);col*=1.0-sep*.80;
+gl_FragColor=vec4(col,1.0);
+}`;
+function setupWebGL(){try{gl=canvas.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance',preserveDrawingBuffer:true});if(!gl){fallback2d=canvas.getContext('2d');return;}
+const compile=(type,source)=>{const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;};
+const vs=compile(gl.VERTEX_SHADER,vertex),fs=compile(gl.FRAGMENT_SHADER,frag);shaderProgram=gl.createProgram();gl.attachShader(shaderProgram,vs);gl.attachShader(shaderProgram,fs);gl.linkProgram(shaderProgram);if(!gl.getProgramParameter(shaderProgram,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(shaderProgram));gl.deleteShader(vs);gl.deleteShader(fs);
+const v=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,v);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);const loc=gl.getAttribLocation(shaderProgram,'p');gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(loc);uniforms={resolution:gl.getUniformLocation(shaderProgram,'resolution'),time:gl.getUniformLocation(shaderProgram,'time')};}catch(e){console.warn('Modo canvas simplificado:',e);gl=null;}if(!gl){fallback2d=canvas.getContext('2d');}}
+// 3D Fibonacci orb. Connections are prepared once and move as the sphere rotates.
+const N=850,points=[],links=[],floaters=[];for(let i=0;i<N;i++){const z=1-2*(i+.5)/N,a=i*2.399963229728653,rr=Math.sqrt(1-z*z);points.push({x:Math.cos(a)*rr,y:Math.sin(a)*rr,z,seed:rand(i),phase:rand(i+27)*6.28});}
+for(let i=0;i<N;i++){let near=[];const p=points[i];for(let j=0;j<N;j++){if(j===i)continue;const q=points[j];const d=(p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2;if(d<.048){near.push({j,d});}}near.sort((a,b)=>a.d-b.d);for(const nn of near.slice(0,3)){if(nn.j>i)links.push([i,nn.j]);}}
+for(let i=0;i<120;i++){floaters.push({a:rand(i+1000)*6.28,r:.2+rand(i+300)*1.8,v:.18+rand(i+890)*.4,p:rand(i+1400)*6.28});}
+const projected=Array(N);
+function size(){cssWidth=innerWidth;cssHeight=innerHeight;const dpr=Math.min(devicePixelRatio||1,1.65);w=Math.max(1,Math.round(cssWidth*dpr));h=Math.max(1,Math.round(cssHeight*dpr));orbCanvas.width=w;orbCanvas.height=h;canvas.width=Math.max(1,Math.floor(w*.85));canvas.height=Math.max(1,Math.floor(h*.85));if(gl)gl.viewport(0,0,canvas.width,canvas.height);}
+// Canvas2D fallback for low-power hardware and disabled WebGL drivers.
+// The same time curve and colors are used, so the opening never turns blank.
+function drawFallback(t){
+const ctx=fallback2d;if(!ctx)return;const sw=canvas.width,sh=canvas.height,cx=sw/2,cy=sh/2,unit=Math.min(sw,sh);
+const active=1-smooth(5.3,7.6,t),ignite=smooth(.07,1.3,t),power=active*ignite;
+ctx.clearRect(0,0,sw,sh);ctx.fillStyle='#050306';ctx.fillRect(0,0,sw,sh);
+if(power<.004)return;
+const R=unit*(.16+.065*Math.sin(t*.8)),burst=smooth(1.4,3.2,t)*(1-smooth(4.3,6.5,t));
+const outer=unit*(.26+burst*.26),flicker=1+.04*Math.sin(t*3);
+ctx.save();ctx.translate(cx,cy);ctx.globalCompositeOperation='screen';
+const haze=ctx.createRadialGradient(0,0,1,0,0,unit*.7);haze.addColorStop(0,`rgba(255,135,40,${power*.56})`);haze.addColorStop(.21,`rgba(181,56,21,${power*.23})`);haze.addColorStop(.49,`rgba(81,27,12,${power*.16})`);haze.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=haze;ctx.beginPath();ctx.arc(0,0,unit*.7,0,Math.PI*2);ctx.fill();
+// Angular plasma threads fan out from the corona, breathing in concentric waves.
+for(let i=0;i<340;i++){
+ const a=(i/340)*Math.PI*2+t*.047;const sig=rand(i*2+17);const swir=Math.sin(a*13+t*1.1+sig*3)*.05;
+ const from=R*(.68+.27*sig),reach=outer*(.60+.9*sig)+unit*.065*Math.sin(t*2+i*.71);
+ const br=power*(.12+.35*sig);const x0=Math.cos(a)*from,y0=Math.sin(a)*from;
+ ctx.beginPath();ctx.moveTo(x0,y0);
+ const bend=.16*Math.sin(a*8+t+sig*4);
+ ctx.quadraticCurveTo(Math.cos(a+bend)*(from+reach)*.56,Math.sin(a+bend)*(from+reach)*.56,Math.cos(a+swir)*reach,Math.sin(a+swir)*reach);
+ ctx.strokeStyle=`rgba(255,${Math.round(106+sig*113)},${Math.round(18+sig*65)},${br})`;ctx.lineWidth=(.3+sig*1.8)*sw/1280+ .25;ctx.stroke();
+}
+// Multi-layer incandescent rings with subtle tearing and turbulence.
+for(let layer=0;layer<8;layer++){
+ ctx.beginPath();const rad=R*(.73+layer*.07);for(let j=0;j<=480;j++){
+ const a=j/480*Math.PI*2;const ripple=1+.035*Math.sin(12*a-t*1.1)+.032*Math.sin(33*a+t*.63+layer*.35)+.012*Math.sin(a*79+t*2.2);
+ const x=Math.cos(a)*rad*ripple,y=Math.sin(a)*rad*ripple;if(j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ }
+ const al=power*(.11+(layer===4?.23:.065));ctx.strokeStyle=`rgba(255,${Math.round(100+layer*16)},${Math.round(28+layer*10)},${al})`;ctx.lineWidth=(layer===4?3:1.2)*sw/1280+ .4;
+ if(layer===4){ctx.shadowColor='#ffaf46';ctx.shadowBlur=unit*.035;}ctx.stroke();ctx.shadowBlur=0;
+}
+// Light-grain corona and radial streamers create the volume around the origin.
+for(let i=0;i<1800;i++){
+ const a=rand(i+710)*Math.PI*2+t*(.018+.065*rand(i+67)),frac=rand(i+122);
+ const rr=R*(.8+frac*1.9)+Math.sin(a*9-t*1.8+i)*unit*.014;
+ const sparkle=(.3+.7*rand(i+56))*power;
+ const x=Math.cos(a)*rr,y=Math.sin(a)*rr;
+ ctx.fillStyle=`rgba(255,${Math.round(105+rand(i+500)*128)},${Math.round(38+rand(i+50)*70)},${sparkle*.43})`;
+ const size=(.5+rand(i+212)*1.6)*sw/1280+.27;ctx.fillRect(x,y,size,size);
+}
+const inner=ctx.createRadialGradient(0,0,0,0,0,R*.97);inner.addColorStop(0,`rgba(255,244,195,${power*.97})`);inner.addColorStop(.075,`rgba(255,224,122,${power*.91})`);inner.addColorStop(.28,`rgba(250,137,34,${power*.45})`);inner.addColorStop(.7,`rgba(255,80,16,${power*.11})`);inner.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=inner;ctx.beginPath();ctx.arc(0,0,R,0,Math.PI*2);ctx.fill();
+ctx.restore();
+}
+function orbDraw(t){c2.clearRect(0,0,w,h);const appear=smooth(4.75,6.8,t),settle=smooth(6.0,8.15,t);if(appear<.001)return;
+const cx=w*.5,cy=h*.485,base=Math.min(w,h)*(.1+.113*settle),explode=(1-smooth(6.1,7.25,t))*.35;
+const radius=base*(1+explode+Math.sin(t*1.6)*.012),spin=t*.18,tilt=.38+Math.sin(t*.18)*.12;
+const cs=Math.cos(spin),ss=Math.sin(spin),ct=Math.cos(tilt),st=Math.sin(tilt);
+const pzScale=3.8;
+for(let i=0;i<N;i++){const p=points[i],wr=1+Math.sin(t*1.25+p.phase)*.019;let x=(p.x*cs-p.z*ss)*wr,z=(p.x*ss+p.z*cs)*wr,y=p.y*wr;const y1=y*ct-z*st,z1=y*st+z*ct;const sc=pzScale/(pzScale-z1*.48);projected[i]={x:cx+x*radius*sc,y:cy+y1*radius*sc,z:z1,sc,bright: .34+.66*(z1+1)/2};}
+c2.save();c2.globalCompositeOperation='screen';
+let core=c2.createRadialGradient(cx,cy,1,cx,cy,radius*1.34);core.addColorStop(0,`rgba(255,189,80,${.10*appear})`);core.addColorStop(.3,`rgba(252,158,58,${.078*appear})`);core.addColorStop(.57,`rgba(245,146,35,${.045*appear})`);core.addColorStop(1,'rgba(0,0,0,0)');c2.fillStyle=core;c2.beginPath();c2.arc(cx,cy,radius*1.34,0,Math.PI*2);c2.fill();
+c2.lineWidth=Math.max(.42,w/1800);
+for(const [a,b] of links){const p=projected[a],q=projected[b],br=(p.bright+q.bright)*.5;const alpha=appear*(.035+br*.23);c2.strokeStyle=`rgba(252,172,64,${alpha})`;c2.beginPath();c2.moveTo(p.x,p.y);c2.lineTo(q.x,q.y);c2.stroke();}
+for(let i=0;i<N;i++){const p=projected[i],s=points[i],twinkle=.76+.24*Math.sin(t*2.4+s.phase*12),alpha=appear*p.bright*twinkle;const sz=Math.max(.6,w*.00075)*(s.seed*.7+.65)*p.sc;
+if(s.seed>.88){c2.fillStyle=`rgba(255,161,40,${alpha*.17})`;c2.beginPath();c2.arc(p.x,p.y,sz*3.8,0,Math.PI*2);c2.fill();}
+c2.fillStyle=`rgba(${s.seed>.84?'255,233,164':'255,179,73'},${Math.min(1,alpha)})`;c2.beginPath();c2.arc(p.x,p.y,sz,0,Math.PI*2);c2.fill();}
+for(const f of floaters){const a=f.a+t*f.v,r=radius*(f.r+.12*Math.sin(t*.7+f.p));const x=cx+Math.cos(a)*r,y=cy+Math.sin(a*.85+f.p)*r*.64;const al=.08+.30*(Math.sin(t*1.4+f.p)*.5+.5);c2.fillStyle=`rgba(248,184,78,${al*appear})`;c2.beginPath();c2.arc(x,y,Math.max(.8,w*.0011),0,Math.PI*2);c2.fill();}
+if(t<7.4){const flash=(1-smooth(6.05,7.4,t))*appear*.6;const gr=c2.createRadialGradient(cx,cy,0,cx,cy,radius*.65);gr.addColorStop(0,`rgba(255,244,198,${flash*.32})`);gr.addColorStop(1,'rgba(0,0,0,0)');c2.fillStyle=gr;c2.beginPath();c2.arc(cx,cy,radius*.65,0,Math.PI*2);c2.fill();}
+c2.restore();}
+function finish(){if(completed)return;completed=true;document.body.classList.add('done');$('progress').style.width='100%';$('bootLabel').textContent='SISTEMA ONLINE';if(embedded){window.parent.postMessage({type:'ELYSIA_BOOT_FINISHED'},'*');}}
+function draw(now){const t=debugTime===null?(now-started)/1000:debugTime;
+if(!completed && t>=duration)finish();
+const reveal=smooth(6.5,9.0,t);document.querySelector('.ui').style.opacity=String(reveal);document.querySelector('.ui').style.transform=`scale(${(1.035-.035*reveal).toFixed(4)})`;document.querySelector('.grid').style.opacity=String(reveal*.72);canvas.style.opacity=String(1-.88*reveal);
+if(gl&&shaderProgram){gl.useProgram(shaderProgram);gl.uniform2f(uniforms.resolution,canvas.width,canvas.height);gl.uniform1f(uniforms.time,t);gl.drawArrays(gl.TRIANGLES,0,6);}else{drawFallback(t);}
+orbDraw(t);
+if(!completed){$('progress').style.width=(Math.min(1,t/duration)*100).toFixed(1)+'%';const label=t<1.5?'INICIALIZANDO NÚCLEO...':t<3.4?'ENERGIA DETECTADA':t<5.7?'SINTONIZANDO PARTÍCULAS':t<7.4?'FORMANDO CONSCIÊNCIA VISUAL':'DESPERTANDO E.L.Y.S.I.A.';$('bootLabel').textContent=label;}
+raf=requestAnimationFrame(draw);
+}
+function skip(){finish();}function restart(){document.body.classList.remove('done');completed=false;started=performance.now();debugTime=null;}
+$('skip').addEventListener('click',skip);$('replay').addEventListener('click',restart);
+addEventListener('resize',size);document.addEventListener('visibilitychange',()=>{if(!document.hidden && !completed && debugTime===null){started=performance.now()-Math.min(duration,(performance.now()-started)/1000)*1000;}});
+setupWebGL();size();if(reduced){finish();}raf=requestAnimationFrame(draw);
+// Deterministic recording hooks for automated visual testing, not used by the app.
+window.__elysiaSetTime=t=>{debugTime=t;completed=false;document.body.classList.toggle('done',t>=duration);draw(performance.now());};
+window.__elysiaFinish=finish;
+})();
+</script>
+</body>
+</html>
